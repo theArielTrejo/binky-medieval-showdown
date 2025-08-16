@@ -14,6 +14,9 @@ export class Player {
     private healthBar: Phaser.GameObjects.Rectangle;
     private healthBarBg: Phaser.GameObjects.Rectangle;
     private archetypeText: Phaser.GameObjects.Text;
+    private lastDamageTime: number = 0;
+    private damageCooldown: number = 1000; // 1 second invincibility frames
+    private isInvulnerable: boolean = false;
 
     constructor(scene: Scene, x: number, y: number, archetypeType: PlayerArchetypeType) {
         this.scene = scene;
@@ -64,29 +67,35 @@ export class Player {
         }
     }
 
-    public update(enemies: Enemy[]): void {
-        this.handleMovement();
+    public update(enemies: Enemy[], deltaTime: number): void {
+        this.handleMovement(deltaTime);
         this.handleAttack(enemies);
-        this.updateBullets();
+        this.updateBullets(deltaTime);
         this.updateHealthBar();
         this.updateArchetype();
+        this.updateInvulnerability();
     }
 
-    private handleMovement(): void {
+    private handleMovement(deltaTime: number): void {
         let velocityX = 0;
         let velocityY = 0;
         
-        // Handle input
-        if (this.cursors.left?.isDown || this.wasdKeys.A.isDown) {
+        // Safe input handling with proper null checks
+        const leftPressed = this.isKeyPressed(this.cursors?.left) || this.isKeyPressed(this.wasdKeys?.A);
+        const rightPressed = this.isKeyPressed(this.cursors?.right) || this.isKeyPressed(this.wasdKeys?.D);
+        const upPressed = this.isKeyPressed(this.cursors?.up) || this.isKeyPressed(this.wasdKeys?.W);
+        const downPressed = this.isKeyPressed(this.cursors?.down) || this.isKeyPressed(this.wasdKeys?.S);
+        
+        if (leftPressed) {
             velocityX = -this.archetype.stats.speed;
         }
-        if (this.cursors.right?.isDown || this.wasdKeys.D.isDown) {
+        if (rightPressed) {
             velocityX = this.archetype.stats.speed;
         }
-        if (this.cursors.up?.isDown || this.wasdKeys.W.isDown) {
+        if (upPressed) {
             velocityY = -this.archetype.stats.speed;
         }
-        if (this.cursors.down?.isDown || this.wasdKeys.S.isDown) {
+        if (downPressed) {
             velocityY = this.archetype.stats.speed;
         }
         
@@ -96,8 +105,7 @@ export class Player {
             velocityY *= 0.707;
         }
         
-        // Apply movement
-        const deltaTime = 1/60; // Assuming 60 FPS
+        // Apply movement with actual delta time
         this.sprite.x += velocityX * deltaTime;
         this.sprite.y += velocityY * deltaTime;
         
@@ -119,14 +127,122 @@ export class Player {
     private handleAttack(enemies: Enemy[]): void {
         const currentTime = Date.now();
         
-        if ((this.cursors.space?.isDown || this.wasdKeys.SPACE.isDown) && 
-            currentTime - this.lastAttackTime > this.attackCooldown) {
+        // Safe input handling for attack
+        const attackPressed = this.isKeyPressed(this.cursors?.space) || this.isKeyPressed(this.wasdKeys?.SPACE);
+        
+        if (attackPressed && currentTime - this.lastAttackTime > this.attackCooldown) {
             this.attack(enemies);
             this.lastAttackTime = currentTime;
         }
     }
+    
+    private isKeyPressed(key: any): boolean {
+        return key && typeof key === 'object' && key.isDown === true;
+    }
 
     private attack(enemies: Enemy[]): void {
+        switch (this.archetype.type) {
+            case PlayerArchetypeType.TANK:
+                this.meleeAttack(enemies);
+                break;
+            case PlayerArchetypeType.EVASIVE:
+                this.aoeAttack(enemies);
+                break;
+            case PlayerArchetypeType.GLASS_CANNON:
+            default:
+                this.projectileAttack(enemies);
+                break;
+        }
+    }
+
+    private meleeAttack(enemies: Enemy[]): void {
+        // Tank uses close-range melee attacks
+        const meleeRange = this.archetype.stats.attackRange;
+        const meleeDamage = this.archetype.stats.damage;
+        
+        // Create visual effect for melee attack
+        const meleeEffect = this.scene.add.circle(
+            this.sprite.x,
+            this.sprite.y,
+            meleeRange,
+            0xff0000,
+            0.3
+        );
+        
+        // Remove effect after short duration
+        this.scene.time.delayedCall(150, () => {
+            meleeEffect.destroy();
+        });
+        
+        // Damage all enemies within melee range
+        enemies.forEach(enemy => {
+            const distance = Phaser.Math.Distance.Between(
+                this.sprite.x,
+                this.sprite.y,
+                enemy.sprite.x,
+                enemy.sprite.y
+            );
+            
+            if (distance <= meleeRange) {
+                const enemyDied = enemy.takeDamage(meleeDamage);
+                if (enemyDied) {
+                    this.archetype.gainXP(enemy.stats.xpValue);
+                }
+                this.archetype.dealDamage(meleeDamage);
+            }
+        });
+    }
+
+    private aoeAttack(enemies: Enemy[]): void {
+        // Evasive uses area-of-effect attacks
+        const aoeRange = this.archetype.stats.attackRange;
+        const aoeDamage = this.archetype.stats.damage;
+        
+        // Create multiple AoE explosions around the player
+        const explosionCount = 3;
+        const explosionRadius = 40;
+        
+        for (let i = 0; i < explosionCount; i++) {
+            const angle = (i / explosionCount) * Math.PI * 2;
+            const explosionX = this.sprite.x + Math.cos(angle) * (aoeRange * 0.7);
+            const explosionY = this.sprite.y + Math.sin(angle) * (aoeRange * 0.7);
+            
+            // Create visual effect for explosion
+            const explosion = this.scene.add.circle(
+                explosionX,
+                explosionY,
+                explosionRadius,
+                0x00ff00,
+                0.4
+            );
+            
+            // Remove effect after short duration
+            this.scene.time.delayedCall(200, () => {
+                explosion.destroy();
+            });
+            
+            // Damage enemies within explosion radius
+            enemies.forEach(enemy => {
+                const distance = Phaser.Math.Distance.Between(
+                    explosionX,
+                    explosionY,
+                    enemy.sprite.x,
+                    enemy.sprite.y
+                );
+                
+                if (distance <= explosionRadius) {
+                    const enemyDied = enemy.takeDamage(aoeDamage);
+                    if (enemyDied) {
+                        this.archetype.gainXP(enemy.stats.xpValue);
+                    }
+                    this.archetype.dealDamage(aoeDamage);
+                }
+            });
+        }
+    }
+
+    private projectileAttack(enemies: Enemy[]): void {
+        // Glass Cannon uses projectile attacks (original behavior)
         const closestEnemy = this.findClosestEnemy(enemies);
 
         // Create a bullet
@@ -158,7 +274,6 @@ export class Player {
             velocityY = Math.sin(angle) * 400;
         }
         
-        // For simplicity, bullets go upward. In a real game, you'd aim towards enemies or mouse
         bullet.setData('velocityX', velocityX);
         bullet.setData('velocityY', velocityY);
         
@@ -186,8 +301,7 @@ export class Player {
         return closestEnemy;
     }
 
-    private updateBullets(): void {
-        const deltaTime = 1/60;
+    private updateBullets(deltaTime: number): void {
         
         this.bullets = this.bullets.filter(bullet => {
             if (!bullet.active) return false;
@@ -236,8 +350,29 @@ export class Player {
     }
 
     private updateArchetype(): void {
-        // Update sprite color based on archetype
-        this.sprite.setFillStyle(this.getArchetypeColor());
+        // Update sprite color based on archetype (only if not invulnerable)
+        if (!this.isInvulnerable) {
+            this.sprite.setFillStyle(this.getArchetypeColor());
+        }
+    }
+
+    private updateInvulnerability(): void {
+        if (this.isInvulnerable) {
+            const currentTime = Date.now();
+            const timeSinceDamage = currentTime - this.lastDamageTime;
+            
+            // Check if invulnerability period is over
+            if (timeSinceDamage >= this.damageCooldown) {
+                this.isInvulnerable = false;
+                this.sprite.setAlpha(1.0); // Restore full opacity
+                this.sprite.setFillStyle(this.getArchetypeColor()); // Restore normal color
+            } else {
+                // Create flashing effect during invulnerability
+                const flashInterval = 100; // Flash every 100ms
+                const shouldFlash = Math.floor(timeSinceDamage / flashInterval) % 2 === 0;
+                this.sprite.setAlpha(shouldFlash ? 0.3 : 0.8);
+            }
+        }
     }
 
     public checkCollisionWithEnemies(enemies: Enemy[]): void {
@@ -262,7 +397,12 @@ export class Player {
             
             // Check player-enemy collision
             if (this.checkCollision(this.sprite, enemy.sprite)) {
-                this.takeDamage(enemy.stats.damage);
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(enemy.stats.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
             }
         });
         
@@ -279,11 +419,10 @@ export class Player {
     public takeDamage(amount: number): void {
         this.archetype.takeDamage(amount);
         
-        // Visual feedback - flash red
-        const originalColor = this.getArchetypeColor();
+        // Visual feedback - brief red flash, then invulnerability will take over
         this.sprite.setFillStyle(0xff0000);
-        this.scene.time.delayedCall(100, () => {
-            this.sprite.setFillStyle(originalColor);
+        this.scene.time.delayedCall(50, () => {
+            // Don't restore color here - let invulnerability system handle it
         });
     }
 

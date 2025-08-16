@@ -93,15 +93,15 @@ export class Enemy {
         return false;
     }
 
-    public update(playerX: number, playerY: number): void {
+    public update(playerX: number, playerY: number, deltaTime: number): void {
         // Simple AI: move towards player
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance > 0) {
-            const moveX = (dx / distance) * this.stats.speed * (1/60); // Assuming 60 FPS
-            const moveY = (dy / distance) * this.stats.speed * (1/60);
+            const moveX = (dx / distance) * this.stats.speed * deltaTime;
+            const moveY = (dy / distance) * this.stats.speed * deltaTime;
             
             this.sprite.x += moveX;
             this.sprite.y += moveY;
@@ -200,9 +200,9 @@ export class EnemySystem {
         this.spawnRate *= (1 + percentage / 100);
     }
 
-    public update(playerX: number, playerY: number): void {
+    public update(playerX: number, playerY: number, deltaTime: number): void {
         this.enemies.forEach(enemy => {
-            enemy.update(playerX, playerY);
+            enemy.update(playerX, playerY, deltaTime);
         });
         
         // Remove destroyed enemies

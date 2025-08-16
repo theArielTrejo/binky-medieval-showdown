@@ -36,25 +36,25 @@ export class PlayerArchetype {
                 return {
                     maxHealth: 200,
                     speed: 100,
-                    damage: 25,
-                    attackRange: 80,
-                    attackSpeed: 1.0
+                    damage: 40,        // Increased for melee effectiveness
+                    attackRange: 60,   // Reduced for close-range combat
+                    attackSpeed: 0.8   // Slower but more powerful attacks
                 };
             case PlayerArchetypeType.GLASS_CANNON:
                 return {
                     maxHealth: 50,
                     speed: 150,
-                    damage: 60,
-                    attackRange: 200,
-                    attackSpeed: 2.0
+                    damage: 65,        // Slightly increased for long-range specialization
+                    attackRange: 250,  // Increased for long-range combat
+                    attackSpeed: 2.2   // Faster projectile attacks
                 };
             case PlayerArchetypeType.EVASIVE:
                 return {
                     maxHealth: 100,
                     speed: 250,
-                    damage: 35,
-                    attackRange: 120,
-                    attackSpeed: 1.5
+                    damage: 30,        // Reduced per hit but AoE compensates
+                    attackRange: 140,  // Moderate range for AoE placement
+                    attackSpeed: 1.3   // Moderate speed for AoE attacks
                 };
         }
     }

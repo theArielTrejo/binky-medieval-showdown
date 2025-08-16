@@ -137,17 +137,18 @@ export class AIDirector {
     }
 
     public async chooseAction(gameState: GameState): Promise<DirectorAction> {
-        if (!this.model) {
-            return DirectorAction.DO_NOTHING;
-        }
+        try {
+            if (!this.model) {
+                return DirectorAction.DO_NOTHING;
+            }
 
-        // Epsilon-greedy action selection
-        if (this.isTraining && Math.random() < this.epsilon) {
-            // Random action for exploration
-            return Math.floor(Math.random() * 6) as DirectorAction;
-        }
+            // Epsilon-greedy action selection
+            if (this.isTraining && Math.random() < this.epsilon) {
+                // Random action for exploration
+                return Math.floor(Math.random() * 6) as DirectorAction;
+            }
 
-        // Use the model to predict the best action
+            // Use the model to predict the best action
         const stateTensor = this.gameStateToTensor(gameState);
         const prediction = this.model.predict(stateTensor) as tf.Tensor;
         const actionValues = await prediction.data();
@@ -165,6 +166,11 @@ export class AIDirector {
         }
 
         return bestAction as DirectorAction;
+        } catch (error) {
+            console.warn('AI Director chooseAction failed:', error);
+            // Fallback to random action if model fails
+            return Math.floor(Math.random() * 6) as DirectorAction;
+        }
     }
 
     public executeAction(action: DirectorAction, enemySystem: EnemySystem): void {

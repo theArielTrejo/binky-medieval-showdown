@@ -204,7 +204,7 @@ export class Game extends Scene {
         this.gameUI.setVisible(false);
     }
 
-    update(): void {
+    update(_time: number, delta: number): void {
         if (!this.gameStarted || !this.player) return;
         
         // Check if player is alive
@@ -213,11 +213,14 @@ export class Game extends Scene {
             return;
         }
         
+        // Convert delta from milliseconds to seconds
+        const deltaTime = delta / 1000;
+        
         // Update game systems
-        this.player.update(this.enemySystem.getEnemies());
+        this.player.update(this.enemySystem.getEnemies(), deltaTime);
         
         const playerPos = this.player.getPosition();
-        this.enemySystem.update(playerPos.x, playerPos.y);
+        this.enemySystem.update(playerPos.x, playerPos.y, deltaTime);
         
         // Check collisions
         this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies());
