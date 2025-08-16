@@ -34,27 +34,27 @@ export class PlayerArchetype {
         switch (type) {
             case PlayerArchetypeType.TANK:
                 return {
-                    maxHealth: 200,
-                    speed: 100,
-                    damage: 40,        // Increased for melee effectiveness
-                    attackRange: 60,   // Reduced for close-range combat
-                    attackSpeed: 0.8   // Slower but more powerful attacks
+                    maxHealth: 2000,    // 10x increase - nearly indestructible
+                    speed: 400,         // 4x increase - fast movement
+                    damage: 300,        // 7.5x increase - devastating melee
+                    attackRange: 120,   // 2x increase - extended reach
+                    attackSpeed: 4.0    // 5x increase - rapid attacks
                 };
             case PlayerArchetypeType.GLASS_CANNON:
                 return {
-                    maxHealth: 50,
-                    speed: 150,
-                    damage: 65,        // Slightly increased for long-range specialization
-                    attackRange: 250,  // Increased for long-range combat
-                    attackSpeed: 2.2   // Faster projectile attacks
+                    maxHealth: 800,     // 16x increase - no longer fragile
+                    speed: 500,         // 3.3x increase - extremely fast
+                    damage: 450,        // 7x increase - devastating ranged
+                    attackRange: 600,   // 2.4x increase - extreme range
+                    attackSpeed: 8.0    // 3.6x increase - machine gun rate
                 };
             case PlayerArchetypeType.EVASIVE:
                 return {
-                    maxHealth: 100,
-                    speed: 250,
-                    damage: 30,        // Reduced per hit but AoE compensates
-                    attackRange: 140,  // Moderate range for AoE placement
-                    attackSpeed: 1.3   // Moderate speed for AoE attacks
+                    maxHealth: 1200,    // 12x increase - very durable
+                    speed: 800,         // 3.2x increase - lightning fast
+                    damage: 200,        // 6.7x increase - powerful AoE
+                    attackRange: 300,   // 2.1x increase - large AoE radius
+                    attackSpeed: 6.0    // 4.6x increase - constant AoE spam
                 };
         }
     }

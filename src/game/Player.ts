@@ -3,7 +3,7 @@ import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
 import { Enemy } from './EnemySystem';
 
 export class Player {
-    public sprite: Phaser.GameObjects.Rectangle;
+    public sprite: Phaser.GameObjects.Sprite;
     public archetype: PlayerArchetype;
     private scene: Scene;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -17,15 +17,21 @@ export class Player {
     private lastDamageTime: number = 0;
     private damageCooldown: number = 1000; // 1 second invincibility frames
     private isInvulnerable: boolean = false;
+    private isMoving: boolean = false;
+    private currentAnimation: string = '';
 
     constructor(scene: Scene, x: number, y: number, archetypeType: PlayerArchetypeType) {
         this.scene = scene;
         this.archetype = new PlayerArchetype(archetypeType);
         this.attackCooldown = 1000 / this.archetype.stats.attackSpeed; // Convert to milliseconds
         
-        // Create player sprite (blue rectangle)
-        this.sprite = scene.add.rectangle(x, y, 30, 30, 0x0066ff);
-        this.sprite.setStrokeStyle(2, 0x003399);
+        // Create player sprite using Dark Oracle character
+        const spriteKey = this.getSpriteKeyForArchetype(archetypeType);
+        this.sprite = scene.add.sprite(x, y, spriteKey);
+        this.sprite.setScale(0.15); // Scale down significantly to match enemy proportions
+        
+        // Start with idle animation
+        this.playAnimation('idle');
         
         // Create health bar
         this.healthBarBg = scene.add.rectangle(x, y - 40, 40, 6, 0x333333);
@@ -53,6 +59,17 @@ export class Player {
                 return 'GLASS CANNON';
             case PlayerArchetypeType.EVASIVE:
                 return 'EVASIVE';
+        }
+    }
+
+    private getSpriteKeyForArchetype(type: PlayerArchetypeType): string {
+        switch (type) {
+            case PlayerArchetypeType.TANK:
+                return 'dark_oracle_1'; // Dark Oracle 1 for Tank
+            case PlayerArchetypeType.GLASS_CANNON:
+                return 'dark_oracle_2'; // Dark Oracle 2 for Glass Cannon
+            case PlayerArchetypeType.EVASIVE:
+                return 'dark_oracle_3'; // Dark Oracle 3 for Evasive
         }
     }
 
@@ -103,6 +120,13 @@ export class Player {
         if (velocityX !== 0 && velocityY !== 0) {
             velocityX *= 0.707; // 1/sqrt(2)
             velocityY *= 0.707;
+        }
+        
+        // Check if player is moving and update animations
+        const moved = velocityX !== 0 || velocityY !== 0;
+        if (moved !== this.isMoving) {
+            this.isMoving = moved;
+            this.playAnimation(moved ? 'running' : 'idle');
         }
         
         // Apply movement with actual delta time
@@ -350,9 +374,9 @@ export class Player {
     }
 
     private updateArchetype(): void {
-        // Update sprite color based on archetype (only if not invulnerable)
+        // Update sprite tint based on archetype (only if not invulnerable)
         if (!this.isInvulnerable) {
-            this.sprite.setFillStyle(this.getArchetypeColor());
+            this.sprite.setTint(this.getArchetypeColor());
         }
     }
 
@@ -365,7 +389,7 @@ export class Player {
             if (timeSinceDamage >= this.damageCooldown) {
                 this.isInvulnerable = false;
                 this.sprite.setAlpha(1.0); // Restore full opacity
-                this.sprite.setFillStyle(this.getArchetypeColor()); // Restore normal color
+                this.sprite.clearTint(); // Restore normal color
             } else {
                 // Create flashing effect during invulnerability
                 const flashInterval = 100; // Flash every 100ms
@@ -410,7 +434,7 @@ export class Player {
         this.bullets = this.bullets.filter(bullet => !bulletsToRemove.includes(bullet));
     }
 
-    private checkCollision(obj1: Phaser.GameObjects.Rectangle, obj2: Phaser.GameObjects.Rectangle): boolean {
+    private checkCollision(obj1: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle, obj2: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle): boolean {
         const bounds1 = obj1.getBounds();
         const bounds2 = obj2.getBounds();
         return Phaser.Geom.Rectangle.Overlaps(bounds1, bounds2);
@@ -419,10 +443,10 @@ export class Player {
     public takeDamage(amount: number): void {
         this.archetype.takeDamage(amount);
         
-        // Visual feedback - brief red flash, then invulnerability will take over
-        this.sprite.setFillStyle(0xff0000);
+        // Visual feedback - brief red tint, then invulnerability will take over
+        this.sprite.setTint(0xff0000);
         this.scene.time.delayedCall(50, () => {
-            // Don't restore color here - let invulnerability system handle it
+            // Don't restore tint here - let invulnerability system handle it
         });
     }
 
@@ -440,6 +464,31 @@ export class Player {
 
     public getBullets(): Phaser.GameObjects.Rectangle[] {
         return this.bullets;
+    }
+
+    private playAnimation(animationName: string): void {
+        if (this.currentAnimation !== animationName) {
+            this.currentAnimation = animationName;
+            try {
+                // Try to play the animation if it exists
+                const spriteKey = this.getSpriteKeyForArchetype(this.archetype.type);
+                const animKey = `${spriteKey}_${animationName}`;
+                
+                if (this.scene.anims.exists(animKey)) {
+                    this.sprite.play(animKey);
+                } else {
+                    // Fallback to a basic animation or static frame
+                    console.warn(`Animation ${animKey} not found, using static frame`);
+                    // Try to set a static frame as fallback
+                    const fallbackFrame = `${spriteKey}_${animationName}_000`;
+                    if (this.scene.textures.exists(fallbackFrame)) {
+                        this.sprite.setTexture(fallbackFrame);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to play animation ${animationName}:`, error);
+            }
+        }
     }
 
     public destroy(): void {
