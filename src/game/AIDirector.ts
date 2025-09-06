@@ -75,7 +75,7 @@ export class AIDirector {
     private targetModels: Map<DifficultyLevel, tf.LayersModel | null> = new Map();
     private currentDifficulty: DifficultyLevel = DifficultyLevel.MEDIUM;
     private difficultyConfigs: Map<DifficultyLevel, DifficultyConfig> = new Map();
-    private isTraining: boolean = false;
+    private trainingMode: boolean = false;
     private gameStartTime: number;
     private lastActionTime: number = 0;
     private actionInterval: number = 3000; // 3 seconds between actions
@@ -517,6 +517,12 @@ export class AIDirector {
         await this.updateTargetModel();
     }
 
+    /**
+     * Gets the current game state for AI processing
+     * @param player - The player archetype instance
+     * @param enemySystem - The enemy system instance
+     * @returns Current game state object with normalized values
+     */
     public getGameState(player: PlayerArchetype, enemySystem: EnemySystem): GameState {
         const currentTime = Date.now();
         const gameTimer = (currentTime - this.gameStartTime) / 1000; // Game time in seconds
@@ -663,7 +669,7 @@ export class AIDirector {
             // Difficulty-specific epsilon-greedy action selection
             const currentEpsilon = Math.max(this.epsilonMin, config.epsilon * Math.pow(config.epsilonDecay, this.trainSteps));
             
-            if (this.isTraining && Math.random() < currentEpsilon) {
+            if (this.trainingMode && Math.random() < currentEpsilon) {
                 // Random action (exploration) - but bias towards aggressive actions for hard difficulty
                 let action: DirectorAction;
                 if (this.currentDifficulty === DifficultyLevel.HARD && Math.random() < config.aggressiveness) {
@@ -705,7 +711,7 @@ export class AIDirector {
             }
             
             // Decay epsilon
-            if (this.isTraining && this.epsilon > this.epsilonMin) {
+            if (this.trainingMode && this.epsilon > this.epsilonMin) {
                 this.epsilon *= this.epsilonDecay;
                 this.trainingMetrics.explorationRate = this.epsilon;
             }
@@ -922,7 +928,7 @@ export class AIDirector {
         this.lastActionTime = currentTime;
         
         // Train the model periodically
-        if (this.isTraining && this.replayBuffer.length >= 64) {
+        if (this.trainingMode && this.replayBuffer.length >= 64) {
             await this.trainModelEnhanced();
             this.trainSteps++;
             
@@ -1082,12 +1088,20 @@ export class AIDirector {
         return batch;
     }
 
+    /**
+     * Sets the training mode for the AI Director
+     * @param training - Whether to enable training mode
+     */
     public setTrainingMode(training: boolean): void {
-        this.isTraining = training;
+        this.trainingMode = training;
     }
 
-    public getIsTraining(): boolean {
-        return this.isTraining;
+    /**
+     * Gets the current training mode status
+     * @returns True if training mode is enabled, false otherwise
+     */
+    public isTraining(): boolean {
+        return this.trainingMode;
     }
 
     public setDifficulty(difficulty: DifficultyLevel): void {
@@ -1120,10 +1134,17 @@ export class AIDirector {
         return { ...this.difficultyConfigs.get(targetDifficulty)! };
     }
 
+    /**
+     * Gets all difficulty configurations
+     * @returns Map containing all difficulty level configurations
+     */
     public getAllDifficultyConfigs(): Map<DifficultyLevel, DifficultyConfig> {
-        return new Map(this.difficultyConfigs);
+        return this.difficultyConfigs;
     }
     
+    /**
+     * Cycles through difficulty levels in order (Easy -> Medium -> Hard -> Easy)
+     */
     public cycleDifficulty(): void {
         const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
         const currentIndex = difficulties.indexOf(this.currentDifficulty);
@@ -1157,7 +1178,7 @@ export class AIDirector {
 
     public getTrainingStatus(): string {
         const status = [];
-        status.push(`Training: ${this.isTraining ? 'ON' : 'OFF'}`);
+        status.push(`Training: ${this.trainingMode ? 'ON' : 'OFF'}`);
         status.push(`Difficulty: ${this.difficultyConfigs.get(this.currentDifficulty)?.name || 'Unknown'}`);
         
         const currentModel = this.models.get(this.currentDifficulty);
@@ -1270,6 +1291,10 @@ export class AIDirector {
         }
     }
     
+    /**
+     * Lists all saved AI Director models
+     * @returns Promise resolving to array of saved model names
+     */
     public async listSavedModels(): Promise<string[]> {
         try {
             const models = await tf.io.listModels();
@@ -1282,6 +1307,11 @@ export class AIDirector {
         }
     }
     
+    /**
+     * Deletes a saved AI Director model and its metadata
+     * @param modelName - Name of the model to delete
+     * @returns Promise resolving to true if deletion was successful, false otherwise
+     */
     public async deleteModel(modelName: string): Promise<boolean> {
         try {
             // Delete models for all difficulty levels

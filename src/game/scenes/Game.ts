@@ -1,16 +1,19 @@
 import { Scene } from 'phaser';
 import { Player } from '../Player';
-import { EnemySystem } from '../EnemySystem';
+import { EnemySystem, EnemyType } from '../EnemySystem';
 import { AIDirector } from '../AIDirector';
 import { PlayerArchetypeType } from '../PlayerArchetype';
 import { AIMetricsDashboard } from '../../ui/AIMetricsDashboard';
 import { ClassSelectionUI } from '../../ui/ClassSelectionUI';
+import { XPOrbSystem } from '../XPOrbSystem';
+import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
 
 export class Game extends Scene {
     private player!: Player;
     private enemySystem!: EnemySystem;
     private aiDirector!: AIDirector;
     private aiDashboard!: AIMetricsDashboard;
+    private xpOrbSystem!: XPOrbSystem;
     private gameStarted: boolean = false;
     private classSelectionUI!: ClassSelectionUI;
     private gameUI: Phaser.GameObjects.Group;
@@ -76,11 +79,12 @@ export class Game extends Scene {
         // Initialize systems (but don't start yet)
         this.enemySystem = new EnemySystem(this);
         this.aiDirector = new AIDirector();
+        this.xpOrbSystem = new XPOrbSystem(this);
         
-        // Initialize AI Dashboard
+        // Initialize AI Dashboard with design system positioning
         this.aiDashboard = new AIMetricsDashboard(this, this.aiDirector, {
-            position: { x: 10, y: 10 },
-            size: { width: 500, height: 400 },
+            position: { x: EnhancedDesignSystem.spacing.md, y: EnhancedDesignSystem.spacing.md },
+            size: { width: 520, height: 420 },
             visible: false // Initially hidden until game starts
         });
         
@@ -102,28 +106,34 @@ export class Game extends Scene {
 
 
     private createGameUI(): void {
-        // Stats display with elegant styling
-        this.statsText = this.add.text(20, 20, '', {
-            fontSize: '16px',
-            color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
-            backgroundColor: 'rgba(26, 26, 26, 0.9)',
-            padding: { x: 15, y: 10 },
-            stroke: '#d4af37',
-            strokeThickness: 1
-        });
+        // Stats display with design system styling
+        this.statsText = this.add.text(
+            EnhancedDesignSystem.spacing.xl, 
+            EnhancedDesignSystem.spacing.xl, 
+            '', 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'lg',
+                color: EnhancedDesignSystem.colors.primary,
+                stroke: true,
+                background: true
+            })
+        );
+        this.statsText.setDepth(EnhancedDesignSystem.zIndex.ui);
         this.gameUI.add(this.statsText);
 
-        // AI Director stats with elegant styling
-        this.directorStatsText = this.add.text(20, 120, '', {
-            fontSize: '14px',
-            color: '#c9b037',
-            fontFamily: 'Cinzel, serif',
-            backgroundColor: 'rgba(26, 26, 26, 0.9)',
-            padding: { x: 15, y: 10 },
-            stroke: '#c9b037',
-            strokeThickness: 1
-        });
+        // AI Director stats with design system styling
+        this.directorStatsText = this.add.text(
+            EnhancedDesignSystem.spacing.xl, 
+            120, 
+            '', 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'md',
+                color: EnhancedDesignSystem.colors.primaryDark,
+                stroke: true,
+                background: true
+            })
+        );
+        this.directorStatsText.setDepth(EnhancedDesignSystem.zIndex.ui);
         this.gameUI.add(this.directorStatsText);
 
         // Initially hide game UI
@@ -284,12 +294,18 @@ export class Game extends Scene {
         // Create player
         this.player = new Player(this, 512, 384, archetypeType);
         
+        // Set up enemy death callback to spawn XP orbs
+        this.player.setEnemyDeathCallback((x: number, y: number, enemyType: EnemyType, xpValue: number) => {
+            this.xpOrbSystem.spawnXPOrbs(x, y, enemyType, xpValue);
+        });
+        
         // Reset and start AI Director
         this.aiDirector.resetGame();
         this.aiDirector.setTrainingMode(true); // Enable learning
         
-        // Clear any existing enemies
+        // Clear any existing enemies and XP orbs
         this.enemySystem.clearAllEnemies();
+        this.xpOrbSystem.clearAllOrbs();
         
         this.gameStarted = true;
         
@@ -352,8 +368,14 @@ export class Game extends Scene {
         const playerPos = this.player.getPosition();
         this.enemySystem.update(playerPos.x, playerPos.y, deltaTime);
         
+        // Update XP orb system
+        this.xpOrbSystem.update(deltaTime);
+        
         // Check collisions
         this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies());
+        
+        // Collect XP orbs
+        this.player.collectXPOrbs(this.xpOrbSystem);
         
         // Update AI Director
         this.aiDirector.update(this.player.getArchetype(), this.enemySystem);
@@ -370,11 +392,14 @@ export class Game extends Scene {
         const maxHealth = archetype.stats.maxHealth;
         const xp = Math.ceil(archetype.xpGained);
         const enemyCount = this.enemySystem.getEnemyCount();
+        const orbCount = this.xpOrbSystem.getOrbCount();
+        const availableXP = this.xpOrbSystem.getTotalAvailableXP();
         
         this.statsText.setText(
             `Health: ${health}/${maxHealth}\n` +
             `XP: ${xp}\n` +
             `Enemies: ${enemyCount}\n` +
+            `XP Orbs: ${orbCount} (${availableXP} XP)\n` +
             `Archetype: ${archetype.type.toUpperCase()}`
         );
         
@@ -399,33 +424,35 @@ export class Game extends Scene {
         // Hide AI dashboard on game over
         this.aiDashboard.hide();
         
-        this.gameOverText = this.add.text(512, 384, 
-            'GAME OVER\n\nThe AI Director learned from your playstyle!\n\nPress R to try a different archetype', {
-            fontSize: '36px',
-            color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
-            align: 'center',
-            backgroundColor: 'rgba(26, 26, 26, 0.95)',
-            padding: { x: 30, y: 25 },
-            stroke: '#d4af37',
-            strokeThickness: 2
-        }).setOrigin(0.5).setDepth(1000);
+        this.gameOverText = this.add.text(
+            512, 
+            384, 
+            'GAME OVER\n\nThe AI Director learned from your playstyle!\n\nPress R to try a different archetype', 
+            {
+                ...EnhancedStyleHelpers.createTextStyle({
+                    size: 'title',
+                    color: EnhancedDesignSystem.colors.primary,
+                    stroke: true,
+                    background: true
+                }),
+                align: 'center',
+                padding: { x: EnhancedDesignSystem.spacing.xxxl, y: EnhancedDesignSystem.spacing.xxl }
+            }
+        ).setOrigin(0.5).setDepth(EnhancedDesignSystem.zIndex.modal);
     }
     
     private setupAIControls(): void {
-        // Add AI controls text
-        this.aiControlsText = this.add.text(20, 680, 
+        // Add AI controls text with design system styling
+        this.aiControlsText = this.add.text(
+            EnhancedDesignSystem.spacing.xl, 
+            680, 
             'AI Controls: F1-Dashboard | F2-Save | F3-Load | F4-Export | F5-Training | F6-Difficulty', 
-            {
-                fontSize: '14px',
-                color: '#c9b037',
-                backgroundColor: 'rgba(26, 26, 26, 0.9)',
-                padding: { x: 12, y: 8 },
-                fontFamily: 'Cinzel, serif',
-                stroke: '#c9b037',
-                strokeThickness: 1
-            }
-        ).setDepth(1000);
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'md',
+                color: EnhancedDesignSystem.colors.primaryDark,
+                background: true
+            })
+        ).setDepth(EnhancedDesignSystem.zIndex.ui);
         
         // Set up keyboard handlers for AI controls
         this.input.keyboard!.on('keydown-F1', () => {
@@ -459,7 +486,7 @@ export class Game extends Scene {
         });
         
         this.input.keyboard!.on('keydown-F5', () => {
-            const isTraining = this.aiDirector.getIsTraining();
+            const isTraining = this.aiDirector.isTraining();
             this.aiDirector.setTrainingMode(!isTraining);
             this.showNotification(
                 `Training ${!isTraining ? 'enabled' : 'disabled'}`, 

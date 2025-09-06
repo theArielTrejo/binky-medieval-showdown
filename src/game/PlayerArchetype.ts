@@ -59,6 +59,10 @@ export class PlayerArchetype {
         }
     }
 
+    /**
+     * Gets the archetype as a one-hot encoded vector for AI processing
+     * @returns Array representing archetype [tank, glass_cannon, evasive]
+     */
     public getArchetypeVector(): number[] {
         switch (this.type) {
             case PlayerArchetypeType.TANK:
@@ -70,15 +74,28 @@ export class PlayerArchetype {
         }
     }
 
+    /**
+     * Applies damage to the player archetype
+     * @param amount - Amount of damage to apply
+     */
     public takeDamage(amount: number): void {
         this.currentHealth = Math.max(0, this.currentHealth - amount);
         this.lastDamageTime = Date.now();
     }
 
+    /**
+     * Records damage dealt by the player
+     * @param amount - Amount of damage dealt
+     */
     public dealDamage(amount: number): void {
         this.totalDamageDealt += amount;
     }
 
+    /**
+     * Updates the player's position and tracks movement history
+     * @param x - New X coordinate
+     * @param y - New Y coordinate
+     */
     public updatePosition(x: number, y: number): void {
         this.position = { x, y };
         this.movementHistory.push({ x, y, time: Date.now() });
@@ -88,20 +105,36 @@ export class PlayerArchetype {
         this.movementHistory = this.movementHistory.filter(entry => entry.time > tenSecondsAgo);
     }
 
+    /**
+     * Adds experience points to the player
+     * @param amount - Amount of XP to gain
+     */
     public gainXP(amount: number): void {
         this.xpGained += amount;
         this.lastXpTime = Date.now();
     }
 
+    /**
+     * Gets the current health as a percentage of maximum health
+     * @returns Health percentage (0.0 to 1.0)
+     */
     public getHealthPercentage(): number {
         return this.currentHealth / this.stats.maxHealth;
     }
 
+    /**
+     * Calculates damage per second over the last 10 seconds
+     * @returns Average DPS over the last 10 seconds
+     */
     public getDPSOverLastTenSeconds(): number {
         // This would need to be tracked more precisely in a real implementation
         return this.totalDamageDealt / 10; // Simplified calculation
     }
 
+    /**
+     * Calculates total movement distance over the last 10 seconds
+     * @returns Total distance moved in pixels
+     */
     public getMovementDistanceLastTenSeconds(): number {
         if (this.movementHistory.length < 2) return 0;
         
@@ -116,11 +149,19 @@ export class PlayerArchetype {
         return totalDistance;
     }
 
+    /**
+     * Checks if damage was taken recently (within last 5 seconds)
+     * @returns 1 if damage taken recently, 0 otherwise
+     */
     public getDamageTakenRecently(): number {
         const fiveSecondsAgo = Date.now() - 5000;
         return this.lastDamageTime > fiveSecondsAgo ? 1 : 0; // Simplified: 1 if damaged recently, 0 if not
     }
 
+    /**
+     * Calculates experience point generation rate over the last 10 seconds
+     * @returns XP per second rate
+     */
     public getXPGenerationRate(): number {
         const tenSecondsAgo = Date.now() - 10000;
         return this.lastXpTime > tenSecondsAgo ? this.xpGained / 10 : 0;

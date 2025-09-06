@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
-import { Enemy } from './EnemySystem';
+import { Enemy, EnemyType } from './EnemySystem';
+import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 
 export class Player {
     public sprite: Phaser.GameObjects.Sprite;
@@ -19,6 +20,7 @@ export class Player {
     private isInvulnerable: boolean = false;
     private isMoving: boolean = false;
     private currentAnimation: string = '';
+    private onEnemyDeathCallback: ((x: number, y: number, enemyType: EnemyType, xpValue: number) => void) | null = null;
 
     constructor(scene: Scene, x: number, y: number, archetypeType: PlayerArchetypeType) {
         this.scene = scene;
@@ -37,11 +39,13 @@ export class Player {
         this.healthBarBg = scene.add.rectangle(x, y - 40, 40, 6, 0x333333);
         this.healthBar = scene.add.rectangle(x, y - 40, 40, 6, 0x00ff00);
         
-        // Create archetype display
-        this.archetypeText = scene.add.text(x, y - 60, this.getArchetypeDisplayName(), {
-            fontSize: '12px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
+        // Create archetype display using Enhanced Design System
+        this.archetypeText = scene.add.text(
+            x, 
+            y - 60, 
+            this.getArchetypeDisplayName(), 
+            EnhancedStyleHelpers.archetype.getStyle(archetypeType)
+        ).setOrigin(0.5);
         
         // Set up input
         this.cursors = scene.input.keyboard!.createCursorKeys();
@@ -74,16 +78,22 @@ export class Player {
     }
 
     private getArchetypeColor(): number {
-        switch (this.archetype.type) {
-            case PlayerArchetypeType.TANK:
-                return 0x4169E1; // Royal Blue
-            case PlayerArchetypeType.GLASS_CANNON:
-                return 0xFF6347; // Tomato
-            case PlayerArchetypeType.EVASIVE:
-                return 0x32CD32; // Lime Green
-        }
+        return EnhancedStyleHelpers.archetype.getColorHex(this.archetype.type);
     }
 
+    /**
+     * Sets the callback function to be called when an enemy dies
+     * @param callback - Function to call when enemy dies (x, y, enemyType, xpValue)
+     */
+    public setEnemyDeathCallback(callback: (x: number, y: number, enemyType: EnemyType, xpValue: number) => void): void {
+        this.onEnemyDeathCallback = callback;
+    }
+
+    /**
+     * Updates the player state each frame
+     * @param enemies - Array of enemy objects to interact with
+     * @param deltaTime - Time elapsed since last frame in seconds
+     */
     public update(enemies: Enemy[], deltaTime: number): void {
         this.handleMovement(deltaTime);
         this.handleAttack(enemies);
@@ -209,8 +219,8 @@ export class Player {
             
             if (distance <= meleeRange) {
                 const enemyDied = enemy.takeDamage(meleeDamage);
-                if (enemyDied) {
-                    this.archetype.gainXP(enemy.stats.xpValue);
+                if (enemyDied && this.onEnemyDeathCallback) {
+                    this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
                 }
                 this.archetype.dealDamage(meleeDamage);
             }
@@ -256,8 +266,8 @@ export class Player {
                 
                 if (distance <= explosionRadius) {
                     const enemyDied = enemy.takeDamage(aoeDamage);
-                    if (enemyDied) {
-                        this.archetype.gainXP(enemy.stats.xpValue);
+                    if (enemyDied && this.onEnemyDeathCallback) {
+                        this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
                     }
                     this.archetype.dealDamage(aoeDamage);
                 }
@@ -363,14 +373,9 @@ export class Player {
         const healthPercent = this.archetype.getHealthPercentage();
         this.healthBar.scaleX = healthPercent;
         
-        // Change color based on health
-        if (healthPercent > 0.6) {
-            this.healthBar.setFillStyle(0x00ff00); // Green
-        } else if (healthPercent > 0.3) {
-            this.healthBar.setFillStyle(0xffff00); // Yellow
-        } else {
-            this.healthBar.setFillStyle(0xff0000); // Red
-        }
+        // Use Enhanced Design System for health bar colors
+        const healthColor = EnhancedStyleHelpers.enemy.getHealthBarColor(healthPercent);
+        this.healthBar.setFillStyle(healthColor);
     }
 
     private updateArchetype(): void {
@@ -399,6 +404,10 @@ export class Player {
         }
     }
 
+    /**
+     * Checks for collisions between the player and enemies
+     * @param enemies - Array of enemies to check collision against
+     */
     public checkCollisionWithEnemies(enemies: Enemy[]): void {
         const bulletsToRemove: Phaser.GameObjects.Rectangle[] = [];
         
@@ -409,8 +418,8 @@ export class Player {
                     const damage = bullet.getData('damage');
                     const enemyDied = enemy.takeDamage(damage);
                     
-                    if (enemyDied) {
-                        this.archetype.gainXP(enemy.stats.xpValue);
+                    if (enemyDied && this.onEnemyDeathCallback) {
+                        this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
                     }
                     this.archetype.dealDamage(damage);
                     
@@ -440,6 +449,10 @@ export class Player {
         return Phaser.Geom.Rectangle.Overlaps(bounds1, bounds2);
     }
 
+    /**
+     * Applies damage to the player if not invulnerable
+     * @param amount - Amount of damage to apply
+     */
     public takeDamage(amount: number): void {
         this.archetype.takeDamage(amount);
         
@@ -450,18 +463,34 @@ export class Player {
         });
     }
 
+    /**
+     * Checks if the player is still alive
+     * @returns True if player health is greater than 0
+     */
     public isAlive(): boolean {
         return this.archetype.currentHealth > 0;
     }
 
+    /**
+     * Gets the current position of the player
+     * @returns Object containing x and y coordinates
+     */
     public getPosition(): { x: number; y: number } {
         return { x: this.sprite.x, y: this.sprite.y };
     }
 
+    /**
+     * Gets the player's current archetype
+     * @returns The player's archetype instance
+     */
     public getArchetype(): PlayerArchetype {
         return this.archetype;
     }
 
+    /**
+     * Gets all active bullets fired by the player
+     * @returns Array of bullet game objects
+     */
     public getBullets(): Phaser.GameObjects.Rectangle[] {
         return this.bullets;
     }
@@ -491,6 +520,20 @@ export class Player {
         }
     }
 
+    /**
+     * Collects XP orbs within range and adds XP to the player
+     * @param xpOrbSystem - The XP orb system to collect from
+     */
+    public collectXPOrbs(xpOrbSystem: any): void {
+        const playerPos = this.getPosition();
+        xpOrbSystem.collectOrbs(playerPos.x, playerPos.y, (xp: number) => {
+            this.archetype.gainXP(xp);
+        });
+    }
+
+    /**
+     * Destroys the player and cleans up all associated resources
+     */
     public destroy(): void {
         this.sprite.destroy();
         this.healthBar.destroy();

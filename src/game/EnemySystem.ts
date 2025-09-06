@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 
 export enum EnemyType {
     TANK = 'tank',
@@ -129,8 +130,8 @@ export class Enemy {
         }
         
         // Calculate dynamic cost and threat level using static methods
-        const cost = EnemySystem.calculateEnemyCostStatic(baseStats, specialAbilities);
-        const threatLevel = EnemySystem.calculateThreatLevelStatic(baseStats, specialAbilities);
+        const cost = EnemySystem.calculateEnemyCost(baseStats, specialAbilities);
+        const threatLevel = EnemySystem.calculateThreatLevel(baseStats, specialAbilities);
         
         return {
             ...baseStats,
@@ -141,35 +142,29 @@ export class Enemy {
     }
 
     private getColorForType(type: EnemyType): number {
-        switch (type) {
-            case EnemyType.TANK:
-                return 0x8B4513; // Brown
-            case EnemyType.PROJECTILE:
-                return 0xFF4500; // Orange Red
-            case EnemyType.SPEEDSTER:
-                return 0x00FF00; // Green
-            case EnemyType.BOSS:
-                return 0x800080; // Purple
-            case EnemyType.ELITE_TANK:
-                return 0x654321; // Dark Brown
-            case EnemyType.SNIPER:
-                return 0x8B0000; // Dark Red
-            case EnemyType.SWARM:
-                return 0xFFFF00; // Yellow
-            case EnemyType.BERSERKER:
-                return 0xFF0000; // Red
-        }
+        return EnhancedStyleHelpers.enemy.getColor(type);
     }
 
+    /**
+     * Applies damage to the enemy
+     * @param amount - Amount of damage to apply
+     * @returns True if enemy died, false if it survived
+     */
     public takeDamage(amount: number): boolean {
         this.currentHealth -= amount;
         if (this.currentHealth <= 0) {
             this.destroy();
             return true; // Enemy died
         }
-        return false;
+        return false; // Enemy survived
     }
 
+    /**
+     * Updates the enemy's position and behavior
+     * @param playerX - Player's X coordinate
+     * @param playerY - Player's Y coordinate
+     * @param deltaTime - Time elapsed since last frame in seconds
+     */
     public update(playerX: number, playerY: number, deltaTime: number): void {
         // Simple AI: move towards player
         const dx = playerX - this.sprite.x;
@@ -185,18 +180,33 @@ export class Enemy {
         }
     }
 
+    /**
+     * Destroys the enemy and cleans up its sprite
+     */
     public destroy(): void {
         this.sprite.destroy();
     }
 
+    /**
+     * Gets the resource cost of this enemy
+     * @returns The cost value for AI resource management
+     */
     public getCost(): number {
         return this.stats.cost;
     }
 
+    /**
+     * Gets the threat level of this enemy
+     * @returns The threat level rating (0-100)
+     */
     public getThreatLevel(): number {
         return this.stats.threatLevel;
     }
 
+    /**
+     * Gets the list of special abilities for this enemy
+     * @returns Array of special ability names
+     */
     public getSpecialAbilities(): string[] {
         return this.stats.specialAbilities;
     }
@@ -212,6 +222,14 @@ export class EnemySystem {
         this.scene = scene;
     }
 
+    /**
+     * Spawns a wave of enemies of the specified type
+     * @param enemyType - Type of enemy to spawn
+     * @param count - Number of enemies to spawn
+     * @param location - Spawn location strategy ('near_player', 'screen_edges', 'random_ambush')
+     * @param playerX - Player's X coordinate for positioning
+     * @param playerY - Player's Y coordinate for positioning
+     */
     public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384): void {
         if (this.enemies.length >= this.maxEnemies) {
             return; // Don't spawn if max is reached
@@ -277,6 +295,10 @@ export class EnemySystem {
         return distance < safeRadius;
     }
 
+    /**
+     * Starts a special enemy event
+     * @param eventType - Type of special event to trigger
+     */
     public startSpecialEvent(eventType: string): void {
         switch (eventType) {
             case 'boss_encounter':
@@ -285,10 +307,20 @@ export class EnemySystem {
         }
     }
 
+    /**
+     * Increases the spawn rate by a percentage
+     * @param percentage - Percentage increase in spawn rate
+     */
     public increaseSpawnRate(percentage: number): void {
         this.spawnRate *= (1 + percentage / 100);
     }
 
+    /**
+     * Updates all enemies in the system
+     * @param playerX - Player's X coordinate
+     * @param playerY - Player's Y coordinate
+     * @param deltaTime - Time elapsed since last frame in seconds
+     */
     public update(playerX: number, playerY: number, deltaTime: number): void {
         this.enemies.forEach(enemy => {
             enemy.update(playerX, playerY, deltaTime);
@@ -298,25 +330,41 @@ export class EnemySystem {
         this.enemies = this.enemies.filter(enemy => enemy.sprite.active);
     }
 
+    /**
+     * Gets the total number of active enemies
+     * @returns Current enemy count
+     */
     public getEnemyCount(): number {
         return this.enemies.length;
     }
 
+    /**
+     * Gets the count of enemies of a specific type
+     * @param type - The enemy type to count
+     * @returns Number of enemies of the specified type
+     */
     public getEnemyCountByType(type: EnemyType): number {
         return this.enemies.filter(enemy => enemy.type === type).length;
     }
 
+    /**
+     * Gets the array of all active enemies
+     * @returns Array of enemy objects
+     */
     public getEnemies(): Enemy[] {
         return this.enemies;
     }
 
+    /**
+     * Destroys all enemies and clears the enemy array
+     */
     public clearAllEnemies(): void {
         this.enemies.forEach(enemy => enemy.destroy());
         this.enemies = [];
     }
 
     // Dynamic cost calculation based on combat effectiveness
-    public static calculateEnemyCostStatic(stats: Omit<EnemyStats, 'cost' | 'threatLevel' | 'specialAbilities'>, abilities: string[]): number {
+    public static calculateEnemyCost(stats: Omit<EnemyStats, 'cost' | 'threatLevel' | 'specialAbilities'>, abilities: string[]): number {
         // Base cost calculation
         let baseCost = Math.round(
             (stats.health * 0.1) + 
@@ -360,7 +408,7 @@ export class EnemySystem {
 
 
     // Calculate overall threat level (0-10 scale)
-    public static calculateThreatLevelStatic(stats: Omit<EnemyStats, 'cost' | 'threatLevel' | 'specialAbilities'>, abilities: string[]): number {
+    public static calculateThreatLevel(stats: Omit<EnemyStats, 'cost' | 'threatLevel' | 'specialAbilities'>, abilities: string[]): number {
         // Base threat calculation (0-100 scale)
         let baseThreat = Math.min(100, Math.round(
             (stats.health * 0.15) + 
@@ -413,7 +461,10 @@ export class EnemySystem {
 
 
 
-    // Get total cost of all current enemies
+    /**
+     * Gets the total resource cost of all current enemies
+     * @returns Sum of all enemy costs
+     */
     public getTotalEnemyCost(): number {
         return this.enemies.reduce((total, enemy) => total + enemy.getCost(), 0);
     }

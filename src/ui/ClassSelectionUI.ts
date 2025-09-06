@@ -1,6 +1,7 @@
 // Enhanced Class Selection UI with elegant styling
 import { Scene } from 'phaser';
 import { PlayerArchetypeType } from '../game/PlayerArchetype';
+import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
 
 export interface ClassData {
     name: string;
@@ -32,30 +33,30 @@ export class ClassSelectionUI {
     
     private classData: ClassData[] = [
         {
-            name: 'Tank',
-            description: 'A resilient defender who protects allies by absorbing damage.',
-            strengths: 'High survivability, crowd control.',
-            weaknesses: 'Low damage output.',
-            icon: '🛡️',
-            color: 0x4169E1,
+            name: 'Knight',
+            description: 'A noble warrior clad in heavy armor, sworn to protect the realm.',
+            strengths: 'Stalwart defense, battlefield control.',
+            weaknesses: 'Limited offensive prowess.',
+            icon: '⚔️',
+            color: 0x4682b4,
             archetype: PlayerArchetypeType.TANK
         },
         {
-            name: 'Glass Cannon',
-            description: 'Deals massive damage from a distance but is very fragile.',
-            strengths: 'Huge ranged damage.',
-            weaknesses: 'Low health.',
-            icon: '💥',
-            color: 0xFF6347,
+            name: 'Mage',
+            description: 'A master of arcane arts who wields devastating magical forces.',
+            strengths: 'Immense magical power.',
+            weaknesses: 'Frail constitution.',
+            icon: '🔮',
+            color: 0x8b0000,
             archetype: PlayerArchetypeType.GLASS_CANNON
         },
         {
-            name: 'Evasive',
-            description: 'A nimble rogue using speed and stealth for critical strikes.',
-            strengths: 'High mobility & burst damage.',
-            weaknesses: 'Poor in direct combat.',
-            icon: '💨',
-            color: 0x32CD32,
+            name: 'Rogue',
+            description: 'A shadowy assassin who strikes from darkness with deadly precision.',
+            strengths: 'Swift movement & lethal strikes.',
+            weaknesses: 'Vulnerable in open combat.',
+            icon: '🗡️',
+            color: 0x228b22,
             archetype: PlayerArchetypeType.EVASIVE
         }
     ];
@@ -81,10 +82,10 @@ export class ClassSelectionUI {
         this.container.add(overlay);
 
         // Title
-        const title = this.scene.add.text(0, -300, 'Choose Class', {
+        const title = this.scene.add.text(0, -300, 'Choose Thy Path', {
             fontSize: '56px',
             color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
+            fontFamily: 'Cinzel, "Old English Text MT", serif',
             fontStyle: 'bold'
         }).setOrigin(0.5);
         
@@ -122,12 +123,12 @@ export class ClassSelectionUI {
     private createClassCard(classInfo: ClassData, x: number, y: number): Phaser.GameObjects.Container {
         const card = this.scene.add.container(x, y);
 
-        // Card background
+        // Card background with standardized styling
         const bg = this.scene.add.graphics();
-        bg.fillStyle(0x1a1a1a, 1);
-        bg.lineStyle(2, 0x333333, 1);
-        bg.fillRoundedRect(-90, -60, 180, 120, 10);
-        bg.strokeRoundedRect(-90, -60, 180, 120, 10);
+        EnhancedStyleHelpers.createCard(bg, {
+            width: 180,
+            height: 120
+        });
         card.add(bg);
 
         // Icon (using text as emoji placeholder)
@@ -136,13 +137,18 @@ export class ClassSelectionUI {
         }).setOrigin(0.5);
         card.add(icon);
 
-        // Class name
-        const name = this.scene.add.text(0, 25, classInfo.name, {
-            fontSize: '18px',
-            color: '#e0e0e0',
-            fontFamily: 'Cinzel, serif',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
+        // Class name with standardized styling
+        const name = this.scene.add.text(
+            0, 
+            25, 
+            classInfo.name, 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'lg',
+                color: EnhancedDesignSystem.colors.text,
+                fontFamily: 'primary',
+                fontStyle: 'bold'
+            })
+        ).setOrigin(0.5);
         card.add(name);
 
         // Make card interactive
@@ -188,12 +194,15 @@ export class ClassSelectionUI {
         if (isHover) {
             // Debounce hover events to prevent rapid firing
             this.hoverTimeout = setTimeout(() => {
-                // Hover effect
-                bg.clear();
-                bg.fillStyle(0x1a1a1a, 1);
-                bg.lineStyle(2, 0xd4af37, 1);
-                bg.fillRoundedRect(-90, -60, 180, 120, 10);
-                bg.strokeRoundedRect(-90, -60, 180, 120, 10);
+                // Hover effect with standardized styling
+                EnhancedStyleHelpers.createHoverCard(bg, {
+                    width: 180,
+                    height: 120,
+                    hover: {
+                        borderColor: 0xd4af37,
+                        scale: 1.05
+                    }
+                });
                 
                 card.setScale(1.05);
                 
@@ -202,11 +211,10 @@ export class ClassSelectionUI {
             }, 50); // 50ms debounce delay
         } else {
             // Immediate response for hover out to feel responsive
-            bg.clear();
-            bg.fillStyle(0x1a1a1a, 1);
-            bg.lineStyle(2, 0x333333, 1);
-            bg.fillRoundedRect(-90, -60, 180, 120, 10);
-            bg.strokeRoundedRect(-90, -60, 180, 120, 10);
+            EnhancedStyleHelpers.createCard(bg, {
+                width: 180,
+                height: 120
+            });
             
             card.setScale(1);
             
@@ -260,12 +268,15 @@ export class ClassSelectionUI {
     private createDetailsPanel(): void {
         this.detailsPanel = this.scene.add.container(0, 120);
         
-        // Panel background
+        // Panel background with standardized styling
         const bg = this.scene.add.graphics();
-        bg.fillStyle(0x1a1a1a, 1);
-        bg.lineStyle(2, 0x333333, 1);
-        bg.fillRoundedRect(-300, -60, 600, 120, 10);
-        bg.strokeRoundedRect(-300, -60, 600, 120, 10);
+        EnhancedStyleHelpers.createBackground(bg, {
+            width: 600,
+            height: 120,
+            borderColor: 0x333333
+        });
+        // Adjust position since createBackground draws from 0,0
+        bg.setPosition(-300, -60);
         this.detailsPanel.add(bg);
 
         this.detailsPanel.setAlpha(0);
@@ -289,39 +300,57 @@ export class ClassSelectionUI {
         // Clear existing details safely
         this.clearDetailsContent();
 
-        // Class name
-        const title = this.scene.add.text(0, -40, classInfo.name, {
-            fontSize: '24px',
-            color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
+        // Class name with standardized styling
+        const title = this.scene.add.text(
+            0, 
+            -40, 
+            classInfo.name, 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xl',
+                color: EnhancedDesignSystem.colors.accent,
+                fontFamily: 'primary',
+                fontStyle: 'bold'
+            })
+        ).setOrigin(0.5);
         this.detailsPanel.add(title);
 
-        // Description
-        const description = this.scene.add.text(0, -15, classInfo.description, {
-            fontSize: '14px',
-            color: '#e0e0e0',
-            fontFamily: 'Cinzel, serif',
-            align: 'center',
-            wordWrap: { width: 550 }
-        }).setOrigin(0.5);
+        // Description with standardized styling
+        const description = this.scene.add.text(
+            0, 
+            -15, 
+            classInfo.description, 
+            {
+                ...EnhancedStyleHelpers.bodyStyle(),
+                align: 'center',
+                wordWrap: { width: 550 }
+            }
+        ).setOrigin(0.5);
         this.detailsPanel.add(description);
 
-        // Strengths
-        const strengths = this.scene.add.text(-150, 15, `Strengths: ${classInfo.strengths}`, {
-            fontSize: '12px',
-            color: '#90EE90',
-            fontFamily: 'Cinzel, serif'
-        }).setOrigin(0, 0.5);
+        // Strengths with standardized styling
+        const strengths = this.scene.add.text(
+            -150, 
+            15, 
+            `Strengths: ${classInfo.strengths}`, 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: EnhancedDesignSystem.colors.success,
+                fontFamily: 'primary'
+            })
+        ).setOrigin(0, 0.5);
         this.detailsPanel.add(strengths);
 
-        // Weaknesses
-        const weaknesses = this.scene.add.text(-150, 35, `Weaknesses: ${classInfo.weaknesses}`, {
-            fontSize: '12px',
-            color: '#FFB6C1',
-            fontFamily: 'Cinzel, serif'
-        }).setOrigin(0, 0.5);
+        // Weaknesses with standardized styling
+        const weaknesses = this.scene.add.text(
+            -150, 
+            35, 
+            `Weaknesses: ${classInfo.weaknesses}`, 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: EnhancedDesignSystem.colors.error,
+                fontFamily: 'primary'
+            })
+        ).setOrigin(0, 0.5);
         this.detailsPanel.add(weaknesses);
 
         // Fade in with proper state management
@@ -381,21 +410,18 @@ export class ClassSelectionUI {
     private createSelectButton(): void {
         this.selectButton = this.scene.add.container(0, 250);
 
-        // Button background
+        // Button background with medieval styling
         const bg = this.scene.add.graphics();
-        bg.fillStyle(0x333333, 1);
-        bg.lineStyle(2, 0x444444, 1);
-        bg.fillRoundedRect(-80, -25, 160, 50, 10);
-        bg.strokeRoundedRect(-80, -25, 160, 50, 10);
+        EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, false);
         this.selectButton.add(bg);
 
-        // Button text
-        const text = this.scene.add.text(0, 0, 'Select', {
-            fontSize: '24px',
-            color: '#777777',
-            fontFamily: 'Cinzel, serif',
+        // Button text with medieval styling
+        const text = this.scene.add.text(0, 0, 'Choose Path', EnhancedStyleHelpers.createTextStyle({
+            size: 'lg',
+            color: EnhancedDesignSystem.colors.textDark,
+            fontFamily: 'primary',
             fontStyle: 'bold'
-        }).setOrigin(0.5);
+        })).setOrigin(0.5);
         this.selectButton.add(text);
 
         // Initially disabled
@@ -408,14 +434,11 @@ export class ClassSelectionUI {
         const text = this.selectButton.getAt(1) as Phaser.GameObjects.Text;
         
         if (this.selectedClass) {
-            // Enable button
+            // Enable button with medieval styling
             bg.clear();
-            bg.fillStyle(0xd4af37, 1);
-            bg.lineStyle(2, 0xd4af37, 1);
-            bg.fillRoundedRect(-80, -25, 160, 50, 10);
-            bg.strokeRoundedRect(-80, -25, 160, 50, 10);
+            EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, false);
             
-            text.setColor('#0a0a0a');
+            text.setColor(EnhancedDesignSystem.colors.textDark);
             this.selectButton.setAlpha(1);
             
             // Make interactive
@@ -426,19 +449,13 @@ export class ClassSelectionUI {
             hitArea.on('pointerover', () => {
                 this.selectButton.setScale(1.05);
                 bg.clear();
-                bg.fillStyle(0xd4af37, 1);
-                bg.lineStyle(4, 0xd4af37, 0.7);
-                bg.fillRoundedRect(-80, -25, 160, 50, 10);
-                bg.strokeRoundedRect(-84, -29, 168, 58, 12);
+                EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, true);
             });
             
             hitArea.on('pointerout', () => {
                 this.selectButton.setScale(1);
                 bg.clear();
-                bg.fillStyle(0xd4af37, 1);
-                bg.lineStyle(2, 0xd4af37, 1);
-                bg.fillRoundedRect(-80, -25, 160, 50, 10);
-                bg.strokeRoundedRect(-80, -25, 160, 50, 10);
+                EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, false);
             });
             
             hitArea.on('pointerdown', () => {

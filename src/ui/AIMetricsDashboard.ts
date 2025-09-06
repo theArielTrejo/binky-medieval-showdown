@@ -1,5 +1,6 @@
 // AI Metrics Dashboard for visualizing training progress and performance
 import { AIDirector } from '../game/AIDirector';
+import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
 
 export interface DashboardConfig {
     position: { x: number; y: number };
@@ -47,78 +48,74 @@ export class AIMetricsDashboard {
         this.container = this.scene.add.container(this.config.position.x, this.config.position.y);
         this.container.setDepth(1000); // Ensure it's on top
         
-        // Create background with elegant styling
+        // Create background with standardized styling
         this.background = this.scene.add.graphics();
-        this.background.fillStyle(0x1a1a1a, 0.95);
-        this.background.fillRoundedRect(0, 0, this.config.size.width, this.config.size.height, 15);
-        this.background.lineStyle(3, 0xd4af37, 1);
-        this.background.strokeRoundedRect(0, 0, this.config.size.width, this.config.size.height, 15);
+        EnhancedStyleHelpers.createBackground(this.background, {
+            width: this.config.size.width,
+            height: this.config.size.height
+        });
         this.container.add(this.background);
         
-        // Create title with elegant styling
-        this.titleText = this.scene.add.text(15, 15, 'AI Training Metrics', {
-            fontSize: '20px',
-            color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
-            stroke: '#d4af37',
-            strokeThickness: 1
-        });
+        // Create title with standardized styling
+        this.titleText = this.scene.add.text(
+            EnhancedDesignSystem.spacing.md, 
+            EnhancedDesignSystem.spacing.md, 
+            'Battle Tactics Scroll', 
+            EnhancedStyleHelpers.titleStyle()
+        );
         this.container.add(this.titleText);
         
         // Create metrics text areas
         const metricsLabels = [
-            'Training Status:',
-            'Episodes:',
-            'Avg Reward:',
-            'Exploration Rate:',
-            'Current Budget:',
-            'Budget Efficiency:',
-            'Adaptive Strategy:',
-            'Threat Level:',
-            'Performance Score:',
-            'Model Version:'
+            'Battle Readiness:',
+            'Campaigns:',
+            'Victory Points:',
+            'Scouting Rate:',
+            'War Chest:',
+            'Resource Efficiency:',
+            'Battle Strategy:',
+            'Enemy Threat:',
+            'Commander Rating:',
+            'Tactics Version:'
         ];
         
         metricsLabels.forEach((label, index) => {
-            const text = this.scene.add.text(15, 50 + index * 22, `${label} --`, {
-                fontSize: '14px',
-                color: '#c9b037',
-                fontFamily: 'Cinzel, serif',
-                stroke: '#c9b037',
-                strokeThickness: 0.5
-            });
+            const text = this.scene.add.text(
+                EnhancedDesignSystem.spacing.md, 
+                50 + index * 22, 
+                `${label} --`, 
+                EnhancedStyleHelpers.metricStyle()
+            );
             this.metricsTexts.push(text);
             this.container.add(text);
         });
         
         // Create enemy cost section
-        const enemyCostTitle = this.scene.add.text(15, 270, 'Enemy Cost Analysis:', {
-            fontSize: '16px',
-            color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
-            stroke: '#d4af37',
-            strokeThickness: 1
-        });
+        const enemyCostTitle = this.scene.add.text(
+            EnhancedDesignSystem.spacing.md, 
+            270, 
+            'Enemy Forces Assessment:', 
+            EnhancedStyleHelpers.subtitleStyle()
+        );
         this.container.add(enemyCostTitle);
         
         // Create enemy cost labels
         const enemyCostLabels = [
-            'Tank Cost: --',
-            'Speedster Cost: --',
-            'Elite Tank Cost: --',
-            'Sniper Cost: --',
-            'Swarm Cost: --',
-            'Berserker Cost: --'
+            'Heavy Infantry: --',
+            'Light Cavalry: --',
+            'Elite Guards: --',
+            'Archers: --',
+            'Militia Swarm: --',
+            'Berserkers: --'
         ];
         
         enemyCostLabels.forEach((label, index) => {
-            const text = this.scene.add.text(15, 295 + index * 18, label, {
-                fontSize: '12px',
-                color: '#c9b037',
-                fontFamily: 'Cinzel, serif',
-                stroke: '#c9b037',
-                strokeThickness: 0.5
-            });
+            const text = this.scene.add.text(
+                EnhancedDesignSystem.spacing.md, 
+                295 + index * 18, 
+                label, 
+                EnhancedStyleHelpers.bodyStyle()
+            );
             this.metricsTexts.push(text);
             this.container.add(text);
         });
@@ -275,20 +272,24 @@ export class AIMetricsDashboard {
     private drawChart(data: number[], bounds: any, color: number, title: string): void {
         if (data.length < 2) return;
         
-        // Draw chart background with elegant styling
+        // Draw chart background with standardized styling
         this.chartGraphics.fillStyle(0x2a2a2a, 0.7);
         this.chartGraphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        this.chartGraphics.lineStyle(1, 0xd4af37, 0.8);
+        this.chartGraphics.lineStyle(EnhancedDesignSystem.borders.thin, 0xd4af37, 0.8);
         this.chartGraphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
         
-        // Draw title with elegant styling
-        const titleText = this.scene.add.text(bounds.x + 5, bounds.y - 18, title, {
-            fontSize: '12px',
-            color: '#d4af37',
-            fontFamily: 'Cinzel, serif',
-            stroke: '#d4af37',
-            strokeThickness: 0.5
-        });
+        // Draw title with standardized styling
+        const titleText = this.scene.add.text(
+            bounds.x + EnhancedDesignSystem.spacing.xs, 
+            bounds.y - 18, 
+            title, 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: EnhancedDesignSystem.colors.accent,
+                fontFamily: 'primary',
+                stroke: true
+            })
+        );
         this.container.add(titleText);
         
         // Calculate data range
@@ -308,19 +309,18 @@ export class AIMetricsDashboard {
             this.chartGraphics.lineBetween(x1, y1, x2, y2);
         }
         
-        // Draw current value with elegant styling
+        // Draw current value with standardized styling
         const currentValue = data[data.length - 1];
         const valueText = this.scene.add.text(
             bounds.x + bounds.width - 50,
-            bounds.y + bounds.height + 5,
+            bounds.y + bounds.height + EnhancedDesignSystem.spacing.xs,
             currentValue.toFixed(3),
-            {
-                fontSize: '11px',
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
                 color: `#${color.toString(16).padStart(6, '0')}`,
-                fontFamily: 'Cinzel, serif',
-                stroke: `#${color.toString(16).padStart(6, '0')}`,
-                strokeThickness: 0.3
-            }
+                fontFamily: 'primary',
+                stroke: true
+            })
         );
         this.container.add(valueText);
     }
