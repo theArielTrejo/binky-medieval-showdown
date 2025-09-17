@@ -1,0 +1,157 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "binkymap1.tmx",
+    "expandedProjectPaths": [
+    ],
+    "exportAsImage.visibleLayersOnly": false,
+    "fileStates": {
+        "": {
+            "scaleInDock": 0.75
+        },
+        "binkymap1.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 3036,
+                "y": 1040.5
+            }
+        },
+        "binkymap1.tmx#GraveyardTileset": {
+            "scaleInDock": 0.75
+        },
+        "binkymap1.tmx#castlewall": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "binkymap1.tmx#floor1": {
+            "scaleInDock": 0.125
+        },
+        "binkymap1.tmx#gatedoorandflags": {
+            "scaleInDock": 0.75
+        },
+        "binkymap1.tmx#grassclippings1": {
+            "scaleInDock": 1
+        },
+        "binkymap1.tmx#houses1": {
+            "scaleInDock": 0.5
+        },
+        "binkymap1.tmx#objecthouserocksstatues": {
+            "scaleInDock": 1
+        },
+        "binkymap1.tmx#objectlogs": {
+            "scaleInDock": 1.5
+        },
+        "binkymap1.tmx#objectskeletonstatues": {
+            "scaleInDock": 2
+        },
+        "binkymap1.tmx#tiledwallandfloor": {
+            "scaleInDock": 1.5
+        },
+        "binkymap1.tmx#treesandplants": {
+            "scaleInDock": 0.5
+        },
+        "map1.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 3459,
+                "y": 996.5
+            }
+        },
+        "map1.tmx#Gate2": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "map1.tmx#GraveyardTileset": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.75
+        },
+        "map1.tmx#Skeleton": {
+            "dynamicWrapping": false,
+            "scaleInDock": 3,
+            "scaleInEditor": 1
+        },
+        "map1.tmx#TX Props": {
+            "scaleInDock": 1.5
+        },
+        "map1.tmx#TX Struct": {
+            "scaleInDock": 0.75
+        },
+        "map1.tmx#TX Tileset Grass": {
+            "scaleInDock": 1
+        },
+        "map1.tmx#TX Tileset Wall": {
+            "scaleInDock": 0.75
+        },
+        "map1.tmx#castlewall": {
+            "scaleInDock": 1.5
+        },
+        "map1.tmx#collision": {
+            "scaleInDock": 0.5
+        },
+        "map1.tmx#floorcastle": {
+            "scaleInDock": 1.5
+        },
+        "map1.tmx#grassclippings": {
+            "dynamicWrapping": true,
+            "scaleInDock": 3,
+            "scaleInEditor": 1
+        },
+        "map1.tmx#graveyard house": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "map1.tmx#graveyard house 2": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "map1.tmx#graveyard log": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "map1.tmx#graveyardtrees": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        },
+        "map1.tmx#objectbrickstools": {
+            "dynamicWrapping": false,
+            "scaleInDock": 3
+        },
+        "map1.tmx#roguelike": {
+            "scaleInDock": 2
+        },
+        "map1.tmx#startermap1": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 0.33
+        }
+    },
+    "frame.defaultDuration": 120,
+    "last.exportedFilePath": "D:/BinkysMedievalShowdown/tilemaps/maps",
+    "last.imagePath": "D:/BinkysMedievalShowdown/tilesets_edited",
+    "map.height": 256,
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 256,
+    "openFiles": [
+        "binkymap1.tmx"
+    ],
+    "project": "map1.tiled-project",
+    "recentFiles": [
+        "binkymap1.tmx",
+        "map1.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.margin": 0,
+    "tileset.spacing": 0,
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.type": 0
+}
