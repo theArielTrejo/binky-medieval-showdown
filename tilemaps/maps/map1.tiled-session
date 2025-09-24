@@ -12,11 +12,11 @@
             "scaleInDock": 0.75
         },
         "binkymap1.tmx": {
-            "scale": 1,
+            "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 3036,
-                "y": 1040.5
+                "x": 3346,
+                "y": 1281
             }
         },
         "binkymap1.tmx#GraveyardTileset": {
@@ -130,7 +130,7 @@
         }
     },
     "frame.defaultDuration": 120,
-    "last.exportedFilePath": "D:/BinkysMedievalShowdown/tilemaps/maps",
+    "last.exportedFilePath": "D:/BinkysMedievalShowdown/phaserfiles/testmap/assets",
     "last.imagePath": "D:/BinkysMedievalShowdown/tilesets_edited",
     "map.height": 256,
     "map.lastUsedExportFilter": "All Files (*)",
