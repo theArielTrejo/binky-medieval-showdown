@@ -4,10 +4,8 @@ export default class Start extends Phaser.Scene {
   }
 
   preload() {
-    // Load the Tiled map JSON
+    // --- Map assets ---
     this.load.tilemapTiledJSON("map", "assets/binkymap1.json");
-
-    // Load ALL tileset images that are used in your Tiled map
     this.load.image("castlewall", "assets/castlewall.png");
     this.load.image("floor1", "assets/floor1.png");
     this.load.image("objectskeletonstatues", "assets/objectskeletonstatues.png");
@@ -24,43 +22,89 @@ export default class Start extends Phaser.Scene {
     this.load.image("gatedoorandflags", "assets/gatedoorandflags.png");
     this.load.image("grassclippings1", "assets/grassclippings1.png");
     this.load.image("grassclippings2", "assets/grassclippings2.png");
+
+    // --- Character assets ---
+
+    // ------------------------------------------------------------------------
+    // MEDIEVAL KNIGHT
+
+    // WALKING PNG ASSETS
+    for (let i = 1; i <= 23; i++) {
+      let frameNum = String(i).padStart(3, "0"); // ensures 001, 002...
+      this.load.image(
+        "medieknight" + i,
+        `assets/all-knight-variation/Medieval Knight/PNG/PNG Sequences/Walking/Walking_${frameNum}.png`
+      );
+    }
   }
+  // ------------------------------------------------------------------------
 
   create() {
-    // Create the map
+    // --- Map gets created ---
     const map = this.make.tilemap({ key: "map" });
-
-    // Connect tilesets (first arg = tileset name in Tiled, second = preload key)
-    const castlewall = map.addTilesetImage("castlewall", "castlewall");
-    const floor1 = map.addTilesetImage("floor1", "floor1");
-    const skeletons = map.addTilesetImage("objectskeletonstatues", "objectskeletonstatues");
-    const wallfloor = map.addTilesetImage("tiledwallandfloor", "tiledwallandfloor");
-    const graveyard = map.addTilesetImage("GraveyardTileset", "GraveyardTileset");
-    const houses = map.addTilesetImage("houses1", "houses1");
-    const tools = map.addTilesetImage("objectbrickstools", "objectbrickstools");
-    const rocks = map.addTilesetImage("objecthouserocksstatues", "objecthouserocksstatues");
-    const logs = map.addTilesetImage("objectlogs", "objectlogs");
-    const tents = map.addTilesetImage("tents", "tents");
-    const plants = map.addTilesetImage("treesandplants", "treesandplants");
-    const wagons = map.addTilesetImage("waggonsandmore", "waggonsandmore");
-    const fence = map.addTilesetImage("brokenspikedfence", "brokenspikedfence");
-    const gate = map.addTilesetImage("gatedoorandflags", "gatedoorandflags");
-    const grass1 = map.addTilesetImage("grassclippings1", "grassclippings1");
-    const grass2 = map.addTilesetImage("grassclippings2", "grassclippings2");
-
+    // ALL TILES TO CREATE MAP
     const allTilesets = [
-      castlewall, floor1, skeletons, wallfloor, graveyard, houses,
-      tools, rocks, logs, tents, plants, wagons, fence, gate, grass1, grass2
+      map.addTilesetImage("castlewall", "castlewall"),
+      map.addTilesetImage("floor1", "floor1"),
+      map.addTilesetImage("objectskeletonstatues", "objectskeletonstatues"),
+      map.addTilesetImage("tiledwallandfloor", "tiledwallandfloor"),
+      map.addTilesetImage("GraveyardTileset", "GraveyardTileset"),
+      map.addTilesetImage("houses1", "houses1"),
+      map.addTilesetImage("objectbrickstools", "objectbrickstools"),
+      map.addTilesetImage("objecthouserocksstatues", "objecthouserocksstatues"),
+      map.addTilesetImage("objectlogs", "objectlogs"),
+      map.addTilesetImage("tents", "tents"),
+      map.addTilesetImage("treesandplants", "treesandplants"),
+      map.addTilesetImage("waggonsandmore", "waggonsandmore"),
+      map.addTilesetImage("brokenspikedfence", "brokenspikedfence"),
+      map.addTilesetImage("gatedoorandflags", "gatedoorandflags"),
+      map.addTilesetImage("grassclippings1", "grassclippings1"),
+      map.addTilesetImage("grassclippings2", "grassclippings2")
     ];
 
-    // Create layers (names must match the layer names in Tiled)
     const background = map.createLayer("background", allTilesets, 0, 0);
     const foreground = map.createLayer("foreground", allTilesets, 0, 0);
     const objects = map.createLayer("objects", allTilesets, 0, 0);
 
+    // --- Character ---
+    this.player = this.physics.add.sprite(100, 100, "medieknight1").setScale(0.15);
 
-    // Optional: enable collisions if you’ve marked collidable tiles in Tiled
-    // foreground.setCollisionByProperty({ collides: true });
-    // objects.setCollisionByProperty({ collides: true });
+    this.anims.create({
+      key: "walk",
+      frames: Array.from({ length: 23 }, (_, i) => ({ key: "medieknight" + (i + 1) })),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    // --- Camera ---
+    this.cameras.main.startFollow(this.player);
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+    // --- Controls ---
+    this.cursors = this.input.keyboard.createCursorKeys();
+  }
+
+  update() {
+    const speed = 200;
+    const player = this.player;
+    player.body.setVelocity(0);
+
+    if (this.cursors.left.isDown) {
+      player.setVelocityX(-speed);
+      player.anims.play("walk", true);
+      player.setFlipX(true);
+    } else if (this.cursors.right.isDown) {
+      player.setVelocityX(speed);
+      player.anims.play("walk", true);
+      player.setFlipX(false);
+    } else if (this.cursors.up.isDown) {
+      player.setVelocityY(-speed);
+      player.anims.play("walk", true);
+    } else if (this.cursors.down.isDown) {
+      player.setVelocityY(speed);
+      player.anims.play("walk", true);
+    } else {
+      player.anims.stop();
+    }
   }
 }

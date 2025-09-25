@@ -12,11 +12,11 @@
             "scaleInDock": 0.75
         },
         "binkymap1.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 1,
+            "scale": 0.75,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 3346,
-                "y": 1281
+                "x": 3350.666666666666,
+                "y": 1463.3333333333333
             }
         },
         "binkymap1.tmx#GraveyardTileset": {
@@ -36,7 +36,7 @@
             "scaleInDock": 1
         },
         "binkymap1.tmx#houses1": {
-            "scaleInDock": 0.5
+            "scaleInDock": 1.5
         },
         "binkymap1.tmx#objecthouserocksstatues": {
             "scaleInDock": 1
@@ -51,7 +51,7 @@
             "scaleInDock": 1.5
         },
         "binkymap1.tmx#treesandplants": {
-            "scaleInDock": 0.5
+            "scaleInDock": 2
         },
         "map1.tmx": {
             "scale": 1,
