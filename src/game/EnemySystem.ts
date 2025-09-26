@@ -1,5 +1,4 @@
 import { Scene } from 'phaser';
-import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 
 export enum EnemyType {
     TANK = 'tank',
@@ -24,11 +23,12 @@ export interface EnemyStats {
 }
 
 export class Enemy {
-    public sprite: Phaser.GameObjects.Rectangle;
+    public sprite: Phaser.GameObjects.Sprite;
     public type: EnemyType;
     public stats: EnemyStats;
     public currentHealth: number;
     public scene: Scene;
+    private currentAnimation: string = '';
 
     constructor(scene: Scene, x: number, y: number, type: EnemyType) {
         this.scene = scene;
@@ -36,10 +36,14 @@ export class Enemy {
         this.stats = this.getStatsForType(type);
         this.currentHealth = this.stats.health;
         
-        // Create a simple colored rectangle for the enemy
-        const color = this.getColorForType(type);
-        this.sprite = scene.add.rectangle(x, y, this.stats.size, this.stats.size, color);
+        // Create sprite based on enemy type
+        const spriteKey = this.getSpriteKeyForType(type);
+        this.sprite = scene.add.sprite(x, y, spriteKey);
+        this.sprite.setScale(this.getScaleForType(type));
         this.sprite.setData('enemy', this);
+        
+        // Start with idle animation
+        this.playAnimation('idle');
     }
 
     private getStatsForType(type: EnemyType): EnemyStats {
@@ -141,8 +145,58 @@ export class Enemy {
         };
     }
 
-    private getColorForType(type: EnemyType): number {
-        return EnhancedStyleHelpers.enemy.getColor(type);
+    private getSpriteKeyForType(type: EnemyType): string {
+        switch (type) {
+            case EnemyType.TANK:
+                return 'skeleton_viking_idle';
+            case EnemyType.PROJECTILE:
+                return 'archer_mob_idle';
+            case EnemyType.SPEEDSTER:
+                return 'gnoll_idle';
+            case EnemyType.BOSS:
+            case EnemyType.ELITE_TANK:
+                return 'golem_idle';
+            case EnemyType.SNIPER:
+                return 'archer_mob_idle';
+            case EnemyType.SWARM:
+                return 'gnoll_idle';
+            case EnemyType.BERSERKER:
+                return 'skeleton_viking_idle';
+            default:
+                return 'skeleton_viking_idle';
+        }
+    }
+
+    private getScaleForType(type: EnemyType): number {
+        switch (type) {
+            case EnemyType.TANK:
+                return 0.3;
+            case EnemyType.PROJECTILE:
+                return 0.25;
+            case EnemyType.SPEEDSTER:
+                return 0.28;
+            case EnemyType.BOSS:
+                return 0.5;
+            case EnemyType.ELITE_TANK:
+                return 0.4;
+            case EnemyType.SNIPER:
+                return 0.25;
+            case EnemyType.SWARM:
+                return 0.2;
+            case EnemyType.BERSERKER:
+                return 0.35;
+            default:
+                return 0.3;
+        }
+    }
+
+
+
+    private playAnimation(animationName: string): void {
+        if (this.currentAnimation !== animationName && this.sprite.anims) {
+            this.sprite.play(animationName, true);
+            this.currentAnimation = animationName;
+        }
     }
 
     /**
@@ -171,12 +225,69 @@ export class Enemy {
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance > 0) {
+        if (distance > 5) { // Only move if not too close
             const moveX = (dx / distance) * this.stats.speed * deltaTime;
             const moveY = (dy / distance) * this.stats.speed * deltaTime;
             
             this.sprite.x += moveX;
             this.sprite.y += moveY;
+            
+            // Play running animation when moving
+            this.playAnimation(this.getRunningAnimationKey());
+            
+            // Flip sprite based on movement direction
+            if (dx < 0) {
+                this.sprite.setFlipX(true);
+            } else if (dx > 0) {
+                this.sprite.setFlipX(false);
+            }
+        } else {
+            // Play idle animation when not moving
+            this.playAnimation(this.getIdleAnimationKey());
+        }
+    }
+
+    private getIdleAnimationKey(): string {
+        switch (this.type) {
+            case EnemyType.TANK:
+                return 'skeleton_viking_idle';
+            case EnemyType.PROJECTILE:
+                return 'archer_mob_idle';
+            case EnemyType.SPEEDSTER:
+                return 'gnoll_idle';
+            case EnemyType.BOSS:
+            case EnemyType.ELITE_TANK:
+                return 'golem_idle';
+            case EnemyType.SNIPER:
+                return 'archer_mob_idle';
+            case EnemyType.SWARM:
+                return 'gnoll_idle';
+            case EnemyType.BERSERKER:
+                return 'skeleton_viking_idle';
+            default:
+                return 'skeleton_viking_idle';
+        }
+    }
+
+    private getRunningAnimationKey(): string {
+        switch (this.type) {
+            case EnemyType.TANK:
+                return 'skeleton_viking_running';
+            case EnemyType.PROJECTILE:
+                return 'archer_mob_running';
+            case EnemyType.SPEEDSTER:
+                return 'gnoll_running';
+            case EnemyType.BOSS:
+            case EnemyType.ELITE_TANK:
+                return 'golem_walking';
+            case EnemyType.SNIPER:
+                return 'archer_mob_running';
+            case EnemyType.SWARM:
+                return 'gnoll_running';
+            case EnemyType.BERSERKER:
+                return 'skeleton_viking_running';
+            default:
+                return 'skeleton_viking_running';
         }
     }
 

@@ -28,7 +28,7 @@ export class Player {
         this.attackCooldown = 1000 / this.archetype.stats.attackSpeed; // Convert to milliseconds
         
         // Create player sprite using Dark Oracle character
-        const spriteKey = this.getSpriteKeyForArchetype(archetypeType);
+        const spriteKey = this.getSpriteKeyForArchetype();
         this.sprite = scene.add.sprite(x, y, spriteKey);
         this.sprite.setScale(0.15); // Scale down significantly to match enemy proportions
         
@@ -66,15 +66,9 @@ export class Player {
         }
     }
 
-    private getSpriteKeyForArchetype(type: PlayerArchetypeType): string {
-        switch (type) {
-            case PlayerArchetypeType.TANK:
-                return 'dark_oracle_1'; // Dark Oracle 1 for Tank
-            case PlayerArchetypeType.GLASS_CANNON:
-                return 'dark_oracle_2'; // Dark Oracle 2 for Glass Cannon
-            case PlayerArchetypeType.EVASIVE:
-                return 'dark_oracle_3'; // Dark Oracle 3 for Evasive
-        }
+    private getSpriteKeyForArchetype(): string {
+        // All archetypes now use the medieval knight
+        return 'medieval_knight_idle';
     }
 
     private getArchetypeColor(): number {
@@ -87,6 +81,18 @@ export class Player {
      */
     public setEnemyDeathCallback(callback: (x: number, y: number, enemyType: EnemyType, xpValue: number) => void): void {
         this.onEnemyDeathCallback = callback;
+    }
+
+    /**
+     * Handles enemy death by calling the callback and updating archetype damage dealt
+     * @param enemy - The enemy that died
+     * @param damage - Damage dealt to the enemy
+     */
+    private handleEnemyDeath(enemy: Enemy, damage: number): void {
+        if (this.onEnemyDeathCallback) {
+            this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
+        }
+        this.archetype.dealDamage(damage);
     }
 
     /**
@@ -143,11 +149,12 @@ export class Player {
         this.sprite.x += velocityX * deltaTime;
         this.sprite.y += velocityY * deltaTime;
         
-        // Keep player within screen bounds
-        const gameWidth = 1024;
-        const gameHeight = 768;
-        this.sprite.x = Phaser.Math.Clamp(this.sprite.x, 15, gameWidth - 15);
-        this.sprite.y = Phaser.Math.Clamp(this.sprite.y, 15, gameHeight - 15);
+        // Keep player within world bounds (will be set by the game scene)
+        const worldBounds = this.scene.physics.world.bounds;
+        if (worldBounds.width > 0 && worldBounds.height > 0) {
+            this.sprite.x = Phaser.Math.Clamp(this.sprite.x, worldBounds.x + 15, worldBounds.x + worldBounds.width - 15);
+            this.sprite.y = Phaser.Math.Clamp(this.sprite.y, worldBounds.y + 15, worldBounds.y + worldBounds.height - 15);
+        }
         
         // Update archetype position
         this.archetype.updatePosition(this.sprite.x, this.sprite.y);
@@ -219,10 +226,11 @@ export class Player {
             
             if (distance <= meleeRange) {
                 const enemyDied = enemy.takeDamage(meleeDamage);
-                if (enemyDied && this.onEnemyDeathCallback) {
-                    this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
+                if (enemyDied) {
+                    this.handleEnemyDeath(enemy, meleeDamage);
+                } else {
+                    this.archetype.dealDamage(meleeDamage);
                 }
-                this.archetype.dealDamage(meleeDamage);
             }
         });
     }
@@ -266,10 +274,11 @@ export class Player {
                 
                 if (distance <= explosionRadius) {
                     const enemyDied = enemy.takeDamage(aoeDamage);
-                    if (enemyDied && this.onEnemyDeathCallback) {
-                        this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
+                    if (enemyDied) {
+                        this.handleEnemyDeath(enemy, aoeDamage);
+                    } else {
+                        this.archetype.dealDamage(aoeDamage);
                     }
-                    this.archetype.dealDamage(aoeDamage);
                 }
             });
         }
@@ -417,11 +426,12 @@ export class Player {
                 if (bullet.active && this.checkCollision(bullet, enemy.sprite)) {
                     const damage = bullet.getData('damage');
                     const enemyDied = enemy.takeDamage(damage);
-                    
-                    if (enemyDied && this.onEnemyDeathCallback) {
-                        this.onEnemyDeathCallback(enemy.sprite.x, enemy.sprite.y, enemy.type, enemy.stats.xpValue);
+
+                    if (enemyDied) {
+                        this.handleEnemyDeath(enemy, damage);
+                    } else {
+                        this.archetype.dealDamage(damage);
                     }
-                    this.archetype.dealDamage(damage);
                     
                     bullet.destroy();
                     bulletsToRemove.push(bullet);
@@ -499,20 +509,23 @@ export class Player {
         if (this.currentAnimation !== animationName) {
             this.currentAnimation = animationName;
             try {
-                // Try to play the animation if it exists
-                const spriteKey = this.getSpriteKeyForArchetype(this.archetype.type);
-                const animKey = `${spriteKey}_${animationName}`;
+                // Map animation names to medieval knight animations
+                let animKey = '';
+                if (animationName === 'idle') {
+                    animKey = 'medieval_knight_idle';
+                } else if (animationName === 'running') {
+                    animKey = 'medieval_knight_walk';
+                } else {
+                    // Default to walking animation for any movement
+                    animKey = 'medieval_knight_walk';
+                }
                 
                 if (this.scene.anims.exists(animKey)) {
                     this.sprite.play(animKey);
                 } else {
-                    // Fallback to a basic animation or static frame
                     console.warn(`Animation ${animKey} not found, using static frame`);
-                    // Try to set a static frame as fallback
-                    const fallbackFrame = `${spriteKey}_${animationName}_000`;
-                    if (this.scene.textures.exists(fallbackFrame)) {
-                        this.sprite.setTexture(fallbackFrame);
-                    }
+                    // Fallback to static medieval knight frame
+                    this.sprite.setTexture('medieval_knight_idle');
                 }
             } catch (error) {
                 console.warn(`Failed to play animation ${animationName}:`, error);

@@ -1,12 +1,15 @@
 import { Scene } from 'phaser';
 import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
+import { XP_CONSTANTS } from './constants/XPConstants';
+import { calculateDistance } from './utils/MathUtils';
+import { EffectManager } from './effects/EffectManager';
 
 export class XPOrb {
     public sprite: Phaser.GameObjects.Arc;
     public xpValue: number;
     public scene: Scene;
     private creationTime: number;
-    private lifetime: number = 10000; // 10 seconds in milliseconds
+    private lifetime: number = XP_CONSTANTS.ORB_LIFETIME;
     private isCollected: boolean = false;
     private pulseTimer: number = 0;
     private glowEffect: Phaser.GameObjects.Arc;
@@ -17,16 +20,16 @@ export class XPOrb {
         this.creationTime = Date.now();
         
         // Create the main orb sprite using Enhanced Design System colors
-        this.sprite = scene.add.circle(x, y, 8, EnhancedStyleHelpers.xp.getOrbColor());
-        this.sprite.setStrokeStyle(2, EnhancedStyleHelpers.xp.getOrbBorderColor());
+        this.sprite = scene.add.circle(x, y, XP_CONSTANTS.ORB_RADIUS, EnhancedStyleHelpers.xp.getOrbColor());
+        this.sprite.setStrokeStyle(XP_CONSTANTS.ORB_STROKE_WIDTH, EnhancedStyleHelpers.xp.getOrbBorderColor());
         
         // Create a subtle glow effect
-        this.glowEffect = scene.add.circle(x, y, 12, EnhancedStyleHelpers.xp.getOrbColor(), 0.3);
+        this.glowEffect = scene.add.circle(x, y, XP_CONSTANTS.GLOW_RADIUS, EnhancedStyleHelpers.xp.getOrbColor(), XP_CONSTANTS.GLOW_ALPHA);
         this.glowEffect.setBlendMode(Phaser.BlendModes.ADD);
         
         // Set depth to ensure orbs appear above enemies but below UI
-        this.sprite.setDepth(10);
-        this.glowEffect.setDepth(9);
+        this.sprite.setDepth(XP_CONSTANTS.DEPTH.ORB);
+        this.glowEffect.setDepth(XP_CONSTANTS.DEPTH.GLOW_EFFECT);
         
         // Store reference to this orb in the sprite data
         this.sprite.setData('xpOrb', this);
@@ -35,13 +38,7 @@ export class XPOrb {
         this.sprite.setScale(0);
         this.glowEffect.setScale(0);
         
-        scene.tweens.add({
-            targets: [this.sprite, this.glowEffect],
-            scaleX: 1,
-            scaleY: 1,
-            duration: 200,
-            ease: 'Back.easeOut'
-        });
+        EffectManager.createSpawnAnimation(scene, [this.sprite, this.glowEffect]);
     }
 
     /**
@@ -72,26 +69,13 @@ export class XPOrb {
     private updateVisualEffects(deltaTime: number, age: number): void {
         // Pulse animation
         this.pulseTimer += deltaTime;
-        const pulseScale = 1 + Math.sin(this.pulseTimer * 3) * 0.1;
-        this.sprite.setScale(pulseScale);
-        this.glowEffect.setScale(pulseScale * 1.2);
+        EffectManager.updatePulseAnimation(this.sprite, this.glowEffect, this.pulseTimer);
         
         // Fade out effect as orb approaches expiration
-        const fadeThreshold = this.lifetime * 0.7; // Start fading at 70% of lifetime
-        if (age > fadeThreshold) {
-            const fadeProgress = (age - fadeThreshold) / (this.lifetime - fadeThreshold);
-            const alpha = 1 - (fadeProgress * 0.5); // Fade to 50% opacity
-            this.sprite.setAlpha(alpha);
-            this.glowEffect.setAlpha(alpha * 0.3);
-        }
+        EffectManager.updateFadeEffect(this.sprite, this.glowEffect, age, this.lifetime);
         
-        // Blinking effect in the last 2 seconds
-        if (age > this.lifetime - 2000) {
-            const blinkSpeed = 8; // Blinks per second
-            const shouldShow = Math.floor((age / 1000) * blinkSpeed) % 2 === 0;
-            this.sprite.setVisible(shouldShow);
-            this.glowEffect.setVisible(shouldShow);
-        }
+        // Blinking effect in the last moments
+        EffectManager.updateBlinkEffect(this.sprite, this.glowEffect, age, this.lifetime);
     }
     
     /**
@@ -106,35 +90,19 @@ export class XPOrb {
         this.isCollected = true;
         
         // Create collection animation - orb flies towards player
-        this.scene.tweens.add({
-            targets: [this.sprite, this.glowEffect],
-            x: targetX,
-            y: targetY,
-            scaleX: 0.3,
-            scaleY: 0.3,
-            alpha: 0,
-            duration: 300,
-            ease: 'Power2.easeIn',
-            onComplete: () => {
+        EffectManager.createCollectionAnimation(
+            this.scene,
+            [this.sprite, this.glowEffect],
+            targetX,
+            targetY,
+            () => {
                 this.destroy();
                 onComplete();
             }
-        });
+        );
         
-        // Add a brief flash effect at collection point using design system
-        const flash = this.scene.add.circle(this.sprite.x, this.sprite.y, 15, 0xFFFFFF, 0.8);
-        flash.setDepth(15);
-        this.scene.tweens.add({
-            targets: flash,
-            scaleX: 2,
-            scaleY: 2,
-            alpha: 0,
-            duration: 200,
-            ease: 'Power2.easeOut',
-            onComplete: () => {
-                flash.destroy();
-            }
-        });
+        // Add a brief flash effect at collection point
+        EffectManager.createFlashEffect(this.scene, this.sprite.x, this.sprite.y);
     }
     
     /**
@@ -158,10 +126,7 @@ export class XPOrb {
     public isWithinRange(x: number, y: number, range: number): boolean {
         if (this.isCollected) return false;
         
-        const dx = this.sprite.x - x;
-        const dy = this.sprite.y - y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
+        const distance = calculateDistance(this.sprite.x, this.sprite.y, x, y);
         return distance <= range;
     }
     

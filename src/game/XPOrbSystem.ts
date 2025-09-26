@@ -1,12 +1,15 @@
 import { Scene } from 'phaser';
 import { XPOrb } from './XPOrb';
 import { EnemyType } from './EnemySystem';
+import { XP_CONSTANTS, getOrbConfigForEnemyType, clampCollectionRange, clampToGameBounds } from './constants/XPConstants';
+import { randomBetween } from './utils/MathUtils';
+import { EffectManager } from './effects/EffectManager';
 
 export class XPOrbSystem {
     private scene: Scene;
     private orbs: XPOrb[] = [];
-    private collectionRange: number = 80; // Collection range in pixels (approximately 2-3 blocks)
-    private maxOrbs: number = 100; // Maximum number of orbs to prevent performance issues
+    private collectionRange: number = XP_CONSTANTS.COLLECTION_RANGE;
+    private maxOrbs: number = XP_CONSTANTS.MAX_ORBS;
 
     constructor(scene: Scene) {
         this.scene = scene;
@@ -33,17 +36,16 @@ export class XPOrbSystem {
             }
             
             // Calculate spawn position with slight randomization
-            const angle = (Math.PI * 2 * i) / orbConfig.count + Math.random() * 0.5;
-            const distance = 20 + Math.random() * 30; // 20-50 pixels from death location
+            const angle = (Math.PI * 2 * i) / orbConfig.count + Math.random() * XP_CONSTANTS.SPAWN_ANGLE_VARIANCE;
+            const distance = randomBetween(XP_CONSTANTS.SPAWN_DISTANCE_MIN, XP_CONSTANTS.SPAWN_DISTANCE_MAX);
             const orbX = x + Math.cos(angle) * distance;
             const orbY = y + Math.sin(angle) * distance;
             
             // Ensure orb spawns within game bounds
-            const clampedX = Math.max(20, Math.min(1004, orbX));
-            const clampedY = Math.max(20, Math.min(748, orbY));
+            const clampedPos = clampToGameBounds(orbX, orbY);
             
             // Create the orb
-            const orb = new XPOrb(this.scene, clampedX, clampedY, orbConfig.xpPerOrb);
+            const orb = new XPOrb(this.scene, clampedPos.x, clampedPos.y, orbConfig.xpPerOrb);
             this.orbs.push(orb);
         }
     }
@@ -55,39 +57,16 @@ export class XPOrbSystem {
      * @returns Configuration object with count and XP per orb
      */
     private getOrbConfiguration(enemyType: EnemyType, totalXP: number): { count: number; xpPerOrb: number } {
-        let baseCount: number;
-        
-        // Determine base orb count based on enemy type
-        switch (enemyType) {
-            case EnemyType.SWARM:
-                baseCount = 1; // Small enemies drop single orbs
-                break;
-            case EnemyType.SPEEDSTER:
-            case EnemyType.PROJECTILE:
-                baseCount = 1;
-                break;
-            case EnemyType.TANK:
-            case EnemyType.ELITE_TANK:
-                baseCount = 2; // Medium enemies drop 2 orbs
-                break;
-            case EnemyType.SNIPER:
-            case EnemyType.BERSERKER:
-                baseCount = 3; // Special enemies drop 3 orbs
-                break;
-            case EnemyType.BOSS:
-                baseCount = 5; // Bosses drop many orbs
-                break;
-            default:
-                baseCount = 1;
-        }
+        // Get base configuration from constants
+        const config = getOrbConfigForEnemyType(enemyType);
+        let finalCount = config.baseCount;
         
         // Adjust count based on total XP (more valuable enemies might drop more orbs)
-        let finalCount = baseCount;
-        if (totalXP > 50) {
-            finalCount = Math.min(baseCount + 1, 6); // Cap at 6 orbs max
+        if (totalXP > XP_CONSTANTS.XP_THRESHOLDS.MEDIUM) {
+            finalCount = Math.min(config.baseCount + 1, config.maxCount);
         }
-        if (totalXP > 100) {
-            finalCount = Math.min(baseCount + 2, 8); // Cap at 8 orbs max for very valuable enemies
+        if (totalXP > XP_CONSTANTS.XP_THRESHOLDS.HIGH) {
+            finalCount = Math.min(config.baseCount + 2, config.maxCount);
         }
         
         const xpPerOrb = Math.ceil(totalXP / finalCount);
@@ -125,7 +104,7 @@ export class XPOrbSystem {
                 totalXPCollected += xpValue;
                 
                 // Create visual feedback for XP collection
-                this.createCollectionEffects(orbPos.x, orbPos.y, xpValue);
+                EffectManager.createCollectionEffect(this.scene, orbPos.x, orbPos.y, xpValue);
                 
                 // Animate orb collection
                 orb.collect(playerX, playerY, () => {
@@ -177,7 +156,7 @@ export class XPOrbSystem {
      * @param range - New collection range in pixels
      */
     public setCollectionRange(range: number): void {
-        this.collectionRange = Math.max(20, Math.min(200, range)); // Clamp between 20-200 pixels
+        this.collectionRange = clampCollectionRange(range);
     }
     
     /**
@@ -196,96 +175,7 @@ export class XPOrbSystem {
         this.orbs = [];
     }
     
-    /**
-     * Creates visual effects when XP is collected
-     * @param x - X coordinate where collection occurred
-     * @param y - Y coordinate where collection occurred
-     * @param xpValue - Amount of XP collected
-     */
-    private createCollectionEffects(x: number, y: number, xpValue: number): void {
-        // Create floating XP text
-        const xpText = this.scene.add.text(x, y, `+${xpValue}`, {
-            fontSize: '16px',
-            color: '#FFD700',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
-        
-        // Animate the floating text
-        this.scene.tweens.add({
-            targets: xpText,
-            y: y - 50,
-            alpha: 0,
-            scale: 1.5,
-            duration: 1000,
-            ease: 'Power2.easeOut',
-            onComplete: () => {
-                xpText.destroy();
-            }
-        });
-        
-        // Create particle burst effect
-        this.createParticleBurst(x, y);
-        
-        // Create collection sound effect (visual representation)
-        this.createSoundEffect(x, y);
-    }
-    
-    /**
-     * Creates a particle burst effect at the collection point
-     * @param x - X coordinate
-     * @param y - Y coordinate
-     */
-    private createParticleBurst(x: number, y: number): void {
-        const particleCount = 8;
-        
-        for (let i = 0; i < particleCount; i++) {
-            const angle = (Math.PI * 2 * i) / particleCount;
-            const distance = 30 + Math.random() * 20;
-            const targetX = x + Math.cos(angle) * distance;
-            const targetY = y + Math.sin(angle) * distance;
-            
-            // Create small golden particles
-            const particle = this.scene.add.circle(x, y, 3, 0xFFD700, 0.8);
-            particle.setDepth(20);
-            
-            this.scene.tweens.add({
-                targets: particle,
-                x: targetX,
-                y: targetY,
-                alpha: 0,
-                scale: 0.2,
-                duration: 400 + Math.random() * 200,
-                ease: 'Power2.easeOut',
-                onComplete: () => {
-                    particle.destroy();
-                }
-            });
-        }
-    }
-    
-    /**
-     * Creates a visual sound effect representation
-     * @param x - X coordinate
-     * @param y - Y coordinate
-     */
-    private createSoundEffect(x: number, y: number): void {
-        // Create expanding ring effect to represent sound
-        const soundRing = this.scene.add.circle(x, y, 5, 0xFFFFFF, 0);
-        soundRing.setStrokeStyle(2, 0xFFD700, 0.6);
-        soundRing.setDepth(15);
-        
-        this.scene.tweens.add({
-            targets: soundRing,
-            scaleX: 3,
-            scaleY: 3,
-            alpha: 0,
-            duration: 300,
-            ease: 'Power2.easeOut',
-            onComplete: () => {
-                soundRing.destroy();
-            }
-        });
-    }
+
     
     /**
      * Gets all active orbs (useful for debugging or special effects)

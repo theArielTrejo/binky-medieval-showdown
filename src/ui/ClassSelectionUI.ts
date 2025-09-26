@@ -73,9 +73,10 @@ export class ClassSelectionUI {
     }
 
     private createUI(): void {
-        // Main container
+        // Main container - use screen coordinates, not world coordinates
         this.container = this.scene.add.container(this.config.position!.x, this.config.position!.y);
         this.container.setDepth(1000);
+        this.container.setScrollFactor(0); // Make UI fixed to camera/screen
 
         // Background overlay
         const overlay = this.scene.add.rectangle(0, 0, 1024, 768, 0x0a0a0a, 0.95);
@@ -102,6 +103,12 @@ export class ClassSelectionUI {
 
         // Create select button
         this.createSelectButton();
+        
+        // Create scene-level interactive zones as a fallback
+        this.createSceneLevelInteractiveZones();
+
+        // Ensure all child elements have proper scroll factor for screen-relative positioning
+        this.setChildScrollFactors();
 
         // Set initial visibility
         this.container.setVisible(this.config.visible!);
@@ -123,12 +130,16 @@ export class ClassSelectionUI {
     private createClassCard(classInfo: ClassData, x: number, y: number): Phaser.GameObjects.Container {
         const card = this.scene.add.container(x, y);
 
-        // Card background with standardized styling
+        // Card background with standardized styling - make it interactive
         const bg = this.scene.add.graphics();
         EnhancedStyleHelpers.createCard(bg, {
             width: 180,
             height: 120
         });
+        
+        // Make the background itself interactive
+        bg.setInteractive(new Phaser.Geom.Rectangle(-90, -60, 180, 120), Phaser.Geom.Rectangle.Contains);
+        bg.setScrollFactor(0); // Ensure it's screen-relative
         card.add(bg);
 
         // Icon (using text as emoji placeholder)
@@ -151,17 +162,14 @@ export class ClassSelectionUI {
         ).setOrigin(0.5);
         card.add(name);
 
-        // Make card interactive
-        const hitArea = this.scene.add.rectangle(0, 0, 180, 120, 0x000000, 0);
-        hitArea.setInteractive();
-        card.add(hitArea);
-
-        // Card interactions
-        hitArea.on('pointerover', () => {
+        // Card interactions with debug logging - using the background graphics
+        bg.on('pointerover', () => {
+            console.log('Card hover detected:', classInfo.name);
             this.onCardHover(card, classInfo, true);
         });
 
-        hitArea.on('pointerout', () => {
+        bg.on('pointerout', () => {
+            console.log('Card hover out:', classInfo.name);
             if (this.selectedClass !== classInfo.archetype) {
                 this.onCardHover(card, classInfo, false);
             }
@@ -169,15 +177,19 @@ export class ClassSelectionUI {
 
         // Add pointer move event to ensure consistent hover state
         // Only trigger if we're not already showing details for this card
-        hitArea.on('pointermove', () => {
+        bg.on('pointermove', () => {
             if (!this.isShowingDetails && this.selectedClass !== classInfo.archetype) {
                 this.onCardHover(card, classInfo, true);
             }
         });
 
-        hitArea.on('pointerdown', () => {
+        bg.on('pointerdown', () => {
+            console.log('Card clicked:', classInfo.name, classInfo.archetype);
             this.selectClass(classInfo.archetype);
         });
+
+        // Ensure the entire card is above the overlay
+        card.setDepth(5);
 
         return card;
     }
@@ -226,6 +238,8 @@ export class ClassSelectionUI {
     }
 
     private selectClass(archetype: PlayerArchetypeType): void {
+        console.log('selectClass called with:', archetype);
+        
         // Deselect previous
         if (this.selectedClass) {
             const prevCard = this.classCards.get(this.selectedClass);
@@ -263,6 +277,12 @@ export class ClassSelectionUI {
 
         // Enable select button
         this.updateSelectButton();
+        
+        // Auto-start the game after a short delay to allow visual feedback
+        setTimeout(() => {
+            console.log('Auto-starting game with archetype:', archetype);
+            this.config.onClassSelected(archetype);
+        }, 500);
     }
 
     private createDetailsPanel(): void {
@@ -513,4 +533,63 @@ export class ClassSelectionUI {
     public setVisible(visible: boolean): void {
         this.container.setVisible(visible);
     }
+
+    private setChildScrollFactors(): void {
+        // Recursively set scroll factor for all child elements to ensure screen-relative positioning
+        const setScrollFactorRecursive = (obj: any) => {
+            if (obj && typeof obj.setScrollFactor === 'function') {
+                obj.setScrollFactor(0, 0);
+            }
+            // Handle containers
+            if (obj && obj.list && Array.isArray(obj.list)) {
+                obj.list.forEach((child: any) => setScrollFactorRecursive(child));
+            }
+            // Handle groups
+            if (obj && obj.children && obj.children.entries) {
+                obj.children.entries.forEach((child: any) => setScrollFactorRecursive(child));
+            }
+        };
+        
+        // Set scroll factor for the main container and all its children
+        this.container.setScrollFactor(0, 0);
+        setScrollFactorRecursive(this.container);
+         
+         // Explicitly set scroll factor for known interactive elements
+         this.classCards.forEach(card => {
+             setScrollFactorRecursive(card);
+         });
+         
+         if (this.detailsPanel) {
+             setScrollFactorRecursive(this.detailsPanel);
+         }
+         
+         if (this.selectButton) {
+             setScrollFactorRecursive(this.selectButton);
+         }
+     }
+     
+     private createSceneLevelInteractiveZones(): void {
+         // Create direct scene-level interactive zones as a fallback
+         const cardPositions = [
+             { x: 512 - 200, y: 384 - 50, archetype: PlayerArchetypeType.TANK, name: 'Knight' },
+             { x: 512, y: 384 - 50, archetype: PlayerArchetypeType.GLASS_CANNON, name: 'Mage' },
+             { x: 512 + 200, y: 384 - 50, archetype: PlayerArchetypeType.EVASIVE, name: 'Rogue' }
+         ];
+         
+         cardPositions.forEach(pos => {
+             const zone = this.scene.add.zone(pos.x, pos.y, 180, 120);
+             zone.setInteractive();
+             zone.setScrollFactor(0);
+             zone.setDepth(2000); // Very high depth to ensure it's on top
+             
+             zone.on('pointerdown', () => {
+                 console.log('Scene-level zone clicked:', pos.name, pos.archetype);
+                 this.selectClass(pos.archetype);
+             });
+             
+             zone.on('pointerover', () => {
+                 console.log('Scene-level zone hover:', pos.name);
+             });
+         });
+     }
 }

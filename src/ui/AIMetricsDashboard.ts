@@ -47,6 +47,7 @@ export class AIMetricsDashboard {
         // Create container
         this.container = this.scene.add.container(this.config.position.x, this.config.position.y);
         this.container.setDepth(1000); // Ensure it's on top
+        this.container.setScrollFactor(0); // Make UI fixed to screen
         
         // Create background with standardized styling
         this.background = this.scene.add.graphics();
