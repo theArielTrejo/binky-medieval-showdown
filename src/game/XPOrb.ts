@@ -1,101 +1,103 @@
 import { Scene } from 'phaser';
-// REMOVED: Unused import
-// import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 import { XP_CONSTANTS } from './constants/XPConstants';
-// REMOVED: Unused import
-// import { calculateDistance } from './utils/MathUtils';
 import { EffectManager } from './effects/EffectManager';
 
-export class XPOrb {
-    public sprite: Phaser.Physics.Arcade.Sprite; 
-    public xpValue: number;
-    public scene: Scene;
-    private creationTime: number;
+// The class now extends Sprite, making it a true GameObject
+export class XPOrb extends Phaser.Physics.Arcade.Sprite {
+    public xpValue: number = 0;
+    private creationTime: number = 0;
     private lifetime: number = XP_CONSTANTS.ORB_LIFETIME;
     private isCollected: boolean = false;
     private pulseTimer: number = 0;
     
-    constructor(scene: Scene, x: number, y: number, xpValue: number) {
-        this.scene = scene;
-        this.xpValue = xpValue;
-        this.creationTime = Date.now();
+    constructor(scene: Scene, x: number, y: number) {
+        // Call the parent constructor (Sprite)
+        super(scene, x, y, 'green_orb');
         
-        this.sprite = scene.physics.add.sprite(x, y, 'green_orb');
+        // Add this object to the scene's display list and physics world
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
         
-        const glowColor = 0x00ff00; 
-        const glow = this.sprite.postFX.addGlow(glowColor, 1, 0, false, 0.1, 10);
-        
-        this.sprite.setData('glowEffect', glow);
-        this.sprite.setDepth(XP_CONSTANTS.DEPTH.ORB);
-        this.sprite.setData('xpOrb', this);
-        
-        this.sprite.setScale(0);
-        EffectManager.createSpawnAnimation(scene, [this.sprite]);
+        // Add the Glow FX directly to this sprite
+        const glow = this.postFX.addGlow(0x00ff00, 1, 0, false, 0.1, 10);
+        this.setData('glowEffect', glow);
+        this.setDepth(XP_CONSTANTS.DEPTH.ORB);
     }
 
-    public update(deltaTime: number): boolean {
-        if (this.isCollected) {
-            return true;
+    /**
+     * This method is used by the object pool to activate and initialize a recycled orb.
+     */
+    public launch(x: number, y: number, xpValue: number): void {
+        if (this.body) {
+            this.body.reset(x, y);
         }
+        this.setActive(true);
+        this.setVisible(true);
         
-        const age = Date.now() - this.creationTime;
+        this.xpValue = xpValue;
+        this.creationTime = this.scene.time.now;
+        this.isCollected = false;
+        
+        // Play spawn animation
+        this.setScale(0);
+        EffectManager.createSpawnAnimation(this.scene, [this]);
+    }
+    
+    // Renamed from 'update' to 'preUpdate' to be automatically called by the Group
+    preUpdate(time: number, delta: number): void {
+        super.preUpdate(time, delta);
+        
+        if (!this.active) {
+            return;
+        }
+
+        const age = time - this.creationTime;
         
         if (age >= this.lifetime) {
-            this.destroy();
-            return true;
+            this.kill(); // Deactivate instead of destroying
+            return;
         }
         
-        this.updateVisualEffects(deltaTime, age);
-        
-        return false;
+        // The deltaTime passed to preUpdate is in ms, EffectManager expects seconds
+        this.updateVisualEffects(delta / 1000, age);
     }
     
     private updateVisualEffects(deltaTime: number, age: number): void {
         this.pulseTimer += deltaTime;
-        EffectManager.updatePulseAnimation(this.sprite, this.pulseTimer);
-        EffectManager.updateFadeEffect(this.sprite, age, this.lifetime);
-        EffectManager.updateBlinkEffect(this.sprite, age, this.lifetime);
+        EffectManager.updatePulseAnimation(this, this.pulseTimer);
+        EffectManager.updateFadeEffect(this, age, this.lifetime);
+        EffectManager.updateBlinkEffect(this, age, this.lifetime);
     }
     
     public collect(targetX: number, targetY: number, onComplete: () => void): void {
         if (this.isCollected) return;
-        
         this.isCollected = true;
         
-        EffectManager.createCollectionAnimation(
-            this.scene,
-            [this.sprite],
-            targetX,
-            targetY,
-            () => {
-                this.destroy();
-                onComplete();
-            }
-        );
+        EffectManager.createCollectionAnimation(this.scene, [this], targetX, targetY, () => {
+            this.kill(); // Deactivate when collection is complete
+            onComplete();
+        });
         
-        EffectManager.createFlashEffect(this.scene, this.sprite.x, this.sprite.y);
+        EffectManager.createFlashEffect(this.scene, this.x, this.y);
     }
-    
-    public getPosition(): { x: number; y: number } {
-        return {
-            x: this.sprite.x,
-            y: this.sprite.y
-        };
-    }
-    
-    public isWithinRange(x: number, y: number, range: number): boolean {
-        if (this.isCollected) return false;
-        
-        const distance = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, x, y);
-        return distance <= range;
-    }
-    
-    public destroy(): void {
-        if (this.sprite) {
-            this.sprite.destroy();
+
+    /**
+     * Deactivates the orb and returns it to the object pool.
+     */
+    public kill(): void {
+        this.setActive(false);
+        this.setVisible(false);
+        // It's good practice to disable the body as well
+        if (this.body) {
+            this.body.enable = false;
         }
     }
-    
+
+    public isWithinRange(x: number, y: number, range: number): boolean {
+        if (!this.active || this.isCollected) return false;
+        return Phaser.Math.Distance.Between(this.x, this.y, x, y) <= range;
+    }
+
     public getXPValue(): number {
         return this.xpValue;
     }
