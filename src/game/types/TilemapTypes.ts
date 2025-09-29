@@ -2,6 +2,33 @@
  * Type definitions for tilemap-related data structures
  */
 
+// --- THIS INTERFACE WAS MISSING FROM YOUR FILE ---
+/**
+ * Defines the structure for setting up collisions on a tilemap layer.
+ * Used by TilemapManager's setupCollisions method.
+ */
+export interface CollisionConfig {
+  layerName: string;
+  collisionTiles?: number[];
+  collisionProperty?: string;
+}
+
+// --- THIS INTERFACE WAS MISSING FROM YOUR FILE ---
+/**
+ * Represents the data extracted from a Tiled object layer.
+ * Used by TilemapManager's extractObjects method.
+ */
+export interface TiledObjectData {
+  id: number;
+  name: string;
+  type: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  properties: Record<string, any>;
+}
+
 /**
  * Tileset configuration
  */
@@ -20,7 +47,7 @@ export interface LayerConfig {
   depth?: number;
   alpha?: number;
   visible?: boolean;
-  collides?: boolean;
+  collides?: boolean; // Your useful addition
 }
 
 /**
@@ -48,6 +75,7 @@ export interface TilemapConfig {
     width: number;
     height: number;
   };
+  // Your useful addition for spawn points
   spawnPoints?: {
     player: { x: number; y: number }[];
     enemies: { x: number; y: number; type: string }[];
