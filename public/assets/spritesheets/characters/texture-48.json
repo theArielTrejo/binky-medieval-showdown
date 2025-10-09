@@ -1,0 +1,303 @@
+{
+  "frames": {
+    "characters/magician/Magician_3/PNG/PNG Sequences/Slashing in The Air/0_Magician_Slashing in The Air_007.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 600,
+        "h": 557
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 153,
+        "w": 600,
+        "h": 557
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Medieval Knight/PNG/PNG Sequences/Run Slashing/Run Slashing_006.png": {
+      "frame": {
+        "x": 600,
+        "y": 0,
+        "w": 600,
+        "h": 544
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 268,
+        "y": 188,
+        "w": 600,
+        "h": 544
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Slashing/0_Knight_Slashing_009.png": {
+      "frame": {
+        "x": 1200,
+        "y": 0,
+        "w": 600,
+        "h": 539
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 212,
+        "w": 600,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Slashing/Slashing_006.png": {
+      "frame": {
+        "x": 1200,
+        "y": 539,
+        "w": 600,
+        "h": 534
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 291,
+        "y": 198,
+        "w": 600,
+        "h": 534
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_3/PNG/PNG Sequences/Slashing/0_Paladin_Slashing_009.png": {
+      "frame": {
+        "x": 600,
+        "y": 544,
+        "w": 600,
+        "h": 531
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 220,
+        "w": 600,
+        "h": 531
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_2/PNG/PNG Sequences/Run Slashing/0_Knight_Run Slashing_009.png": {
+      "frame": {
+        "x": 0,
+        "y": 557,
+        "w": 600,
+        "h": 514
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 233,
+        "y": 212,
+        "w": 600,
+        "h": 514
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Throwing/Throwing_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 1071,
+        "w": 407,
+        "h": 600
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 304,
+        "y": 130,
+        "w": 407,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_1/PNG/PNG Sequences/Slashing in The Air/0_Magician_Slashing in The Air_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 1478,
+        "w": 599,
+        "h": 570
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 140,
+        "w": 599,
+        "h": 570
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_1/PNG/PNG Sequences/Slashing in The Air/0_Magician_Slashing in The Air_004.png": {
+      "frame": {
+        "x": 599,
+        "y": 1478,
+        "w": 596,
+        "h": 570
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 140,
+        "w": 596,
+        "h": 570
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_1/PNG/PNG Sequences/Kicking/0_Magician_Kicking_007.png": {
+      "frame": {
+        "x": 600,
+        "y": 1075,
+        "w": 403,
+        "h": 583
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 203,
+        "y": 168,
+        "w": 403,
+        "h": 583
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_1/PNG/PNG Sequences/Kicking/0_Magician_Kicking_004.png": {
+      "frame": {
+        "x": 1183,
+        "y": 1075,
+        "w": 403,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 205,
+        "y": 169,
+        "w": 403,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_1/PNG/PNG Sequences/Slashing/0_Magician_Slashing_009.png": {
+      "frame": {
+        "x": 1195,
+        "y": 1478,
+        "w": 570,
+        "h": 561
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 288,
+        "y": 190,
+        "w": 570,
+        "h": 561
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-48.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1800,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

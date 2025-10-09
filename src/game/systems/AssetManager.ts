@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { DynamicMobLoader } from './DynamicMobLoader';
 import { TilemapManager } from './TilemapManager';
+import { SpriteSheetManager, SpriteSheetLoadResult } from './SpriteSheetManager';
 import {
   AssetLoadingConfig,
   AssetLoadingResult,
@@ -27,12 +28,14 @@ export class AssetManager {
   private scene: Scene;
   private mobLoader: DynamicMobLoader;
   private tilemapManager: TilemapManager;
+  private spritesheetManager: SpriteSheetManager;
   private config: AssetLoadingConfig;
 
   constructor(scene: Scene, config?: Partial<AssetLoadingConfig>) {
     this.scene = scene;
     this.mobLoader = new DynamicMobLoader(scene);
     this.tilemapManager = new TilemapManager(scene);
+    this.spritesheetManager = new SpriteSheetManager(scene);
 
     this.config = {
       maxRetries: 3,
@@ -71,17 +74,25 @@ export class AssetManager {
         errors: [],
         duration: 0,
         mobResults: [],
-        tilemapResults: []
+        tilemapResults: [],
+        spritesheetResults: []
       };
 
-      // Load mobs
-      const mobResults = await this.loadMobs();
-      finalResults.mobResults = mobResults;
+      // Load essential spritesheets first
+      const spritesheetResults = this.loadSpritesheets();
+      finalResults.spritesheetResults = spritesheetResults;
+
+      // Skip mob loading - now using spritesheets
+      // const mobResults = await this.loadMobs();
+      // finalResults.mobResults = mobResults;
+      finalResults.mobResults = [];
       
       // Load tilemaps
       if (tilemapConfigs.length > 0) {
         const tilemapResults = await this.loadTilemaps(tilemapConfigs);
         finalResults.tilemapResults = tilemapResults;
+      } else {
+        finalResults.tilemapResults = [];
       }
 
       // Finalize results from the registry
@@ -130,6 +141,29 @@ export class AssetManager {
     return results;
   }
   
+  private loadSpritesheets(): SpriteSheetLoadResult[] {
+    const results = this.spritesheetManager.loadEssentialSpritesheets();
+    
+    // Update registry after all spritesheets are processed
+    for (const result of results) {
+      const assetInfo: AssetInfo = {
+        key: result.key,
+        type: AssetType.SPRITESHEET,
+        path: `assets/spritesheets/${result.key}`,
+        state: result.success ? AssetLoadingState.LOADED : AssetLoadingState.FAILED,
+        error: result.error,
+        retryCount: 0,
+        maxRetries: this.config.maxRetries
+      };
+      
+      // Store individual asset info in the registry
+      this.scene.registry.set(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${result.key}`, assetInfo);
+
+      this.updateOverallProgress(result.success, result.error);
+    }
+    return results;
+  }
+
   private async loadTilemaps(configs: TilemapConfig[]): Promise<TilemapLoadResult[]> {
     const loadPromises = configs.map(config => this.tilemapManager.loadTilemap(config));
     const results = await Promise.all(loadPromises);
@@ -232,12 +266,17 @@ export class AssetManager {
     return this.tilemapManager;
   }
 
+  public getSpritesheetManager(): SpriteSheetManager {
+    return this.spritesheetManager;
+  }
+
   /**
    * Clean up resources and reset registry keys if desired.
    */
   public destroy(): void {
     this.mobLoader.destroy();
     this.tilemapManager.destroy();
+    this.spritesheetManager.destroy();
     // Optionally remove all asset-related keys from the registry
     // this.resetProgressInRegistry();
   }

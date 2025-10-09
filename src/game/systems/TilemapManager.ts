@@ -118,6 +118,20 @@ export class TilemapManager {
   // The private `loadTilemapJSON` and `loadTilesetImage` methods are no longer needed.
 
   /**
+   * Register an already-loaded tilemap asset (for assets loaded in preload)
+   */
+  public registerLoadedTilemap(config: TilemapConfig): void {
+    const asset: TilemapAsset = {
+      name: config.name,
+      key: config.key,
+      jsonPath: config.jsonPath,
+      tilesets: config.tilesets,
+      loaded: true // Mark as loaded since it's already loaded
+    };
+    this.tilemapAssets.set(config.name, asset);
+  }
+
+  /**
    * Create tilemap from loaded assets
    */
   public createTilemap(config: TilemapConfig): Phaser.Tilemaps.Tilemap | null {

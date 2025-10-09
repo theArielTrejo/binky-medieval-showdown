@@ -55,9 +55,7 @@ export class XPOrbSystem {
         return { count: finalCount, xpPerOrb };
     }
     
-    public update(): void {
-        // This is handled automatically by the Group's 'runChildUpdate: true' config.
-    }
+
     
     public collectOrbs(playerX: number, playerY: number, onXPCollected: (xp: number) => void): number {
         let totalXPCollected = 0;
@@ -101,5 +99,16 @@ export class XPOrbSystem {
     
     public setCollectionRange(range: number): void {
         this.collectionRange = clampCollectionRange(range);
+    }
+
+    public getTotalAvailableXP(): number {
+        let totalXP = 0;
+        this.orbsGroup.getChildren().forEach(orbGO => {
+            const orb = orbGO as XPOrb;
+            if (orb.active && !orb.isOrbCollected()) {
+                totalXP += orb.getXPValue();
+            }
+        });
+        return totalXP;
     }
 }
