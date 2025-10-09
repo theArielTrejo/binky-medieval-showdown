@@ -148,22 +148,22 @@ export class Enemy {
     private getSpriteKeyForType(type: EnemyType): string {
         switch (type) {
             case EnemyType.TANK:
-                return 'skeleton_viking_idle';
+                return 'mob-texture-0'; // Skeleton viking type mobs
             case EnemyType.PROJECTILE:
-                return 'archer_mob_idle';
+                return 'mob-texture-1'; // Archer type mobs
             case EnemyType.SPEEDSTER:
-                return 'gnoll_idle';
+                return 'mob-texture-2'; // Fast mobs
             case EnemyType.BOSS:
             case EnemyType.ELITE_TANK:
-                return 'golem_idle';
+                return 'mob-texture-3'; // Large/boss mobs
             case EnemyType.SNIPER:
-                return 'archer_mob_idle';
+                return 'mob-texture-1'; // Archer type mobs
             case EnemyType.SWARM:
-                return 'gnoll_idle';
+                return 'mob-texture-2'; // Fast mobs
             case EnemyType.BERSERKER:
-                return 'skeleton_viking_idle';
+                return 'mob-texture-0'; // Skeleton viking type mobs
             default:
-                return 'skeleton_viking_idle';
+                return 'mob-texture-0'; // Default to first mob spritesheet
         }
     }
 
@@ -248,47 +248,13 @@ export class Enemy {
     }
 
     private getIdleAnimationKey(): string {
-        switch (this.type) {
-            case EnemyType.TANK:
-                return 'skeleton_viking_idle';
-            case EnemyType.PROJECTILE:
-                return 'archer_mob_idle';
-            case EnemyType.SPEEDSTER:
-                return 'gnoll_idle';
-            case EnemyType.BOSS:
-            case EnemyType.ELITE_TANK:
-                return 'golem_idle';
-            case EnemyType.SNIPER:
-                return 'archer_mob_idle';
-            case EnemyType.SWARM:
-                return 'gnoll_idle';
-            case EnemyType.BERSERKER:
-                return 'skeleton_viking_idle';
-            default:
-                return 'skeleton_viking_idle';
-        }
+        // All mob types now use the generic mob_idle animation from spritesheets
+        return 'mob_idle';
     }
 
     private getRunningAnimationKey(): string {
-        switch (this.type) {
-            case EnemyType.TANK:
-                return 'skeleton_viking_running';
-            case EnemyType.PROJECTILE:
-                return 'archer_mob_running';
-            case EnemyType.SPEEDSTER:
-                return 'gnoll_running';
-            case EnemyType.BOSS:
-            case EnemyType.ELITE_TANK:
-                return 'golem_walking';
-            case EnemyType.SNIPER:
-                return 'archer_mob_running';
-            case EnemyType.SWARM:
-                return 'gnoll_running';
-            case EnemyType.BERSERKER:
-                return 'skeleton_viking_running';
-            default:
-                return 'skeleton_viking_running';
-        }
+        // All mob types now use the generic mob_walk animation from spritesheets
+        return 'mob_walk';
     }
 
     /**

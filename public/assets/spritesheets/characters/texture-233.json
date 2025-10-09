@@ -1,0 +1,471 @@
+{
+  "frames": {
+    "characters/knight/Knight_3/PNG/PNG Sequences/Throwing/0_Knight_Throwing_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 366,
+        "h": 539
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 211,
+        "w": 366,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Walking/0_Knight_Walking_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 539,
+        "w": 366,
+        "h": 539
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 242,
+        "y": 211,
+        "w": 366,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Walking/0_Knight_Walking_009.png": {
+      "frame": {
+        "x": 0,
+        "y": 1078,
+        "w": 366,
+        "h": 539
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 243,
+        "y": 213,
+        "w": 366,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Walking/0_Archer_Walking_021.png": {
+      "frame": {
+        "x": 0,
+        "y": 1617,
+        "w": 421,
+        "h": 537
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 189,
+        "y": 217,
+        "w": 421,
+        "h": 537
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Idle Blinking/Idle Blinking_005.png": {
+      "frame": {
+        "x": 537,
+        "y": 1617,
+        "w": 421,
+        "h": 536
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 222,
+        "y": 196,
+        "w": 421,
+        "h": 536
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Walking/0_Knight_Walking_021.png": {
+      "frame": {
+        "x": 1073,
+        "y": 0,
+        "w": 366,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 242,
+        "y": 213,
+        "w": 366,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Walking/Walking_000.png": {
+      "frame": {
+        "x": 1612,
+        "y": 0,
+        "w": 436,
+        "h": 538
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 233,
+        "y": 198,
+        "w": 436,
+        "h": 538
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Walking/0_Knight_Walking_022.png": {
+      "frame": {
+        "x": 1073,
+        "y": 366,
+        "w": 366,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 249,
+        "y": 213,
+        "w": 366,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Templar Knight/PNG/PNG Sequences/Hurt/Hurt_009.png": {
+      "frame": {
+        "x": 1073,
+        "y": 732,
+        "w": 354,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 245,
+        "y": 193,
+        "w": 354,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Dying/Dying_001.png": {
+      "frame": {
+        "x": 1612,
+        "y": 538,
+        "w": 436,
+        "h": 534
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 238,
+        "y": 176,
+        "w": 436,
+        "h": 534
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Assassin Guy/PNG/PNG Sequences/Hurt/Hurt_005.png": {
+      "frame": {
+        "x": 1612,
+        "y": 1072,
+        "w": 436,
+        "h": 526
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 171,
+        "y": 206,
+        "w": 436,
+        "h": 526
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Run Slashing/0_Knight_Run Slashing_000.png": {
+      "frame": {
+        "x": 1073,
+        "y": 1086,
+        "w": 354,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 276,
+        "y": 212,
+        "w": 354,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_3/PNG/PNG Sequences/Walking/0_Paladin_Walking_021.png": {
+      "frame": {
+        "x": 1073,
+        "y": 1440,
+        "w": 340,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 271,
+        "y": 212,
+        "w": 340,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Idle/0_Knight_Idle_001.png": {
+      "frame": {
+        "x": 366,
+        "y": 0,
+        "w": 339,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 271,
+        "y": 212,
+        "w": 339,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Idle/0_Knight_Idle_017.png": {
+      "frame": {
+        "x": 366,
+        "y": 339,
+        "w": 339,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 267,
+        "y": 212,
+        "w": 339,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Run Throwing/0_Knight_Run Throwing_000.png": {
+      "frame": {
+        "x": 366,
+        "y": 678,
+        "w": 339,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 276,
+        "y": 212,
+        "w": 339,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Running/0_Knight_Running_000.png": {
+      "frame": {
+        "x": 366,
+        "y": 1017,
+        "w": 339,
+        "h": 539
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 276,
+        "y": 212,
+        "w": 339,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_2/PNG/PNG Sequences/Running/0_Knight_Running_009.png": {
+      "frame": {
+        "x": 705,
+        "y": 1017,
+        "w": 368,
+        "h": 514
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 233,
+        "y": 212,
+        "w": 368,
+        "h": 514
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Idle/Idle_005.png": {
+      "frame": {
+        "x": 537,
+        "y": 1617,
+        "w": 421,
+        "h": 536
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 222,
+        "y": 196,
+        "w": 421,
+        "h": 536
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-233.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2038
+    },
+    "scale": 1
+  }
+}

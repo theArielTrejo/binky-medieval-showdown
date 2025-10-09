@@ -1,0 +1,423 @@
+{
+  "frames": {
+    "characters/magician/Magician_2/PNG/PNG Sequences/Walking/0_Magician_Walking_023.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 398,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 242,
+        "y": 189,
+        "w": 398,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Medieval Knight/PNG/PNG Sequences/Kicking/Kicking_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 566,
+        "w": 387,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 230,
+        "y": 166,
+        "w": 387,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_3/PNG/PNG Sequences/Walking/0_Archer_Walking_013.png": {
+      "frame": {
+        "x": 0,
+        "y": 1132,
+        "w": 385,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 261,
+        "y": 195,
+        "w": 385,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Running/0_Knight_Running_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 1698,
+        "w": 342,
+        "h": 543
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 253,
+        "y": 202,
+        "w": 342,
+        "h": 543
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_3/PNG/PNG Sequences/Walking/0_Archer_Walking_014.png": {
+      "frame": {
+        "x": 385,
+        "y": 1132,
+        "w": 385,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 194,
+        "w": 385,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_3/PNG/PNG Sequences/Kicking/0_Archer_Kicking_011.png": {
+      "frame": {
+        "x": 770,
+        "y": 1132,
+        "w": 381,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 224,
+        "y": 185,
+        "w": 381,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_3/PNG/PNG Sequences/Run Throwing/0_Archer_Run Throwing_008.png": {
+      "frame": {
+        "x": 387,
+        "y": 566,
+        "w": 380,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 179,
+        "w": 380,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_3/PNG/PNG Sequences/Running/0_Archer_Running_008.png": {
+      "frame": {
+        "x": 398,
+        "y": 0,
+        "w": 380,
+        "h": 566
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 179,
+        "w": 380,
+        "h": 566
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Shooting in The Air/0_Archer_Shooting in The Air_001.png": {
+      "frame": {
+        "x": 767,
+        "y": 566,
+        "w": 565,
+        "h": 549
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 152,
+        "y": 174,
+        "w": 565,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_2/PNG/PNG Sequences/Slashing/0_Paladin_Slashing_010.png": {
+      "frame": {
+        "x": 778,
+        "y": 0,
+        "w": 565,
+        "h": 548
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 266,
+        "y": 203,
+        "w": 565,
+        "h": 548
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Hurt/0_Knight_Hurt_011.png": {
+      "frame": {
+        "x": 543,
+        "y": 1698,
+        "w": 342,
+        "h": 542
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 251,
+        "y": 209,
+        "w": 342,
+        "h": 542
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Idle/0_Knight_Idle_012.png": {
+      "frame": {
+        "x": 1085,
+        "y": 1698,
+        "w": 342,
+        "h": 542
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 209,
+        "w": 342,
+        "h": 542
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_1/PNG/PNG Sequences/Idle Blinking/0_Archer_Idle Blinking_008.png": {
+      "frame": {
+        "x": 1627,
+        "y": 0,
+        "w": 421,
+        "h": 562
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 198,
+        "y": 189,
+        "w": 421,
+        "h": 562
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Kicking/0_Archer_Kicking_004.png": {
+      "frame": {
+        "x": 1627,
+        "y": 562,
+        "w": 421,
+        "h": 555
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 167,
+        "y": 196,
+        "w": 421,
+        "h": 555
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Kicking/Kicking_008.png": {
+      "frame": {
+        "x": 1627,
+        "y": 1117,
+        "w": 421,
+        "h": 555
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 196,
+        "y": 177,
+        "w": 421,
+        "h": 555
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_3/PNG/PNG Sequences/Sliding/0_Archer_Sliding_005.png": {
+      "frame": {
+        "x": 1151,
+        "y": 1131,
+        "w": 476,
+        "h": 493
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 91,
+        "y": 303,
+        "w": 476,
+        "h": 493
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_1/PNG/PNG Sequences/Idle/0_Archer_Idle_008.png": {
+      "frame": {
+        "x": 1627,
+        "y": 0,
+        "w": 421,
+        "h": 562
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 198,
+        "y": 189,
+        "w": 421,
+        "h": 562
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-108.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2040
+    },
+    "scale": 1
+  }
+}

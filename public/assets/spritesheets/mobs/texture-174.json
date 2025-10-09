@@ -1,0 +1,327 @@
+{
+  "frames": {
+    "Mobs/SkeletonViking/Skeleton_Viking_1/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Viking_Slashing in The Air_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 579,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 254,
+        "y": 161,
+        "w": 579,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Slashing/0_Golem_Slashing_010.png": {
+      "frame": {
+        "x": 579,
+        "y": 0,
+        "w": 579,
+        "h": 546
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 212,
+        "w": 579,
+        "h": 546
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Slashing/0_Skeleton_Death_Knight_Slashing_006.png": {
+      "frame": {
+        "x": 1158,
+        "y": 0,
+        "w": 579,
+        "h": 544
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 284,
+        "y": 207,
+        "w": 579,
+        "h": 544
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Slashing in The Air/0_Golem_Slashing in The Air_008.png": {
+      "frame": {
+        "x": 1158,
+        "y": 544,
+        "w": 579,
+        "h": 534
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 177,
+        "w": 579,
+        "h": 534
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Slashing in The Air/0_Golem_Slashing in The Air_003.png": {
+      "frame": {
+        "x": 579,
+        "y": 546,
+        "w": 579,
+        "h": 532
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 254,
+        "y": 178,
+        "w": 579,
+        "h": 532
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Slashing/0_Golem_Slashing_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 549,
+        "w": 579,
+        "h": 521
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 284,
+        "y": 232,
+        "w": 579,
+        "h": 521
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Slashing/0_Golem_Slashing_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 1070,
+        "w": 579,
+        "h": 520
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 284,
+        "y": 232,
+        "w": 579,
+        "h": 520
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 1590,
+        "w": 457,
+        "h": 521
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 285,
+        "y": 241,
+        "w": 457,
+        "h": 521
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_006.png": {
+      "frame": {
+        "x": 521,
+        "y": 1590,
+        "w": 457,
+        "h": 521
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 284,
+        "y": 241,
+        "w": 457,
+        "h": 521
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_003.png": {
+      "frame": {
+        "x": 579,
+        "y": 1078,
+        "w": 574,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 215,
+        "w": 574,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_007.png": {
+      "frame": {
+        "x": 1042,
+        "y": 1590,
+        "w": 457,
+        "h": 521
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 283,
+        "y": 241,
+        "w": 457,
+        "h": 521
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_004.png": {
+      "frame": {
+        "x": 1153,
+        "y": 1078,
+        "w": 574,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 223,
+        "w": 574,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/Vector Parts/Head.png": {
+      "frame": {
+        "x": 1563,
+        "y": 1590,
+        "w": 475,
+        "h": 423
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 22,
+        "w": 475,
+        "h": 423
+      },
+      "sourceSize": {
+        "w": 480,
+        "h": 480
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-174.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2038,
+      "h": 2047
+    },
+    "scale": 1
+  }
+}

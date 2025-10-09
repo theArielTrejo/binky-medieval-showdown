@@ -1,0 +1,399 @@
+{
+  "frames": {
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Run Slashing/0_Golem_Run Slashing_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 594,
+        "h": 531
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 249,
+        "y": 208,
+        "w": 594,
+        "h": 531
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Kicking/0_Skeleton_Pirate_Captain_Kicking_005.png": {
+      "frame": {
+        "x": 594,
+        "y": 0,
+        "w": 476,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 158,
+        "y": 157,
+        "w": 476,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Kicking/0_Skeleton_Pirate_Captain_Kicking_006.png": {
+      "frame": {
+        "x": 1188,
+        "y": 0,
+        "w": 476,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 159,
+        "y": 157,
+        "w": 476,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Falling Down/0_Skeleton_Pirate_Captain_Falling Down_003.png": {
+      "frame": {
+        "x": 594,
+        "y": 476,
+        "w": 475,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 228,
+        "y": 120,
+        "w": 475,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_3/PNG/PNG Sequences/Kicking/0_Skeleton_Pirate_Captain_Kicking_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 531,
+        "w": 465,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 174,
+        "y": 157,
+        "w": 465,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_3/PNG/PNG Sequences/Dying/0_Skeleton_Pirate_Captain_Dying_009.png": {
+      "frame": {
+        "x": 1188,
+        "y": 476,
+        "w": 594,
+        "h": 458
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 27,
+        "y": 354,
+        "w": 594,
+        "h": 458
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Throwing in The Air/0_Archer_Throwing in The Air_009.png": {
+      "frame": {
+        "x": 1188,
+        "y": 934,
+        "w": 436,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 216,
+        "y": 125,
+        "w": 436,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Throwing/0_Golem_Throwing_008.png": {
+      "frame": {
+        "x": 594,
+        "y": 951,
+        "w": 436,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 278,
+        "y": 159,
+        "w": 436,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Kicking/0_Cursed_Alchemist_Kicking_007.png": {
+      "frame": {
+        "x": 0,
+        "y": 996,
+        "w": 435,
+        "h": 594
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 191,
+        "y": 157,
+        "w": 435,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Kicking/0_Cursed_Alchemist_Kicking_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 1431,
+        "w": 434,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 190,
+        "y": 157,
+        "w": 434,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Dying/0_Archer_Dying_011.png": {
+      "frame": {
+        "x": 434,
+        "y": 1431,
+        "w": 594,
+        "h": 432
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 451,
+        "w": 594,
+        "h": 432
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Kicking/0_Archer_Kicking_010.png": {
+      "frame": {
+        "x": 866,
+        "y": 1387,
+        "w": 432,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 157,
+        "w": 432,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_2/PNG/PNG Sequences/Dying/0_Skeleton_Viking_Dying_010.png": {
+      "frame": {
+        "x": 1298,
+        "y": 1387,
+        "w": 594,
+        "h": 430
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 24,
+        "y": 380,
+        "w": 594,
+        "h": 430
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Dying/0_Archer_Dying_012.png": {
+      "frame": {
+        "x": 434,
+        "y": 1431,
+        "w": 594,
+        "h": 432
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 451,
+        "w": 594,
+        "h": 432
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Dying/0_Archer_Dying_013.png": {
+      "frame": {
+        "x": 434,
+        "y": 1431,
+        "w": 594,
+        "h": 432
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 451,
+        "w": 594,
+        "h": 432
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Dying/0_Archer_Dying_014.png": {
+      "frame": {
+        "x": 434,
+        "y": 1431,
+        "w": 594,
+        "h": 432
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 451,
+        "w": 594,
+        "h": 432
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-66.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1782,
+      "h": 2025
+    },
+    "scale": 1
+  }
+}

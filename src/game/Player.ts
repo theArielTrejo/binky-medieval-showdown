@@ -33,7 +33,7 @@ export class Player {
         this.sprite.setScale(0.15); // Scale down significantly to match enemy proportions
         
         // Start with idle animation
-        this.playAnimation('idle');
+        this.playAnimation('player_idle');
         
         // Create health bar
         this.healthBarBg = scene.add.rectangle(x, y - 40, 40, 6, 0x333333);
@@ -67,8 +67,8 @@ export class Player {
     }
 
     private getSpriteKeyForArchetype(): string {
-        // All archetypes now use the medieval knight
-        return 'medieval_knight_idle';
+        // All archetypes now use the character spritesheet
+        return 'char-texture-0';
     }
 
     private getArchetypeColor(): number {
@@ -142,7 +142,7 @@ export class Player {
         const moved = velocityX !== 0 || velocityY !== 0;
         if (moved !== this.isMoving) {
             this.isMoving = moved;
-            this.playAnimation(moved ? 'running' : 'idle');
+            this.playAnimation(moved ? 'player_walk' : 'player_idle');
         }
         
         // Apply movement with actual delta time
@@ -509,26 +509,18 @@ export class Player {
         if (this.currentAnimation !== animationName) {
             this.currentAnimation = animationName;
             try {
-                // Map animation names to medieval knight animations
-                let animKey = '';
-                if (animationName === 'idle') {
-                    animKey = 'medieval_knight_idle';
-                } else if (animationName === 'running') {
-                    animKey = 'medieval_knight_walk';
+                // Use the new spritesheet-based animations
+                if (this.scene.anims.exists(animationName)) {
+                    this.sprite.play(animationName);
                 } else {
-                    // Default to walking animation for any movement
-                    animKey = 'medieval_knight_walk';
-                }
-                
-                if (this.scene.anims.exists(animKey)) {
-                    this.sprite.play(animKey);
-                } else {
-                    console.warn(`Animation ${animKey} not found, using static frame`);
-                    // Fallback to static medieval knight frame
-                    this.sprite.setTexture('medieval_knight_idle');
+                    console.warn(`Animation ${animationName} not found, using fallback`);
+                    // Fallback to the spritesheet texture
+                    this.sprite.setTexture('char-texture-0');
                 }
             } catch (error) {
                 console.warn(`Failed to play animation ${animationName}:`, error);
+                // Fallback to the spritesheet texture
+                this.sprite.setTexture('char-texture-0');
             }
         }
     }

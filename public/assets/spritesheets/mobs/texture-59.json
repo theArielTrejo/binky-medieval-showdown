@@ -1,0 +1,327 @@
+{
+  "frames": {
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Slashing/0_Golem_Slashing_010.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 552,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 283,
+        "y": 157,
+        "w": 552,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Falling Down/0_Archer_Falling Down_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 596,
+        "w": 444,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 253,
+        "y": 122,
+        "w": 444,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Falling Down/0_Archer_Falling Down_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 1192,
+        "w": 444,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 253,
+        "y": 122,
+        "w": 444,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Kicking/0_Gnoll_Kicking_008.png": {
+      "frame": {
+        "x": 444,
+        "y": 596,
+        "w": 434,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 182,
+        "y": 165,
+        "w": 434,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Throwing/0_Skeleton_Death_Knight_Throwing_003.png": {
+      "frame": {
+        "x": 552,
+        "y": 0,
+        "w": 433,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 278,
+        "y": 156,
+        "w": 433,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Dying/0_Skeleton_Death_Knight_Dying_002.png": {
+      "frame": {
+        "x": 985,
+        "y": 0,
+        "w": 429,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 265,
+        "y": 112,
+        "w": 429,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Hurt/0_Skeleton_Death_Knight_Hurt_001.png": {
+      "frame": {
+        "x": 1414,
+        "y": 0,
+        "w": 429,
+        "h": 596
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 155,
+        "w": 429,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Kicking/0_Skeleton_Death_Knight_Kicking_003.png": {
+      "frame": {
+        "x": 1414,
+        "y": 429,
+        "w": 422,
+        "h": 596
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 197,
+        "y": 155,
+        "w": 422,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Shooting in The Air/0_Archer_Shooting in The Air_003.png": {
+      "frame": {
+        "x": 878,
+        "y": 596,
+        "w": 536,
+        "h": 591
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 169,
+        "y": 132,
+        "w": 536,
+        "h": 591
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Walking/0_Skeleton_Death_Knight_Walking_008.png": {
+      "frame": {
+        "x": 1414,
+        "y": 851,
+        "w": 420,
+        "h": 596
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 222,
+        "y": 155,
+        "w": 420,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Slashing in The Air/0_Golem_Slashing in The Air_010.png": {
+      "frame": {
+        "x": 878,
+        "y": 1187,
+        "w": 570,
+        "h": 536
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 231,
+        "y": 178,
+        "w": 570,
+        "h": 536
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Throwing in The Air/0_Archer_Throwing in The Air_010.png": {
+      "frame": {
+        "x": 444,
+        "y": 1192,
+        "w": 434,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 126,
+        "w": 434,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Walking/0_Skeleton_Death_Knight_Walking_020.png": {
+      "frame": {
+        "x": 1414,
+        "y": 1271,
+        "w": 420,
+        "h": 596
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 221,
+        "y": 156,
+        "w": 420,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-59.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2010,
+      "h": 1788
+    },
+    "scale": 1
+  }
+}

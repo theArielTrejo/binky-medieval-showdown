@@ -1,0 +1,399 @@
+{
+  "frames": {
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Kicking/0_Archer_Kicking_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 188,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Run Shooting/0_Archer_Run Shooting_007.png": {
+      "frame": {
+        "x": 0,
+        "y": 563,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 237,
+        "y": 185,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Run Throwing/0_Archer_Run Throwing_007.png": {
+      "frame": {
+        "x": 0,
+        "y": 1126,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 237,
+        "y": 185,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Running/0_Archer_Running_007.png": {
+      "frame": {
+        "x": 408,
+        "y": 0,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 237,
+        "y": 185,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Hurt/0_Skeleton_Death_Knight_Hurt_002.png": {
+      "frame": {
+        "x": 971,
+        "y": 0,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 271,
+        "y": 188,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_3/PNG/PNG Sequences/Sliding/0_Skeleton_Viking_Sliding_003.png": {
+      "frame": {
+        "x": 1534,
+        "y": 0,
+        "w": 514,
+        "h": 528
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 22,
+        "y": 273,
+        "w": 514,
+        "h": 528
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Walking/0_Skeleton_Death_Knight_Walking_009.png": {
+      "frame": {
+        "x": 408,
+        "y": 408,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 189,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Walking/0_Skeleton_Death_Knight_Walking_021.png": {
+      "frame": {
+        "x": 971,
+        "y": 408,
+        "w": 408,
+        "h": 563
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 246,
+        "y": 190,
+        "w": 408,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Dying/0_Skeleton_Death_Knight_Dying_007.png": {
+      "frame": {
+        "x": 1534,
+        "y": 528,
+        "w": 514,
+        "h": 473
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 98,
+        "y": 208,
+        "w": 514,
+        "h": 473
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Hurt/0_Archer_Hurt_002.png": {
+      "frame": {
+        "x": 408,
+        "y": 1001,
+        "w": 407,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 256,
+        "y": 188,
+        "w": 407,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Sliding/0_Golem_Sliding_003.png": {
+      "frame": {
+        "x": 408,
+        "y": 1564,
+        "w": 496,
+        "h": 484
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 47,
+        "y": 320,
+        "w": 496,
+        "h": 484
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Sliding/0_Golem_Sliding_000.png": {
+      "frame": {
+        "x": 904,
+        "y": 1564,
+        "w": 484,
+        "h": 488
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 53,
+        "y": 316,
+        "w": 484,
+        "h": 488
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Walking/0_Archer_Walking_001.png": {
+      "frame": {
+        "x": 815,
+        "y": 1001,
+        "w": 407,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 260,
+        "y": 194,
+        "w": 407,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Walking/0_Archer_Walking_002.png": {
+      "frame": {
+        "x": 1222,
+        "y": 1001,
+        "w": 407,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 259,
+        "y": 193,
+        "w": 407,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Sliding/0_Gnoll_Sliding_000.png": {
+      "frame": {
+        "x": 1392,
+        "y": 1564,
+        "w": 476,
+        "h": 484
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 66,
+        "y": 303,
+        "w": 476,
+        "h": 484
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Run Throwing/0_Skeleton_Death_Knight_Run Throwing_007.png": {
+      "frame": {
+        "x": 1629,
+        "y": 1001,
+        "w": 407,
+        "h": 563
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 184,
+        "w": 407,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-248.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

@@ -1,0 +1,327 @@
+{
+  "frames": {
+    "Mobs/SkeletonViking/Skeleton_Viking_2/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Viking_Slashing in The Air_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 595,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 238,
+        "y": 135,
+        "w": 595,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Slashing/0_Skeleton_Death_Knight_Slashing_009.png": {
+      "frame": {
+        "x": 595,
+        "y": 0,
+        "w": 568,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 274,
+        "y": 156,
+        "w": 568,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Falling Down/0_Gnoll_Falling Down_003.png": {
+      "frame": {
+        "x": 1190,
+        "y": 0,
+        "w": 448,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 239,
+        "y": 129,
+        "w": 448,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_2/PNG/PNG Sequences/Hurt/0_Elemental_Spirits_Hurt_004.png": {
+      "frame": {
+        "x": 1190,
+        "y": 448,
+        "w": 446,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 138,
+        "y": 156,
+        "w": 446,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Dying/0_Skeleton_Death_Knight_Dying_009.png": {
+      "frame": {
+        "x": 595,
+        "y": 568,
+        "w": 595,
+        "h": 437
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 25,
+        "y": 367,
+        "w": 595,
+        "h": 437
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Run Slashing/0_Cursed_Alchemist_Run Slashing_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 574,
+        "w": 433,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 209,
+        "y": 156,
+        "w": 433,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Throwing/0_Skeleton_Death_Knight_Throwing_009.png": {
+      "frame": {
+        "x": 1190,
+        "y": 894,
+        "w": 433,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 274,
+        "y": 156,
+        "w": 433,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Dying/0_Skeleton_Death_Knight_Dying_003.png": {
+      "frame": {
+        "x": 595,
+        "y": 1005,
+        "w": 432,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 287,
+        "y": 93,
+        "w": 432,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Kicking/0_Archer_Kicking_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 1007,
+        "w": 431,
+        "h": 595
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 156,
+        "w": 431,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Falling Down/0_Skeleton_Death_Knight_Falling Down_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 1438,
+        "w": 431,
+        "h": 595
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 256,
+        "y": 116,
+        "w": 431,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Falling Down/0_Skeleton_Death_Knight_Falling Down_005.png": {
+      "frame": {
+        "x": 431,
+        "y": 1438,
+        "w": 431,
+        "h": 595
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 256,
+        "y": 116,
+        "w": 431,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Kicking/0_Skeleton_Death_Knight_Kicking_010.png": {
+      "frame": {
+        "x": 862,
+        "y": 1437,
+        "w": 422,
+        "h": 595
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 198,
+        "y": 156,
+        "w": 422,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/PNG Sequences/Kicking/0_Cursed_Alchemist_Kicking_002.png": {
+      "frame": {
+        "x": 1284,
+        "y": 1437,
+        "w": 420,
+        "h": 595
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 201,
+        "y": 156,
+        "w": 420,
+        "h": 595
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-62.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1785,
+      "h": 2033
+    },
+    "scale": 1
+  }
+}
