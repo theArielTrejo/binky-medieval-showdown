@@ -9,22 +9,41 @@
     "exportAsImage.visibleLayersOnly": false,
     "fileStates": {
         "": {
-            "scaleInDock": 0.75
+            "scaleInDock": 8
         },
         "binkymap1.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 2,
+            "scale": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 3350.666666666666,
-                "y": 1463.3333333333333
+                "x": 3714,
+                "y": 1011.5
             }
+        },
+        "binkymap1.tmx#FieldsTileset": {
+            "scaleInDock": 2
         },
         "binkymap1.tmx#GraveyardTileset": {
             "scaleInDock": 0.75
         },
+        "binkymap1.tmx#brokenspikedfence": {
+            "scaleInDock": 1.5
+        },
         "binkymap1.tmx#castlewall": {
-            "scaleInDock": 0.5,
+            "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "binkymap1.tmx#collision": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "binkymap1.tmx#farmgrass": {
+            "scaleInDock": 3
+        },
+        "binkymap1.tmx#farmhouses": {
+            "scaleInDock": 1.5
+        },
+        "binkymap1.tmx#farmobjects": {
+            "scaleInDock": 2
         },
         "binkymap1.tmx#floor1": {
             "scaleInDock": 0.125
@@ -33,25 +52,31 @@
             "scaleInDock": 0.75
         },
         "binkymap1.tmx#grassclippings1": {
-            "scaleInDock": 1
+            "scaleInDock": 3
         },
         "binkymap1.tmx#houses1": {
-            "scaleInDock": 1.5
+            "scaleInDock": 0.75
         },
         "binkymap1.tmx#objecthouserocksstatues": {
-            "scaleInDock": 1
+            "scaleInDock": 3
         },
         "binkymap1.tmx#objectlogs": {
-            "scaleInDock": 1.5
+            "scaleInDock": 3
         },
         "binkymap1.tmx#objectskeletonstatues": {
-            "scaleInDock": 2
+            "scaleInDock": 1
+        },
+        "binkymap1.tmx#tents": {
+            "scaleInDock": 1
         },
         "binkymap1.tmx#tiledwallandfloor": {
-            "scaleInDock": 1.5
+            "scaleInDock": 4
         },
         "binkymap1.tmx#treesandplants": {
             "scaleInDock": 2
+        },
+        "binkymap1.tmx#waggonsandmore": {
+            "scaleInDock": 1.5
         },
         "map1.tmx": {
             "scale": 1,
@@ -150,8 +175,8 @@
     "tileset.margin": 0,
     "tileset.spacing": 0,
     "tileset.tileSize": {
-        "height": 16,
-        "width": 16
+        "height": 8,
+        "width": 8
     },
     "tileset.type": 0
 }
