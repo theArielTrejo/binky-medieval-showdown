@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
-import { Enemy, EnemyType } from './EnemySystem';
+import { Enemy, EnemyType, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack } from './EnemySystem';
 import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 
 export class Player {
@@ -21,6 +21,10 @@ export class Player {
     private isMoving: boolean = false;
     private currentAnimation: string = '';
     private onEnemyDeathCallback: ((x: number, y: number, enemyType: EnemyType, xpValue: number) => void) | null = null;
+    private slowMultiplier: number = 1.0; // Current speed multiplier (1.0 = normal, 0.5 = 50% speed)
+    private slowEndTime: number = 0; // Timestamp when slow effect ends
+    private lastVortexHitTime: number = 0; // Last time player was hit by vortex
+    private vortexHitCooldown: number = 500; // Cooldown between vortex hits (ms)
 
     constructor(scene: Scene, x: number, y: number, archetypeType: PlayerArchetypeType) {
         this.scene = scene;
@@ -50,6 +54,17 @@ export class Player {
         // Set up input
         this.cursors = scene.input.keyboard!.createCursorKeys();
         this.wasdKeys = scene.input.keyboard!.addKeys('W,S,A,D,SPACE');
+        
+        // Set up mouse input for left-click attacks
+        scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.leftButtonDown()) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastAttackTime > this.attackCooldown) {
+                    this.performAttack(pointer);
+                    this.lastAttackTime = currentTime;
+                }
+            }
+        });
         
         // Update archetype position
         this.archetype.updatePosition(x, y);
@@ -110,6 +125,9 @@ export class Player {
     }
 
     private handleMovement(deltaTime: number): void {
+        // Update slow effect
+        this.updateSlowEffect();
+        
         let velocityX = 0;
         let velocityY = 0;
         
@@ -137,6 +155,10 @@ export class Player {
             velocityX *= 0.707; // 1/sqrt(2)
             velocityY *= 0.707;
         }
+        
+        // Apply slow effect
+        velocityX *= this.slowMultiplier;
+        velocityY *= this.slowMultiplier;
         
         // Check if player is moving and update animations
         const moved = velocityX !== 0 || velocityY !== 0;
@@ -179,6 +201,28 @@ export class Player {
     
     private isKeyPressed(key: any): boolean {
         return key && typeof key === 'object' && key.isDown === true;
+    }
+
+    /**
+     * Perform attack based on archetype (called by right-click)
+     */
+    private performAttack(pointer: Phaser.Input.Pointer): void {
+        // Get world coordinates (account for camera scroll)
+        const worldX = pointer.x + this.scene.cameras.main.scrollX;
+        const worldY = pointer.y + this.scene.cameras.main.scrollY;
+        
+        switch (this.archetype.type) {
+            case PlayerArchetypeType.TANK:
+                this.meleeAttack([]);
+                break;
+            case PlayerArchetypeType.EVASIVE:
+                this.aoeAttack([]);
+                break;
+            case PlayerArchetypeType.GLASS_CANNON:
+            default:
+                this.projectileAttackTowardsMouse(worldX, worldY);
+                break;
+        }
     }
 
     private attack(enemies: Enemy[]): void {
@@ -284,8 +328,43 @@ export class Player {
         }
     }
 
+    /**
+     * Shoot a single projectile towards mouse position (for Glass Cannon with right-click)
+     */
+    private projectileAttackTowardsMouse(targetX: number, targetY: number): void {
+        // Create a single bullet
+        const bullet = this.scene.add.rectangle(
+            this.sprite.x, 
+            this.sprite.y, 
+            8, 
+            8, 
+            0xffff00
+        );
+        
+        bullet.setData('damage', this.archetype.stats.damage);
+        bullet.setData('range', this.archetype.stats.attackRange);
+        bullet.setData('startX', this.sprite.x);
+        bullet.setData('startY', this.sprite.y);
+        bullet.setData('speed', 400); // Bullet speed
+
+        // Calculate angle to mouse position
+        const angle = Phaser.Math.Angle.Between(
+            this.sprite.x,
+            this.sprite.y,
+            targetX,
+            targetY
+        );
+        const velocityX = Math.cos(angle) * 400;
+        const velocityY = Math.sin(angle) * 400;
+        
+        bullet.setData('velocityX', velocityX);
+        bullet.setData('velocityY', velocityY);
+        
+        this.bullets.push(bullet);
+    }
+
     private projectileAttack(enemies: Enemy[]): void {
-        // Glass Cannon uses projectile attacks (original behavior)
+        // Glass Cannon uses projectile attacks (original behavior for spacebar)
         const closestEnemy = this.findClosestEnemy(enemies);
 
         // Create a bullet
@@ -414,20 +493,76 @@ export class Player {
     }
 
     /**
+     * Updates the slow effect status
+     */
+    private updateSlowEffect(): void {
+        const currentTime = Date.now();
+        
+        // Check if slow effect has expired
+        if (currentTime >= this.slowEndTime) {
+            this.slowMultiplier = 1.0; // Return to normal speed
+        }
+        
+        // Visual indicator for slow effect (cyan tint)
+        if (this.slowMultiplier < 1.0 && !this.isInvulnerable) {
+            // Apply a cyan tint to show the player is slowed
+            this.sprite.setTint(0x00cccc);
+        } else if (!this.isInvulnerable) {
+            // Clear tint if not slowed (and not invulnerable)
+            this.sprite.clearTint();
+        }
+    }
+
+    /**
+     * Applies slow effect to the player
+     * @param multiplier - Speed multiplier (0.5 = 50% speed)
+     * @param duration - Duration of slow in milliseconds
+     */
+    private applySlowEffect(multiplier: number, duration: number): void {
+        this.slowMultiplier = Math.min(this.slowMultiplier, multiplier); // Use the strongest slow
+        this.slowEndTime = Math.max(this.slowEndTime, Date.now() + duration);
+        console.log(`Player slowed! Speed: ${(multiplier * 100).toFixed(0)}%, Duration: ${(duration / 1000).toFixed(1)}s`);
+    }
+
+    /**
      * Checks for collisions between the player and enemies
+     * Also checks if shields block player bullets
      * @param enemies - Array of enemies to check collision against
      */
-    public checkCollisionWithEnemies(enemies: Enemy[]): void {
+    public checkCollisionWithEnemies(enemies: Enemy[], shields?: Shield[]): void {
         const bulletsToRemove: Phaser.GameObjects.Rectangle[] = [];
+        const blockedBullets = new Set<Phaser.GameObjects.Rectangle>();
         
+        // First pass: check if any bullets are blocked by shields
+        if (shields && shields.length > 0) {
+            this.bullets.forEach(bullet => {
+                if (!bullet.active || blockedBullets.has(bullet)) return;
+                
+                for (const shield of shields) {
+                    if (shield.isActive() && shield.blocksProjectile(bullet.x, bullet.y)) {
+                        console.log(`Player bullet blocked by shield at (${bullet.x.toFixed(0)}, ${bullet.y.toFixed(0)})!`);
+                        blockedBullets.add(bullet); // Mark as blocked FIRST
+                        bullet.destroy();
+                        bulletsToRemove.push(bullet);
+                        break; // This bullet is blocked, no need to check other shields
+                    }
+                }
+            });
+        }
+        
+        // Second pass: check bullet-enemy collisions for non-blocked bullets
         enemies.forEach(enemy => {
             // Check bullet-enemy collision
             this.bullets.forEach(bullet => {
-                if (bullet.active && this.checkCollision(bullet, enemy.sprite)) {
+                if (!bullet.active || blockedBullets.has(bullet)) return;
+                
+                if (this.checkCollision(bullet, enemy.sprite)) {
                     const damage = bullet.getData('damage');
+                    console.log(`Bullet hit enemy ${enemy.type} at (${enemy.sprite.x.toFixed(0)}, ${enemy.sprite.y.toFixed(0)}), damage: ${damage}`);
                     const enemyDied = enemy.takeDamage(damage);
 
                     if (enemyDied) {
+                        console.log(`Enemy ${enemy.type} died!`);
                         this.handleEnemyDeath(enemy, damage);
                     } else {
                         this.archetype.dealDamage(damage);
@@ -438,8 +573,9 @@ export class Player {
                 }
             });
             
-            // Check player-enemy collision
-            if (this.checkCollision(this.sprite, enemy.sprite)) {
+            // Check player-enemy collision (only for melee-only enemies like Gnolls)
+            // Other enemies damage through their special attacks
+            if (enemy.type === EnemyType.GNOLL && this.checkCollision(this.sprite, enemy.sprite)) {
                 const currentTime = Date.now();
                 if (currentTime - this.lastDamageTime >= this.damageCooldown) {
                     this.takeDamage(enemy.stats.damage);
@@ -451,6 +587,130 @@ export class Player {
         
         // Remove destroyed bullets
         this.bullets = this.bullets.filter(bullet => !bulletsToRemove.includes(bullet));
+    }
+
+    /**
+     * Checks for collisions between the player and enemy projectiles
+     * @param projectiles - Array of projectiles to check collision against
+     */
+    public checkCollisionWithProjectiles(projectiles: Projectile[]): void {
+        projectiles.forEach(projectile => {
+            if (!projectile.isActive()) return;
+            
+            const pos = projectile.getPosition();
+            const distance = Math.sqrt(
+                Math.pow(this.sprite.x - pos.x, 2) + 
+                Math.pow(this.sprite.y - pos.y, 2)
+            );
+            
+            // Check if projectile hits player (simple radius check)
+            if (distance < 25) { // Player collision radius
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(projectile.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+                projectile.destroy();
+            }
+        });
+    }
+
+    /**
+     * Checks for collisions between the player and enemy melee attacks
+     * @param meleeAttacks - Array of melee attacks to check collision against
+     */
+    public checkCollisionWithMeleeAttacks(meleeAttacks: MeleeAttack[]): void {
+        meleeAttacks.forEach(attack => {
+            if (!attack.isActive()) return;
+            
+            // Use circle-based collision for simplicity with rotated rectangles
+            const attackPos = { x: attack.x, y: attack.y };
+            const distance = Math.sqrt(
+                Math.pow(this.sprite.x - attackPos.x, 2) + 
+                Math.pow(this.sprite.y - attackPos.y, 2)
+            );
+            
+            // Check if player is within attack range (using radius based on attack size)
+            const attackRadius = Math.max(attack.width, attack.height) / 2;
+            if (distance < attackRadius + 25) { // 25 is player collision radius
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+                // Don't destroy melee attack - it can hit multiple times during its lifetime
+            }
+        });
+    }
+
+    /**
+     * Checks for collisions between the player and enemy cone attacks
+     * @param coneAttacks - Array of cone attacks to check collision against
+     */
+    public checkCollisionWithConeAttacks(coneAttacks: ConeAttack[]): void {
+        coneAttacks.forEach(attack => {
+            if (!attack.isActive()) return;
+            
+            // Use the cone's built-in point-in-cone check
+            if (attack.isPointInCone(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+            }
+        });
+    }
+
+    /**
+     * Checks for collisions between the player and enemy vortex attacks
+     * Applies damage and slow effect when hit
+     * @param vortexAttacks - Array of vortex attacks to check collision against
+     */
+    public checkCollisionWithVortexAttacks(vortexAttacks: VortexAttack[]): void {
+        vortexAttacks.forEach(attack => {
+            if (!attack.isActive()) return;
+            
+            // Use the vortex's built-in point-in-vortex check
+            if (attack.isPointInVortex(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                
+                // Apply damage with cooldown (like other attacks)
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+                
+                // Apply slow effect (separate cooldown to prevent spam)
+                if (currentTime - this.lastVortexHitTime >= this.vortexHitCooldown) {
+                    this.applySlowEffect(attack.slowEffect, attack.slowDuration * 1000);
+                    this.lastVortexHitTime = currentTime;
+                }
+            }
+        });
+    }
+
+    public checkCollisionWithExplosionAttacks(explosionAttacks: ExplosionAttack[]): void {
+        explosionAttacks.forEach(attack => {
+            if (!attack.isActive()) return;
+            
+            // Use the explosion's built-in point-in-explosion check
+            if (attack.isPointInExplosion(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                
+                // Apply damage with cooldown to prevent multiple hits from same explosion
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                    console.log(`Player hit by explosion for ${attack.damage} damage!`);
+                }
+            }
+        });
     }
 
     private checkCollision(obj1: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle, obj2: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle): boolean {

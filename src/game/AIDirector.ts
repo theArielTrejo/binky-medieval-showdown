@@ -5,16 +5,12 @@ import { EnemySystem, EnemyType } from './EnemySystem';
 // Enhanced AI Director with improved architecture and training
 
 export enum DirectorAction {
-    SPAWN_TANKS = 0,
-    SPAWN_PROJECTILES = 1,
-    SPAWN_SPEEDSTERS = 2,
-    BOSS_ENCOUNTER = 3,
-    SPAWN_ELITE_TANKS = 4,
-    SPAWN_SNIPERS = 5,
-    SPAWN_SWARM = 6,
-    SPAWN_BERSERKERS = 7,
-    INCREASE_SPAWN_RATE = 8,
-    DO_NOTHING = 9
+    SPAWN_SKELETON_VIKINGS = 0,
+    SPAWN_ARCHERS = 1,
+    SPAWN_GNOLLS = 2,
+    SPAWN_GOLEMS = 3,
+    INCREASE_SPAWN_RATE = 4,
+    DO_NOTHING = 5
 }
 
 export enum DifficultyLevel {
@@ -34,7 +30,7 @@ export interface DifficultyConfig {
 }
 
 export interface GameState {
-    playerArchetype: number[]; // One-hot encoded [tank, glass_cannon, evasive]
+    playerArchetype: number[];
     playerHealthPercent: number;
     playerDPS: number;
     playerPositionX: number;
@@ -43,10 +39,10 @@ export interface GameState {
     playerMovementDistance: number;
     resourceGeneration: number;
     gameTimer: number;
-    enemyCountTanks: number;
-    enemyCountProjectiles: number;
-    enemyCountSpeedsters: number;
-    enemyCountBosses: number;
+    enemyCountSkeletonVikings: number;
+    enemyCountArchers: number;
+    enemyCountGnolls: number;
+    enemyCountGolems: number;
     difficultyLevel: number;
     playerStressLevel: number;
     engagementScore: number;
@@ -174,11 +170,42 @@ export class AIDirector {
         this.gameStartTime = Date.now();
         this.lastSaveTime = Date.now();
         this.lastBudgetUpdate = Date.now();
+        this.clearOldIncompatibleModels(); // Clear models trained with old 10-action system
         this.initializeDifficultyConfigs();
         this.initializeMetrics();
         this.initializeBudgetSystem();
         this.initializeStrategicObjectives();
         this.initializeAllModels();
+    }
+    
+    private async clearOldIncompatibleModels(): Promise<void> {
+        // Clear any models trained with the old 10-action system
+        // New system has 6 actions (SKELETON_VIKING, ARCHER, GNOLL, GOLEM, INCREASE_SPAWN_RATE, DO_NOTHING)
+        const modelVersion = '2.0.0'; // Increment when action space changes
+        
+        if (typeof window !== 'undefined' && window.localStorage) {
+            const storedVersion = localStorage.getItem('ai-director-version');
+            if (storedVersion !== modelVersion) {
+                console.log(`Clearing old AI models (version ${storedVersion} -> ${modelVersion})`);
+                
+                // Clear all models
+                try {
+                    const modelKeys = await tf.io.listModels();
+                    for (const key of Object.keys(modelKeys)) {
+                        if (key.includes('ai-director') || key.includes('easy') || key.includes('medium') || key.includes('hard')) {
+                            await tf.io.removeModel(key);
+                            console.log(`Removed old model: ${key}`);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Error clearing old models:', error);
+                }
+                
+                // Update version
+                localStorage.setItem('ai-director-version', modelVersion);
+                this.modelVersion = modelVersion;
+            }
+        }
     }
     
     private initializeDifficultyConfigs(): void {
@@ -232,25 +259,25 @@ export class AIDirector {
                  type: 'pressure',
                  priority: 0.8,
                  conditions: (state: GameState) => state.playerHealthPercent > 0.7 && state.engagementScore < 0.5,
-                 actions: [DirectorAction.SPAWN_SPEEDSTERS, DirectorAction.SPAWN_SWARM, DirectorAction.INCREASE_SPAWN_RATE]
+                actions: [DirectorAction.SPAWN_GNOLLS, DirectorAction.SPAWN_ARCHERS, DirectorAction.INCREASE_SPAWN_RATE]
              },
              {
                  type: 'overwhelm',
                  priority: 0.9,
                  conditions: (state: GameState) => state.playerDPS > 100 && state.playerHealthPercent > 0.5,
-                 actions: [DirectorAction.SPAWN_ELITE_TANKS, DirectorAction.SPAWN_BERSERKERS, DirectorAction.BOSS_ENCOUNTER]
+                actions: [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_SKELETON_VIKINGS]
              },
              {
                  type: 'adapt',
                  priority: 0.7,
                  conditions: (state: GameState) => state.playerStressLevel < 0.3 && state.gameTimer > 30000,
-                 actions: [DirectorAction.SPAWN_SNIPERS, DirectorAction.SPAWN_TANKS]
+                actions: [DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_SKELETON_VIKINGS]
              },
              {
                  type: 'counter',
                  priority: 1.0,
                  conditions: (state: GameState) => this.detectPlayerPattern(state),
-                 actions: [DirectorAction.SPAWN_ELITE_TANKS, DirectorAction.SPAWN_SNIPERS, DirectorAction.SPAWN_BERSERKERS]
+                actions: [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_GNOLLS]
              }
          ];
      }
@@ -364,25 +391,22 @@ export class AIDirector {
      private selectActionByStrategy(actions: DirectorAction[]): DirectorAction {
          switch (this.adaptiveStrategy) {
              case 'aggressive':
-                 // Prefer high-cost, high-impact actions
-                 const aggressiveActions = [DirectorAction.BOSS_ENCOUNTER, DirectorAction.SPAWN_BERSERKERS, DirectorAction.SPAWN_ELITE_TANKS];
+                const aggressiveActions = [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_SKELETON_VIKINGS];
                  for (const action of aggressiveActions) {
                      if (actions.includes(action)) return action;
                  }
                  break;
                  
              case 'defensive':
-                 // Prefer crowd control and area denial
-                 const defensiveActions = [DirectorAction.SPAWN_TANKS, DirectorAction.SPAWN_PROJECTILES];
+                const defensiveActions = [DirectorAction.SPAWN_SKELETON_VIKINGS, DirectorAction.SPAWN_ARCHERS];
                  for (const action of defensiveActions) {
                      if (actions.includes(action)) return action;
                  }
                  break;
                  
              case 'counter':
-                 // Counter player's preferred strategy
                  if (this.playerPerformanceMetrics.movementPatterns.includes('stationary')) {
-                     const counterStatic = [DirectorAction.SPAWN_SNIPERS, DirectorAction.SPAWN_PROJECTILES];
+                    const counterStatic = [DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_GNOLLS];
                      for (const action of counterStatic) {
                          if (actions.includes(action)) return action;
                      }
@@ -552,13 +576,13 @@ export class AIDirector {
             playerPositionX: player.position.x / 1024, // Normalize to 0-1
             playerPositionY: player.position.y / 768, // Normalize to 0-1
             damageTakenRecently: Math.min(player.getDamageTakenRecently() / 50, 1),
-            playerMovementDistance: Math.min(movementDistance / 1000, 1), // Normalize
-            resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1), // Normalize
-            gameTimer: Math.min(gameTimer / 300, 1), // Normalize to 5 minutes max
-            enemyCountTanks: Math.min(enemySystem.getEnemyCountByType(EnemyType.TANK) / 10, 1),
-            enemyCountProjectiles: Math.min(enemySystem.getEnemyCountByType(EnemyType.PROJECTILE) / 20, 1),
-            enemyCountSpeedsters: Math.min(enemySystem.getEnemyCountByType(EnemyType.SPEEDSTER) / 30, 1),
-            enemyCountBosses: Math.min(enemySystem.getEnemyCountByType(EnemyType.BOSS) / 2, 1),
+            playerMovementDistance: Math.min(movementDistance / 1000, 1),
+            resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1),
+            gameTimer: Math.min(gameTimer / 300, 1),
+            enemyCountSkeletonVikings: Math.min(enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING) / 8, 1),
+            enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 12, 1),
+            enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 15, 1),
+            enemyCountGolems: Math.min(enemySystem.getEnemyCountByType(EnemyType.GOLEM) / 4, 1),
             difficultyLevel: difficultyLevel,
             playerStressLevel: playerStressLevel,
             engagementScore: engagementScore
@@ -670,19 +694,18 @@ export class AIDirector {
             const currentEpsilon = Math.max(this.epsilonMin, config.epsilon * Math.pow(config.epsilonDecay, this.trainSteps));
             
             if (this.trainingMode && Math.random() < currentEpsilon) {
-                // Random action (exploration) - but bias towards aggressive actions for hard difficulty
+                // Random action (exploration)
                 let action: DirectorAction;
                 if (this.currentDifficulty === DifficultyLevel.HARD && Math.random() < config.aggressiveness) {
-                    // Prefer aggressive actions for hard difficulty
-                    const aggressiveActions = [DirectorAction.SPAWN_TANKS, DirectorAction.SPAWN_SPEEDSTERS, DirectorAction.BOSS_ENCOUNTER, DirectorAction.INCREASE_SPAWN_RATE];
+                    const aggressiveActions = [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_GNOLLS, DirectorAction.INCREASE_SPAWN_RATE];
                     action = aggressiveActions[Math.floor(Math.random() * aggressiveActions.length)];
                 } else if (this.currentDifficulty === DifficultyLevel.EASY && Math.random() < (1 - config.aggressiveness)) {
-                    // Prefer passive actions for easy difficulty
-                    const passiveActions = [DirectorAction.DO_NOTHING, DirectorAction.SPAWN_PROJECTILES];
+                    const passiveActions = [DirectorAction.DO_NOTHING, DirectorAction.SPAWN_ARCHERS];
                     action = passiveActions[Math.floor(Math.random() * passiveActions.length)];
                 } else {
                     action = Math.floor(Math.random() * 6) as DirectorAction;
                 }
+                console.log(`AI Director: Random exploration - chose action ${DirectorAction[action]} (${action})`);
                 return action;
             }
 
@@ -703,12 +726,17 @@ export class AIDirector {
             // Choose action with highest Q-value
             let bestAction = 0;
             let bestValue = actionValues[0];
-            for (let i = 1; i < actionValues.length; i++) {
+            for (let i = 1; i < actionValues.length && i < 6; i++) { // Limit to 6 actions
                 if (actionValues[i] > bestValue) {
                     bestValue = actionValues[i];
                     bestAction = i;
                 }
             }
+            
+            // Clamp action to valid range (0-5)
+            bestAction = Math.min(bestAction, 5);
+            
+            console.log(`AI Director: Model prediction - chose action ${DirectorAction[bestAction]} (${bestAction}), Q-value: ${bestValue.toFixed(3)}, actionValues length: ${actionValues.length}`);
             
             // Decay epsilon
             if (this.trainingMode && this.epsilon > this.epsilonMin) {
@@ -733,61 +761,35 @@ export class AIDirector {
         if (spawnPlans.totalCost <= this.currentBudget) {
             // Execute the spawn plan
             switch (action) {
-                case DirectorAction.SPAWN_TANKS:
-                    if (spawnPlans.tanks > 0) {
-                        enemySystem.spawnWave(EnemyType.TANK, spawnPlans.tanks, 'near_player');
-                        this.spendBudget(spawnPlans.tankCost);
+                case DirectorAction.SPAWN_SKELETON_VIKINGS:
+                    if (spawnPlans.skeletonVikings > 0) {
+                        enemySystem.spawnWave(EnemyType.SKELETON_VIKING, spawnPlans.skeletonVikings, 'near_player');
+                        this.spendBudget(spawnPlans.skeletonVikingCost);
                     }
                     break;
-                case DirectorAction.SPAWN_PROJECTILES:
-                    if (spawnPlans.projectiles > 0) {
-                        enemySystem.spawnWave(EnemyType.PROJECTILE, spawnPlans.projectiles, 'screen_edges');
-                        this.spendBudget(spawnPlans.projectileCost);
+                case DirectorAction.SPAWN_ARCHERS:
+                    if (spawnPlans.archers > 0) {
+                        enemySystem.spawnWave(EnemyType.ARCHER, spawnPlans.archers, 'screen_edges');
+                        this.spendBudget(spawnPlans.archerCost);
                     }
                     break;
-                case DirectorAction.SPAWN_SPEEDSTERS:
-                    if (spawnPlans.speedsters > 0) {
-                        enemySystem.spawnWave(EnemyType.SPEEDSTER, spawnPlans.speedsters, 'random_ambush');
-                        this.spendBudget(spawnPlans.speedsterCost);
+                case DirectorAction.SPAWN_GNOLLS:
+                    if (spawnPlans.gnolls > 0) {
+                        enemySystem.spawnWave(EnemyType.GNOLL, spawnPlans.gnolls, 'random_ambush');
+                        this.spendBudget(spawnPlans.gnollCost);
                     }
                     break;
-                case DirectorAction.BOSS_ENCOUNTER:
-                    if (spawnPlans.bosses > 0) {
-                        enemySystem.startSpecialEvent('boss_encounter');
-                        this.spendBudget(spawnPlans.bossCost);
-                    }
-                    break;
-                case DirectorAction.SPAWN_ELITE_TANKS:
-                    if (spawnPlans.eliteTanks > 0) {
-                        enemySystem.spawnWave(EnemyType.ELITE_TANK, spawnPlans.eliteTanks, 'near_player');
-                        this.spendBudget(spawnPlans.eliteTankCost);
-                    }
-                    break;
-                case DirectorAction.SPAWN_SNIPERS:
-                    if (spawnPlans.snipers > 0) {
-                        enemySystem.spawnWave(EnemyType.SNIPER, spawnPlans.snipers, 'screen_edges');
-                        this.spendBudget(spawnPlans.sniperCost);
-                    }
-                    break;
-                case DirectorAction.SPAWN_SWARM:
-                    if (spawnPlans.swarm > 0) {
-                        enemySystem.spawnWave(EnemyType.SWARM, spawnPlans.swarm, 'random');
-                        this.spendBudget(spawnPlans.swarmCost);
-                    }
-                    break;
-                case DirectorAction.SPAWN_BERSERKERS:
-                    if (spawnPlans.berserkers > 0) {
-                        enemySystem.spawnWave(EnemyType.BERSERKER, spawnPlans.berserkers, 'random_ambush');
-                        this.spendBudget(spawnPlans.berserkerCost);
+                case DirectorAction.SPAWN_GOLEMS:
+                    if (spawnPlans.golems > 0) {
+                        enemySystem.spawnWave(EnemyType.GOLEM, spawnPlans.golems, 'near_player');
+                        this.spendBudget(spawnPlans.golemCost);
                     }
                     break;
                 case DirectorAction.INCREASE_SPAWN_RATE:
-                    // This action doesn't cost budget but provides efficiency bonus
                     enemySystem.increaseSpawnRate(10);
                     this.budgetEfficiencyBonus = Math.min(this.budgetEfficiencyBonus + 0.1, 2.0);
                     break;
                 case DirectorAction.DO_NOTHING:
-                    // Intentionally do nothing - budget continues to regenerate
                     break;
             }
         } else {
@@ -1459,107 +1461,65 @@ export class AIDirector {
     }
     
     private calculateOptimalSpawns(action: DirectorAction, enemySystem: EnemySystem): {
-         tanks: number;
-         projectiles: number;
-         speedsters: number;
-         bosses: number;
-         eliteTanks: number;
-         snipers: number;
-         swarm: number;
-         berserkers: number;
-         tankCost: number;
-         projectileCost: number;
-         speedsterCost: number;
-         bossCost: number;
-         eliteTankCost: number;
-         sniperCost: number;
-         swarmCost: number;
-         berserkerCost: number;
+        skeletonVikings: number;
+        archers: number;
+        gnolls: number;
+        golems: number;
+        skeletonVikingCost: number;
+        archerCost: number;
+        gnollCost: number;
+        golemCost: number;
          totalCost: number;
      } {
-        // Define enemy costs based on their power level
          const enemyCosts = {
-             tank: 50,
-             projectile: 15,
-             speedster: 25,
-             boss: 200,
-             eliteTank: 100,
-             sniper: 80,
-             swarm: 8,
-             berserker: 90
-         };
-        
-        // Get current enemy counts to avoid oversaturation
+            skeletonViking: 50,
+            archer: 30,
+            gnoll: 20,
+            golem: 100
+        };
+       
          const currentEnemies = {
-             tanks: enemySystem.getEnemyCountByType(EnemyType.TANK),
-             projectiles: enemySystem.getEnemyCountByType(EnemyType.PROJECTILE),
-             speedsters: enemySystem.getEnemyCountByType(EnemyType.SPEEDSTER),
-             bosses: enemySystem.getEnemyCountByType(EnemyType.BOSS),
-             eliteTanks: enemySystem.getEnemyCountByType(EnemyType.ELITE_TANK),
-             snipers: enemySystem.getEnemyCountByType(EnemyType.SNIPER),
-             swarm: enemySystem.getEnemyCountByType(EnemyType.SWARM),
-             berserkers: enemySystem.getEnemyCountByType(EnemyType.BERSERKER)
-         };
-         
-         // Calculate maximum spawns based on budget and current enemy limits
+            skeletonVikings: enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING),
+            archers: enemySystem.getEnemyCountByType(EnemyType.ARCHER),
+            gnolls: enemySystem.getEnemyCountByType(EnemyType.GNOLL),
+            golems: enemySystem.getEnemyCountByType(EnemyType.GOLEM)
+        };
+        
          const maxSpawns = {
-             tanks: Math.min(Math.floor(this.currentBudget / enemyCosts.tank), Math.max(0, 8 - currentEnemies.tanks)),
-             projectiles: Math.min(Math.floor(this.currentBudget / enemyCosts.projectile), Math.max(0, 20 - currentEnemies.projectiles)),
-             speedsters: Math.min(Math.floor(this.currentBudget / enemyCosts.speedster), Math.max(0, 15 - currentEnemies.speedsters)),
-             bosses: Math.min(Math.floor(this.currentBudget / enemyCosts.boss), Math.max(0, 2 - currentEnemies.bosses)),
-             eliteTanks: Math.min(Math.floor(this.currentBudget / enemyCosts.eliteTank), Math.max(0, 4 - currentEnemies.eliteTanks)),
-             snipers: Math.min(Math.floor(this.currentBudget / enemyCosts.sniper), Math.max(0, 6 - currentEnemies.snipers)),
-             swarm: Math.min(Math.floor(this.currentBudget / enemyCosts.swarm), Math.max(0, 30 - currentEnemies.swarm)),
-             berserkers: Math.min(Math.floor(this.currentBudget / enemyCosts.berserker), Math.max(0, 5 - currentEnemies.berserkers))
+            skeletonVikings: Math.min(Math.floor(this.currentBudget / enemyCosts.skeletonViking), Math.max(0, 8 - currentEnemies.skeletonVikings)),
+            archers: Math.min(Math.floor(this.currentBudget / enemyCosts.archer), Math.max(0, 12 - currentEnemies.archers)),
+            gnolls: Math.min(Math.floor(this.currentBudget / enemyCosts.gnoll), Math.max(0, 15 - currentEnemies.gnolls)),
+            golems: Math.min(Math.floor(this.currentBudget / enemyCosts.golem), Math.max(0, 4 - currentEnemies.golems))
          };
         
-        let spawns = { tanks: 0, projectiles: 0, speedsters: 0, bosses: 0, eliteTanks: 0, snipers: 0, swarm: 0, berserkers: 0 };
+        let spawns = { skeletonVikings: 0, archers: 0, gnolls: 0, golems: 0 };
          
-         // Determine spawns based on action and available budget
          switch (action) {
-             case DirectorAction.SPAWN_TANKS:
-                 spawns.tanks = Math.min(3, maxSpawns.tanks);
+            case DirectorAction.SPAWN_SKELETON_VIKINGS:
+                spawns.skeletonVikings = Math.min(3, maxSpawns.skeletonVikings);
                  break;
-             case DirectorAction.SPAWN_PROJECTILES:
-                 spawns.projectiles = Math.min(8, maxSpawns.projectiles);
+            case DirectorAction.SPAWN_ARCHERS:
+                spawns.archers = Math.min(5, maxSpawns.archers);
                  break;
-             case DirectorAction.SPAWN_SPEEDSTERS:
-                 spawns.speedsters = Math.min(15, maxSpawns.speedsters);
+            case DirectorAction.SPAWN_GNOLLS:
+                spawns.gnolls = Math.min(8, maxSpawns.gnolls);
                  break;
-             case DirectorAction.BOSS_ENCOUNTER:
-                 spawns.bosses = Math.min(1, maxSpawns.bosses);
-                 break;
-             case DirectorAction.SPAWN_ELITE_TANKS:
-                 spawns.eliteTanks = Math.min(2, maxSpawns.eliteTanks);
-                 break;
-             case DirectorAction.SPAWN_SNIPERS:
-                 spawns.snipers = Math.min(3, maxSpawns.snipers);
-                 break;
-             case DirectorAction.SPAWN_SWARM:
-                 spawns.swarm = Math.min(12, maxSpawns.swarm);
-                 break;
-             case DirectorAction.SPAWN_BERSERKERS:
-                 spawns.berserkers = Math.min(2, maxSpawns.berserkers);
+            case DirectorAction.SPAWN_GOLEMS:
+                spawns.golems = Math.min(2, maxSpawns.golems);
                  break;
          }
         
-        // Calculate costs
          const costs = {
-             tankCost: spawns.tanks * enemyCosts.tank,
-             projectileCost: spawns.projectiles * enemyCosts.projectile,
-             speedsterCost: spawns.speedsters * enemyCosts.speedster,
-             bossCost: spawns.bosses * enemyCosts.boss,
-             eliteTankCost: spawns.eliteTanks * enemyCosts.eliteTank,
-             sniperCost: spawns.snipers * enemyCosts.sniper,
-             swarmCost: spawns.swarm * enemyCosts.swarm,
-             berserkerCost: spawns.berserkers * enemyCosts.berserker
+            skeletonVikingCost: spawns.skeletonVikings * enemyCosts.skeletonViking,
+            archerCost: spawns.archers * enemyCosts.archer,
+            gnollCost: spawns.gnolls * enemyCosts.gnoll,
+            golemCost: spawns.golems * enemyCosts.golem
          };
          
          return {
              ...spawns,
              ...costs,
-             totalCost: costs.tankCost + costs.projectileCost + costs.speedsterCost + costs.bossCost + 
-                       costs.eliteTankCost + costs.sniperCost + costs.swarmCost + costs.berserkerCost
+            totalCost: costs.skeletonVikingCost + costs.archerCost + costs.gnollCost + costs.golemCost
          };
     }
     
