@@ -3,7 +3,8 @@
  */
 
 /**
- * Represents a mob's atlas data structure
+ * Represents the structure of a Texture Packer JSON atlas hash.
+ * This is useful for type safety if you ever need to manually parse atlas data.
  */
 export interface MobAtlasData {
   frames: {
@@ -26,7 +27,7 @@ export interface MobAtlasData {
 }
 
 /**
- * Configuration for a mob's animations
+ * Configuration for a single mob animation.
  */
 export interface MobAnimationConfig {
   key: string;
@@ -36,24 +37,24 @@ export interface MobAnimationConfig {
 }
 
 /**
- * Mob asset information
+ * Defines the asset paths and loading state for a mob's texture atlas.
+ * Used by DynamicMobLoader.
  */
 export interface MobAsset {
   name: string;
-  textureKey: string;
-  atlasKey: string;
-  imagePath: string;
-  atlasPath: string;
+  atlasKey: string;      // The key for the loaded atlas (e.g., 'archer')
+  texturePath: string;   // The path to the PNG spritesheet
+  atlasPath: string;     // The path to the JSON data file
   loaded: boolean;
   error?: string;
 }
 
 /**
- * Mob configuration for spawning and behavior
+ * Defines all gameplay-related properties for a mob.
+ * Used by MobSpawner to configure a mob after it's created.
  */
 export interface MobConfig {
   name: string;
-  textureKey: string;
   atlasKey: string;
   animations: MobAnimationConfig[];
   defaultAnimation: string;
@@ -62,10 +63,12 @@ export interface MobConfig {
   speed: number;
   damage: number;
   collisionRadius: number;
+  mass?: number;                      // Optional: Affects momentum in collisions
+  bounce?: { x: number; y: number }; // Optional: Sets bounciness
 }
 
 /**
- * Mob loading result
+ * Represents the final result of loading a single mob asset.
  */
 export interface MobLoadResult {
   success: boolean;
@@ -74,7 +77,7 @@ export interface MobLoadResult {
 }
 
 /**
- * Mob loading progress information
+ * Tracks the overall progress of the mob loading process.
  */
 export interface MobLoadingProgress {
   totalMobs: number;

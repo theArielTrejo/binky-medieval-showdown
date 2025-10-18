@@ -30,6 +30,7 @@ export class ClassSelectionUI {
     private currentDetailsTween: Phaser.Tweens.Tween | null = null;
     private hoverTimeout: NodeJS.Timeout | null = null;
     private isShowingDetails: boolean = false;
+    private clickZones: Phaser.GameObjects.Zone[] = []; // Store zones for cleanup
     
     private classData: ClassData[] = [
         {
@@ -521,8 +522,16 @@ export class ClassSelectionUI {
             this.currentDetailsTween = null;
         }
         
+        // Destroy all click zones
+        this.clickZones.forEach(zone => {
+            zone.removeAllListeners();
+            zone.destroy();
+        });
+        this.clickZones = [];
+        
         // Clear state
         this.isShowingDetails = false;
+        this.classCards.clear();
         
         // Destroy container and all children
         if (this.container) {
@@ -576,20 +585,23 @@ export class ClassSelectionUI {
              { x: 512 + 200, y: 384 - 50, archetype: PlayerArchetypeType.EVASIVE, name: 'Rogue' }
          ];
          
-         cardPositions.forEach(pos => {
-             const zone = this.scene.add.zone(pos.x, pos.y, 180, 120);
-             zone.setInteractive();
-             zone.setScrollFactor(0);
-             zone.setDepth(2000); // Very high depth to ensure it's on top
-             
-             zone.on('pointerdown', () => {
-                 console.log('Scene-level zone clicked:', pos.name, pos.archetype);
-                 this.selectClass(pos.archetype);
-             });
-             
-             zone.on('pointerover', () => {
-                 console.log('Scene-level zone hover:', pos.name);
-             });
-         });
+        cardPositions.forEach(pos => {
+            const zone = this.scene.add.zone(pos.x, pos.y, 180, 120);
+            zone.setInteractive();
+            zone.setScrollFactor(0);
+            zone.setDepth(2000); // Very high depth to ensure it's on top
+            
+            zone.on('pointerdown', () => {
+                console.log('Scene-level zone clicked:', pos.name, pos.archetype);
+                this.selectClass(pos.archetype);
+            });
+            
+            zone.on('pointerover', () => {
+                console.log('Scene-level zone hover:', pos.name);
+            });
+            
+            // Store zone for cleanup
+            this.clickZones.push(zone);
+        });
      }
 }

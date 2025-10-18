@@ -1,6 +1,6 @@
 /**
- * Mob Spawning System
- * Demonstrates the dynamic mob loading system by spawning different mob types
+ * Mob Spawning System (Refactored)
+ * Uses a Physics Group for efficient management and applies physics properties from config.
  */
 
 import { Scene } from 'phaser';
@@ -9,44 +9,60 @@ import { MobConfig } from '../types/MobTypes';
 
 export class MobSpawner {
   private scene: Scene;
-  private spawnedMobs: Phaser.GameObjects.Sprite[] = [];
+  // Use a Physics Group instead of a plain array for performance and convenience
+  private mobGroup: Phaser.Physics.Arcade.Group;
 
   constructor(scene: Scene) {
     this.scene = scene;
+    this.mobGroup = this.scene.physics.add.group();
   }
 
   /**
    * Spawn a mob of the specified type at the given position
    */
-  public spawnMob(mobType: string, x: number, y: number): Phaser.GameObjects.Sprite | null {
-    const config = MOB_CONFIGS[mobType];
+  public spawnMob(mobType: string, x: number, y: number, debug = false): Phaser.GameObjects.Sprite | null {
+    const config = this.getMobConfig(mobType);
     if (!config) {
       console.error(`Mob config not found for type: ${mobType}`);
       return null;
     }
 
     try {
-      // Create sprite using the loaded atlas
+      // Create sprite and add it to our group
       const mob = this.scene.physics.add.sprite(x, y, config.atlasKey);
+      this.mobGroup.add(mob);
       
-      if (!mob) {
-        console.error(`Failed to create sprite for mob: ${mobType}`);
+      if (!mob || !mob.body) {
+        console.error(`Failed to create sprite or physics body for mob: ${mobType}`);
         return null;
       }
 
-      // Apply mob configuration
+      // --- Apply Mob Configuration ---
       mob.setScale(config.scale);
+      
+      // Store custom data
       mob.setData('mobType', mobType);
       mob.setData('health', config.health);
       mob.setData('maxHealth', config.health);
       mob.setData('speed', config.speed);
       mob.setData('damage', config.damage);
       
-      // Set up physics body
-      if (mob.body) {
-        const body = mob.body as Phaser.Physics.Arcade.Body;
-        body.setCircle(config.collisionRadius);
-        body.setCollideWorldBounds(true);
+      // --- Apply Physics Properties from Config ---
+      const body = mob.body as Phaser.Physics.Arcade.Body;
+      body.setCircle(config.collisionRadius);
+      body.setCollideWorldBounds(true);
+      
+      // Set properties from docs for more dynamic behavior
+      if (config.mass) {
+        body.setMass(config.mass);
+      }
+      if (config.bounce) {
+        body.setBounce(config.bounce.x, config.bounce.y);
+      }
+      
+      // Add debug visualization if enabled
+      if (debug) {
+        mob.setDebug(true, true, 0x00ff00); // showBody, showVelocity, color
       }
 
       // Start default animation
@@ -55,10 +71,7 @@ export class MobSpawner {
       } else {
         console.warn(`Animation ${config.defaultAnimation} not found for mob ${mobType}`);
       }
-
-      // Add to spawned mobs list
-      this.spawnedMobs.push(mob);
-
+      
       console.log(`Spawned ${mobType} at (${x}, ${y})`);
       return mob;
 
@@ -71,59 +84,44 @@ export class MobSpawner {
   /**
    * Spawn mobs at predefined spawn points
    */
-  public spawnMobsAtSpawnPoints(spawnPoints: { x: number; y: number; type: string }[]): void {
+  public spawnMobsAtSpawnPoints(spawnPoints: { x: number; y: number; type: string }[], debug = false): void {
     for (const spawnPoint of spawnPoints) {
-      this.spawnMob(spawnPoint.type, spawnPoint.x, spawnPoint.y);
+      this.spawnMob(spawnPoint.type, spawnPoint.x, spawnPoint.y, debug);
     }
   }
 
   /**
-   * Get all spawned mobs
+   * Get the group containing all spawned mobs.
+   * This is useful for setting up colliders (e.g., this.physics.add.collider(player, spawner.getMobGroup()))
    */
-  public getSpawnedMobs(): Phaser.GameObjects.Sprite[] {
-    return [...this.spawnedMobs];
+  public getMobGroup(): Phaser.Physics.Arcade.Group {
+    return this.mobGroup;
   }
 
   /**
-   * Remove a mob from the spawned list
+   * Remove a mob. The group handles removal and optional destruction.
    */
-  public removeMob(mob: Phaser.GameObjects.Sprite): void {
-    const index = this.spawnedMobs.indexOf(mob);
-    if (index > -1) {
-      this.spawnedMobs.splice(index, 1);
-    }
+  public removeMob(mob: Phaser.GameObjects.Sprite, destroy = true): void {
+    this.mobGroup.remove(mob, true, destroy);
   }
 
-  /**
-   * Get mob configuration by type
-   */
   public getMobConfig(mobType: string): MobConfig | undefined {
     return MOB_CONFIGS[mobType];
   }
 
-  /**
-   * Check if a mob type is available
-   */
   public isMobTypeAvailable(mobType: string): boolean {
     return mobType in MOB_CONFIGS;
   }
 
-  /**
-   * Get all available mob types
-   */
   public getAvailableMobTypes(): string[] {
     return Object.keys(MOB_CONFIGS);
   }
 
   /**
-   * Clean up all spawned mobs
+   * Clean up all spawned mobs by clearing the group
    */
   public destroy(): void {
-    for (const mob of this.spawnedMobs) {
-      if (mob && mob.active) {
-        mob.destroy();
-      }
-    }
-    this.spawnedMobs = [];
+    // Setting destroy children to true will call destroy() on each mob
+    this.mobGroup.clear(true, true);
   }
 }

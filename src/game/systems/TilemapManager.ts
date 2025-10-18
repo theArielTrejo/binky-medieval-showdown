@@ -1,7 +1,6 @@
 /**
- * Modular Tilemap Integration System
- * Based on proven tilemap implementation from existing Phaser examples
- * Handles tilemap loading, layer management, and collision setup
+ * Modular Tilemap Integration System (Refactored)
+ * Leverages Phaser's event-driven loader for efficient, parallel asset loading.
  */
 
 import { Scene } from 'phaser';
@@ -18,40 +17,30 @@ export class TilemapManager {
   private scene: Scene;
   private tilemapAssets: Map<string, TilemapAsset> = new Map();
   private loadedTilemaps: Map<string, Phaser.Tilemaps.Tilemap> = new Map();
-  private loadingProgress: TilemapLoadingProgress;
   private onProgressCallback?: (progress: TilemapLoadingProgress) => void;
-  private onCompleteCallback?: (results: TilemapLoadResult[]) => void;
   private onErrorCallback?: (error: string, tilemapName?: string) => void;
 
   constructor(scene: Scene) {
     this.scene = scene;
-    this.loadingProgress = {
-      totalAssets: 0,
-      loadedAssets: 0,
-      failedAssets: 0,
-      errors: []
-    };
   }
-
+  
   /**
    * Set callback functions for loading events
    */
   public setCallbacks(callbacks: {
     onProgress?: (progress: TilemapLoadingProgress) => void;
-    onComplete?: (results: TilemapLoadResult[]) => void;
     onError?: (error: string, tilemapName?: string) => void;
   }): void {
     this.onProgressCallback = callbacks.onProgress;
-    this.onCompleteCallback = callbacks.onComplete;
     this.onErrorCallback = callbacks.onError;
   }
 
   /**
-   * Load tilemap assets based on configuration
+   * Queues a tilemap and its associated tilesets for loading.
+   * Returns a promise that resolves when this specific batch of assets is loaded.
    */
-  public async loadTilemap(config: TilemapConfig): Promise<TilemapLoadResult> {
-    try {
-      // Create tilemap asset entry
+  public loadTilemap(config: TilemapConfig): Promise<TilemapLoadResult> {
+    return new Promise((resolve) => {
       const asset: TilemapAsset = {
         name: config.name,
         key: config.key,
@@ -59,135 +48,74 @@ export class TilemapManager {
         tilesets: config.tilesets,
         loaded: false
       };
-      
       this.tilemapAssets.set(config.name, asset);
+
+      const filesToLoad = [config.key, ...config.tilesets.map(ts => ts.imageKey)];
+      let loadedCount = 0;
+      let failedCount = 0;
+      let hasFailed = false;
       
-      // Calculate total assets to load (tilemap JSON + all tilesets)
-      this.loadingProgress.totalAssets = 1 + config.tilesets.length;
-      this.loadingProgress.loadedAssets = 0;
-      this.loadingProgress.failedAssets = 0;
-      this.loadingProgress.errors = [];
+      const loadingProgress: TilemapLoadingProgress = {
+        totalAssets: filesToLoad.length,
+        loadedAssets: 0,
+        failedAssets: 0,
+        errors: []
+      };
+
+      const onFileComplete = (fileKey: string) => {
+        if (filesToLoad.includes(fileKey)) {
+          loadedCount++;
+          loadingProgress.loadedAssets = loadedCount;
+          this.notifyProgress(loadingProgress);
+        }
+      };
       
-      this.notifyProgress();
-      
-      // Load tilemap JSON
-      await this.loadTilemapJSON(config.key, config.jsonPath);
-      this.loadingProgress.loadedAssets++;
-      this.notifyProgress();
-      
-      // Load all tilesets
-      for (const tileset of config.tilesets) {
-        this.loadingProgress.currentAsset = tileset.name;
-        this.notifyProgress();
+      const onFileError = (file: Phaser.Loader.File) => {
+        if (filesToLoad.includes(file.key)) {
+          hasFailed = true;
+          failedCount++;
+          loadingProgress.failedAssets = failedCount;
+          const errorMsg = `Failed to load asset for tilemap '${config.name}': ${file.key}`;
+          loadingProgress.errors.push(errorMsg);
+          if (this.onErrorCallback) {
+            this.onErrorCallback(errorMsg, config.name);
+          }
+          this.notifyProgress(loadingProgress);
+        }
+      };
+
+      this.scene.load.on(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+      this.scene.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
+
+      this.scene.load.once(Phaser.Loader.Events.COMPLETE, () => {
+        // Clean up listeners for this specific load operation
+        this.scene.load.off(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+        this.scene.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
         
-        await this.loadTilesetImage(tileset.imageKey, tileset.imagePath);
-        this.loadingProgress.loadedAssets++;
-        this.notifyProgress();
-      }
-      
-      asset.loaded = true;
-      
-      const result: TilemapLoadResult = {
-        success: true,
-        tilemapName: config.name
-      };
-      
-      if (this.onCompleteCallback) {
-        this.onCompleteCallback([result]);
-      }
-      
-      return result;
-      
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.loadingProgress.failedAssets++;
-      this.loadingProgress.errors.push(`${config.name}: ${errorMessage}`);
-      
-      if (this.onErrorCallback) {
-        this.onErrorCallback(errorMessage, config.name);
-      }
-      
-      return {
-        success: false,
-        tilemapName: config.name,
-        error: errorMessage
-      };
-    }
-  }
+        asset.loaded = !hasFailed;
+        
+        const result: TilemapLoadResult = {
+          success: !hasFailed,
+          tilemapName: config.name,
+          error: hasFailed ? loadingProgress.errors.join(', ') : undefined
+        };
+        resolve(result);
+      });
 
-  /**
-   * Load tilemap JSON file
-   */
-  private async loadTilemapJSON(key: string, jsonPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.scene.cache.tilemap.exists(key)) {
-        resolve();
-        return;
+      // --- Queue all assets at once ---
+      this.scene.load.tilemapTiledJSON(config.key, config.jsonPath);
+      for (const tileset of config.tilesets) {
+        this.scene.load.image(tileset.imageKey, tileset.imagePath);
       }
       
-      this.scene.load.tilemapTiledJSON(key, jsonPath);
-      
-      const onFileComplete = (fileKey: string) => {
-        if (fileKey === key) {
-          this.scene.load.off('filecomplete', onFileComplete);
-          this.scene.load.off('loaderror', onFileError);
-          resolve();
-        }
-      };
-      
-      const onFileError = (file: any) => {
-        if (file.key === key) {
-          this.scene.load.off('filecomplete', onFileComplete);
-          this.scene.load.off('loaderror', onFileError);
-          reject(new Error(`Failed to load tilemap JSON: ${jsonPath}`));
-        }
-      };
-      
-      this.scene.load.on('filecomplete', onFileComplete);
-      this.scene.load.on('loaderror', onFileError);
-      
+      // Start loading if not already in progress
       if (!this.scene.load.isLoading()) {
         this.scene.load.start();
       }
     });
   }
 
-  /**
-   * Load tileset image
-   */
-  private async loadTilesetImage(key: string, imagePath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.scene.textures.exists(key)) {
-        resolve();
-        return;
-      }
-      
-      this.scene.load.image(key, imagePath);
-      
-      const onFileComplete = (fileKey: string) => {
-        if (fileKey === key) {
-          this.scene.load.off('filecomplete', onFileComplete);
-          this.scene.load.off('loaderror', onFileError);
-          resolve();
-        }
-      };
-      
-      const onFileError = (file: any) => {
-        if (file.key === key) {
-          this.scene.load.off('filecomplete', onFileComplete);
-          this.scene.load.off('loaderror', onFileError);
-          reject(new Error(`Failed to load tileset image: ${imagePath}`));
-        }
-      };
-      
-      this.scene.load.on('filecomplete', onFileComplete);
-      this.scene.load.on('loaderror', onFileError);
-      
-      if (!this.scene.load.isLoading()) {
-        this.scene.load.start();
-      }
-    });
-  }
+  // The private `loadTilemapJSON` and `loadTilesetImage` methods are no longer needed.
 
   /**
    * Create tilemap from loaded assets
@@ -195,27 +123,23 @@ export class TilemapManager {
   public createTilemap(config: TilemapConfig): Phaser.Tilemaps.Tilemap | null {
     const asset = this.tilemapAssets.get(config.name);
     if (!asset || !asset.loaded) {
-      console.error(`Cannot create tilemap ${config.name}: assets not loaded`);
+      console.error(`Cannot create tilemap ${config.name}: assets not loaded or failed to load`);
       return null;
     }
     
     try {
-      // Create the tilemap
       const map = this.scene.make.tilemap({ key: config.key });
-      
-      // Add all tilesets
       const tilesets: Phaser.Tilemaps.Tileset[] = [];
+      
       for (const tilesetConfig of config.tilesets) {
         const tileset = map.addTilesetImage(tilesetConfig.name, tilesetConfig.imageKey);
         if (tileset) {
           tilesets.push(tileset);
         } else {
-          console.warn(`Failed to add tileset: ${tilesetConfig.name}`);
+          console.warn(`Failed to add tileset '${tilesetConfig.name}' to map '${config.name}'. Is the tileset name in your config correct?`);
         }
       }
       
-      // Create layers
-      const layers: Phaser.Tilemaps.TilemapLayer[] = [];
       for (const layerConfig of config.layers) {
         const layerTilesets = layerConfig.tilesets.length > 0 
           ? tilesets.filter(ts => layerConfig.tilesets.includes(ts.name))
@@ -223,42 +147,21 @@ export class TilemapManager {
         
         const layer = map.createLayer(layerConfig.name, layerTilesets, 0, 0);
         if (layer) {
-          // Apply layer configuration
-          if (layerConfig.depth !== undefined) {
-            layer.setDepth(layerConfig.depth);
-          }
-          if (layerConfig.alpha !== undefined) {
-            layer.setAlpha(layerConfig.alpha);
-          }
-          if (layerConfig.visible !== undefined) {
-            layer.setVisible(layerConfig.visible);
-          }
-          
-          layers.push(layer);
+          if (layerConfig.depth !== undefined) layer.setDepth(layerConfig.depth);
+          if (layerConfig.alpha !== undefined) layer.setAlpha(layerConfig.alpha);
+          if (layerConfig.visible !== undefined) layer.setVisible(layerConfig.visible);
         } else {
-          console.warn(`Failed to create layer: ${layerConfig.name}`);
+          console.warn(`Failed to create layer '${layerConfig.name}' in map '${config.name}'. Is the layer name correct?`);
         }
       }
       
-      // Set world bounds if specified
       if (config.worldBounds) {
-        this.scene.physics.world.setBounds(
-          0, 0, 
-          config.worldBounds.width, 
-          config.worldBounds.height
-        );
+        this.scene.physics.world.setBounds(0, 0, config.worldBounds.width, config.worldBounds.height);
       } else {
-        // Use map dimensions
-        this.scene.physics.world.setBounds(
-          0, 0, 
-          map.widthInPixels, 
-          map.heightInPixels
-        );
+        this.scene.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
       }
       
-      // Store the created tilemap
       this.loadedTilemaps.set(config.name, map);
-      
       return map;
       
     } catch (error) {
@@ -278,23 +181,18 @@ export class TilemapManager {
     }
     
     for (const config of collisionConfigs) {
-      const layer = map.getLayer(config.layerName);
-      if (!layer || !layer.tilemapLayer) {
+      const layer = map.getLayer(config.layerName)?.tilemapLayer;
+      if (!layer) {
         console.warn(`Layer ${config.layerName} not found for collision setup`);
         continue;
       }
       
-      const tilemapLayer = layer.tilemapLayer;
-      
       if (config.collisionTiles) {
-        // Set collision for specific tile IDs
-        tilemapLayer.setCollision(config.collisionTiles);
+        layer.setCollision(config.collisionTiles);
       } else if (config.collisionProperty) {
-        // Set collision by property
-        tilemapLayer.setCollisionByProperty({ [config.collisionProperty]: true });
+        layer.setCollisionByProperty({ [config.collisionProperty]: true });
       } else {
-        // Set collision for all non-empty tiles
-        tilemapLayer.setCollisionByExclusion([]);
+        layer.setCollisionByExclusion([-1]); // Set collision on all tiles except -1 (empty)
       }
     }
   }
@@ -316,61 +214,40 @@ export class TilemapManager {
     }
     
     return objectLayer.objects.map(obj => ({
-      id: obj.id || 0,
-      name: obj.name || '',
-      type: obj.type || '',
-      x: obj.x || 0,
-      y: obj.y || 0,
-      width: obj.width || 0,
-      height: obj.height || 0,
-      properties: obj.properties || {}
+      id: obj.id ?? 0,
+      name: obj.name ?? '',
+      type: obj.type ?? '',
+      x: obj.x ?? 0,
+      y: obj.y ?? 0,
+      width: obj.width ?? 0,
+      height: obj.height ?? 0,
+      properties: obj.properties ?? {}
     }));
   }
 
-  /**
-   * Get a loaded tilemap
-   */
   public getTilemap(name: string): Phaser.Tilemaps.Tilemap | undefined {
     return this.loadedTilemaps.get(name);
   }
 
-  /**
-   * Get all loaded tilemaps
-   */
   public getAllTilemaps(): Map<string, Phaser.Tilemaps.Tilemap> {
     return new Map(this.loadedTilemaps);
   }
 
-  /**
-   * Check if a tilemap is loaded
-   */
   public isTilemapLoaded(name: string): boolean {
     const asset = this.tilemapAssets.get(name);
     return asset ? asset.loaded : false;
   }
 
-  /**
-   * Get loading progress
-   */
-  public getLoadingProgress(): TilemapLoadingProgress {
-    return { ...this.loadingProgress };
-  }
-
-  /**
-   * Notify progress callback
-   */
-  private notifyProgress(): void {
+  private notifyProgress(progress: TilemapLoadingProgress): void {
     if (this.onProgressCallback) {
-      this.onProgressCallback({ ...this.loadingProgress });
+      this.onProgressCallback({ ...progress });
     }
   }
-
-  /**
-   * Clean up resources
-   */
+  
   public destroy(): void {
     this.tilemapAssets.clear();
     this.loadedTilemaps.clear();
-    this.scene.load.removeAllListeners();
+    // It's generally safer not to blindly remove all loader listeners,
+    // as other systems might be using them.
   }
 }

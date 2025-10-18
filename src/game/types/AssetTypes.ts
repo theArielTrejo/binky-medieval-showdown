@@ -78,3 +78,38 @@ export interface AssetLoadingResult {
   tilemapResults?: TilemapLoadResult[];
   duration: number;
 }
+
+/**
+ * Asset loading callbacks
+ */
+export interface AssetLoadingCallbacks {
+  onStart?: () => void;
+  onProgress?: (progress: AssetLoadingProgress) => void;
+  onComplete?: (result: AssetLoadingResult) => void;
+  onError?: (error: string) => void;
+  onAssetLoaded?: (assetKey: string, assetType: AssetType) => void;
+  onAssetFailed?: (assetKey: string, assetType: AssetType, error: string) => void;
+}
+
+/**
+ * Asset loading event
+ */
+export interface AssetLoadingEvent {
+  type: 'start' | 'progress' | 'complete' | 'error';
+  timestamp: number;
+  progress?: AssetLoadingProgress;
+  error?: string;
+  assetKey?: string;
+  assetType?: AssetType;
+}
+
+/**
+ * Asset validation result
+ */
+export interface AssetValidationResult {
+  valid: boolean;
+  assetKey: string;
+  assetType: AssetType;
+  errors: string[];
+  warnings: string[];
+}

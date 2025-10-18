@@ -1,159 +1,107 @@
 import { Scene } from 'phaser';
-import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 import { XP_CONSTANTS } from './constants/XPConstants';
-import { calculateDistance } from './utils/MathUtils';
 import { EffectManager } from './effects/EffectManager';
 
-export class XPOrb {
-    public sprite: Phaser.GameObjects.Arc;
-    public xpValue: number;
-    public scene: Scene;
-    private creationTime: number;
+// The class now extends Sprite, making it a true GameObject
+export class XPOrb extends Phaser.Physics.Arcade.Sprite {
+    public xpValue: number = 0;
+    private creationTime: number = 0;
     private lifetime: number = XP_CONSTANTS.ORB_LIFETIME;
     private isCollected: boolean = false;
     private pulseTimer: number = 0;
-    private glowEffect: Phaser.GameObjects.Arc;
-
-    constructor(scene: Scene, x: number, y: number, xpValue: number) {
-        this.scene = scene;
-        this.xpValue = xpValue;
-        this.creationTime = Date.now();
+    
+    constructor(scene: Scene, x: number, y: number) {
+        // Call the parent constructor (Sprite)
+        super(scene, x, y, 'green_orb');
         
-        // Create the main orb sprite using Enhanced Design System colors
-        this.sprite = scene.add.circle(x, y, XP_CONSTANTS.ORB_RADIUS, EnhancedStyleHelpers.xp.getOrbColor());
-        this.sprite.setStrokeStyle(XP_CONSTANTS.ORB_STROKE_WIDTH, EnhancedStyleHelpers.xp.getOrbBorderColor());
+        // Add this object to the scene's display list and physics world
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
         
-        // Create a subtle glow effect
-        this.glowEffect = scene.add.circle(x, y, XP_CONSTANTS.GLOW_RADIUS, EnhancedStyleHelpers.xp.getOrbColor(), XP_CONSTANTS.GLOW_ALPHA);
-        this.glowEffect.setBlendMode(Phaser.BlendModes.ADD);
-        
-        // Set depth to ensure orbs appear above enemies but below UI
-        this.sprite.setDepth(XP_CONSTANTS.DEPTH.ORB);
-        this.glowEffect.setDepth(XP_CONSTANTS.DEPTH.GLOW_EFFECT);
-        
-        // Store reference to this orb in the sprite data
-        this.sprite.setData('xpOrb', this);
-        
-        // Add a subtle spawn animation
-        this.sprite.setScale(0);
-        this.glowEffect.setScale(0);
-        
-        EffectManager.createSpawnAnimation(scene, [this.sprite, this.glowEffect]);
+        // Add the Glow FX directly to this sprite
+        const glow = this.postFX.addGlow(0x00ff00, 1, 0, false, 0.1, 10);
+        this.setData('glowEffect', glow);
+        this.setDepth(XP_CONSTANTS.DEPTH.ORB);
     }
 
     /**
-     * Updates the XP orb each frame
-     * @param deltaTime - Time elapsed since last frame in seconds
-     * @returns true if the orb should be removed (expired or collected)
+     * This method is used by the object pool to activate and initialize a recycled orb.
      */
-    public update(deltaTime: number): boolean {
-        if (this.isCollected) {
-            return true;
+    public launch(x: number, y: number, xpValue: number): void {
+        if (this.body) {
+            this.body.reset(x, y);
         }
+        this.setActive(true);
+        this.setVisible(true);
         
-        // Check if orb has expired
-        const currentTime = Date.now();
-        const age = currentTime - this.creationTime;
+        this.xpValue = xpValue;
+        this.creationTime = this.scene.time.now;
+        this.isCollected = false;
+        
+        // Play spawn animation
+        this.setScale(0);
+        EffectManager.createSpawnAnimation(this.scene, [this]);
+    }
+    
+    // Renamed from 'update' to 'preUpdate' to be automatically called by the Group
+    preUpdate(time: number, delta: number): void {
+        super.preUpdate(time, delta);
+        
+        if (!this.active) {
+            return;
+        }
+
+        const age = time - this.creationTime;
         
         if (age >= this.lifetime) {
-            this.destroy();
-            return true;
+            this.kill(); // Deactivate instead of destroying
+            return;
         }
         
-        // Update visual effects
-        this.updateVisualEffects(deltaTime, age);
-        
-        return false;
+        // The deltaTime passed to preUpdate is in ms, EffectManager expects seconds
+        this.updateVisualEffects(delta / 1000, age);
     }
     
     private updateVisualEffects(deltaTime: number, age: number): void {
-        // Pulse animation
         this.pulseTimer += deltaTime;
-        EffectManager.updatePulseAnimation(this.sprite, this.glowEffect, this.pulseTimer);
-        
-        // Fade out effect as orb approaches expiration
-        EffectManager.updateFadeEffect(this.sprite, this.glowEffect, age, this.lifetime);
-        
-        // Blinking effect in the last moments
-        EffectManager.updateBlinkEffect(this.sprite, this.glowEffect, age, this.lifetime);
+        EffectManager.updatePulseAnimation(this, this.pulseTimer);
+        EffectManager.updateFadeEffect(this, age, this.lifetime);
+        EffectManager.updateBlinkEffect(this, age, this.lifetime);
     }
     
-    /**
-     * Collects the XP orb with a collection animation
-     * @param targetX - X position to animate towards (usually player position)
-     * @param targetY - Y position to animate towards (usually player position)
-     * @param onComplete - Callback function to execute when collection is complete
-     */
     public collect(targetX: number, targetY: number, onComplete: () => void): void {
         if (this.isCollected) return;
-        
         this.isCollected = true;
         
-        // Create collection animation - orb flies towards player
-        EffectManager.createCollectionAnimation(
-            this.scene,
-            [this.sprite, this.glowEffect],
-            targetX,
-            targetY,
-            () => {
-                this.destroy();
-                onComplete();
-            }
-        );
+        EffectManager.createCollectionAnimation(this.scene, [this], targetX, targetY, () => {
+            this.kill(); // Deactivate when collection is complete
+            onComplete();
+        });
         
-        // Add a brief flash effect at collection point
-        EffectManager.createFlashEffect(this.scene, this.sprite.x, this.sprite.y);
+        EffectManager.createFlashEffect(this.scene, this.x, this.y);
     }
-    
+
     /**
-     * Gets the current position of the orb
-     * @returns Object with x and y coordinates
+     * Deactivates the orb and returns it to the object pool.
      */
-    public getPosition(): { x: number; y: number } {
-        return {
-            x: this.sprite.x,
-            y: this.sprite.y
-        };
+    public kill(): void {
+        this.setActive(false);
+        this.setVisible(false);
+        // It's good practice to disable the body as well
+        if (this.body) {
+            this.body.enable = false;
+        }
     }
-    
-    /**
-     * Checks if the orb is within collection range of a position
-     * @param x - X coordinate to check
-     * @param y - Y coordinate to check
-     * @param range - Collection range in pixels
-     * @returns true if within range
-     */
+
     public isWithinRange(x: number, y: number, range: number): boolean {
-        if (this.isCollected) return false;
-        
-        const distance = calculateDistance(this.sprite.x, this.sprite.y, x, y);
-        return distance <= range;
+        if (!this.active || this.isCollected) return false;
+        return Phaser.Math.Distance.Between(this.x, this.y, x, y) <= range;
     }
-    
-    /**
-     * Destroys the orb and cleans up its sprites
-     */
-    public destroy(): void {
-        if (this.sprite) {
-            this.sprite.destroy();
-        }
-        if (this.glowEffect) {
-            this.glowEffect.destroy();
-        }
-    }
-    
-    /**
-     * Gets the XP value of this orb
-     * @returns XP value
-     */
+
     public getXPValue(): number {
         return this.xpValue;
     }
     
-    /**
-     * Checks if the orb has been collected
-     * @returns true if collected
-     */
     public isOrbCollected(): boolean {
         return this.isCollected;
     }

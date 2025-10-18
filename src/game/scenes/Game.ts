@@ -5,6 +5,7 @@ import { AIDirector } from '../AIDirector';
 import { PlayerArchetypeType } from '../PlayerArchetype';
 import { AIMetricsDashboard } from '../../ui/AIMetricsDashboard';
 import { ClassSelectionUI } from '../../ui/ClassSelectionUI';
+import { EnemySpawnerUI } from '../../ui/EnemySpawnerUI';
 import { XPOrbSystem } from '../XPOrbSystem';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
 import { AssetManager } from '../systems/AssetManager';
@@ -18,6 +19,7 @@ export class Game extends Scene {
     private enemySystem!: EnemySystem;
     private aiDirector!: AIDirector;
     private aiDashboard!: AIMetricsDashboard;
+    private enemySpawnerUI!: EnemySpawnerUI;
     private xpOrbSystem!: XPOrbSystem;
     private gameStarted: boolean = false;
     private classSelectionUI!: ClassSelectionUI;
@@ -115,29 +117,39 @@ export class Game extends Scene {
         }
         this.load.image('golem_idle', 'mobs/golem/0_Golem_Idle_000.png');
         
-        // Initialize the new asset management system
+        // Skeleton Pirate
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = String(i).padStart(3, '0');
+            this.load.image(`skeleton_pirate_idle_${frameNum}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Idle_${frameNum}.png`);
+        }
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = String(i).padStart(3, '0');
+            this.load.image(`skeleton_pirate_running_${frameNum}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Running_${frameNum}.png`);
+        }
+        this.load.image('skeleton_pirate_idle', 'mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Idle_000.png');
+        
+        // Elemental Spirit
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = String(i).padStart(3, '0');
+            this.load.image(`elemental_spirit_idle_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Idle_${frameNum}.png`);
+        }
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = String(i).padStart(3, '0');
+            this.load.image(`elemental_spirit_running_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Running_${frameNum}.png`);
+        }
+        for (let i = 0; i <= 14; i++) {
+            const frameNum = String(i).padStart(3, '0');
+            this.load.image(`elemental_spirit_dying_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Dying_${frameNum}.png`);
+        }
+        this.load.image('elemental_spirit_idle', 'mobs/elemental-spirit/0_Elemental_Spirits_Idle_000.png');
+        
+        // Initialize the new asset management system (for tilemap only - mobs are loaded manually above)
         this.assetManager = new AssetManager(this);
         
-        // Set up asset loading callbacks
-        this.assetManager.setCallbacks({
-            onProgress: (progress: AssetLoadingProgress) => {
-                console.log(`Asset loading progress: ${progress.percentage.toFixed(1)}%`);
-            },
-            onComplete: (result: AssetLoadingResult) => {
-                console.log('Asset loading completed:', result);
+        // Note: We're not using AssetManager for mobs since we load individual sprite frames manually
+        // Only use it for tilemap loading if needed in the future
+        // For now, mark assets as loaded since we handle everything in preload()
                 this.assetsLoaded = true;
-                this.setupMobAnimations();
-                this.setupTilemap();
-            },
-            onError: (error: string, assetKey?: string) => {
-                console.error(`Asset loading error for ${assetKey}:`, error);
-            }
-        });
-        
-        // Start loading mobs and tilemaps
-        this.assetManager.loadAllAssets([MAIN_TILEMAP_CONFIG]).catch((error: Error) => {
-            console.error('Failed to load assets:', error);
-        });
     }
 
     create() {
@@ -172,6 +184,12 @@ export class Game extends Scene {
         // Set enemy system reference for cost tracking
         this.aiDashboard.setEnemySystem(this.enemySystem);
         
+        // Initialize Enemy Spawner UI for testing
+        this.enemySpawnerUI = new EnemySpawnerUI(this);
+        this.enemySpawnerUI.setSpawnCallback((type: EnemyType, x: number, y: number) => {
+            this.spawnEnemyAtPosition(type, x, y);
+        });
+        
         // Create animations
         this.createAnimations();
         
@@ -180,6 +198,9 @@ export class Game extends Scene {
         
         // Set up AI control keys
         this.setupAIControls();
+        
+        // Spawn demo mobs for testing
+        this.spawnDemoMobs();
     }
 
     private createTilemap(): void {
@@ -227,48 +248,7 @@ export class Game extends Scene {
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     }
 
-    /**
-     * Set up mob animations using the loaded assets
-     */
-    private setupMobAnimations(): void {
-        const mobLoader = this.assetManager.getMobLoader();
-        
-        // Create animations for each loaded mob
-        for (const [mobName, config] of Object.entries(MOB_CONFIGS) as [string, MobConfig][]) {
-            if (mobLoader.isMobLoaded(mobName)) {
-                mobLoader.createMobAnimations(mobName, config.animations);
-                console.log(`Created animations for ${mobName}`);
-            }
-        }
-    }
 
-    /**
-     * Set up the tilemap using the loaded assets
-     */
-    private setupTilemap(): void {
-        const tilemapManager = this.assetManager.getTilemapManager();
-        
-        // Create the tilemap
-        const createdTilemap = tilemapManager.createTilemap(MAIN_TILEMAP_CONFIG);
-        
-        if (createdTilemap) {
-            this.tilemap = createdTilemap;
-            
-            // Set up collisions
-            tilemapManager.setupCollisions(MAIN_TILEMAP_CONFIG.name, COLLISION_CONFIG);
-            
-            // Set camera bounds to match the tilemap
-            this.cameras.main.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
-            
-            console.log('Tilemap setup completed');
-             
-             // Spawn demo mobs after tilemap is ready
-             this.spawnDemoMobs();
-         } else {
-             console.error('Failed to create tilemap');
-             throw new Error('Tilemap creation failed - cannot continue game initialization');
-         }
-     }
 
     /**
      * Spawn demo mobs to showcase the dynamic loading system
@@ -292,6 +272,20 @@ export class Game extends Scene {
             this.mobSpawner.spawnMob('archer', 800, 200);
             console.log('Spawned fallback demo mobs');
         }
+    }
+
+    /**
+     * Spawn a specific enemy type at a given position (for testing/debugging)
+     */
+    private spawnEnemyAtPosition(type: EnemyType, x: number, y: number): void {
+        if (!this.gameStarted) {
+            console.warn('Cannot spawn enemy: game not started yet');
+            return;
+        }
+
+        // Create an enemy directly through the enemy system
+        this.enemySystem.spawnEnemy(type, x, y);
+        console.log(`Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)})`);
     }
 
 
@@ -455,11 +449,54 @@ export class Game extends Scene {
             frameRate: 8,
             repeat: -1
         });
+        
+        // Skeleton Pirate animations
+        this.anims.create({
+            key: 'skeleton_pirate_idle',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `skeleton_pirate_idle_${String(i).padStart(3, '0')}` })),
+            frameRate: 8,
+            repeat: -1
+        });
+        
+        this.anims.create({
+            key: 'skeleton_pirate_running',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_pirate_running_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
+        
+        // Elemental Spirit animations
+        this.anims.create({
+            key: 'elemental_spirit_idle',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `elemental_spirit_idle_${String(i).padStart(3, '0')}` })),
+            frameRate: 8,
+            repeat: -1
+        });
+        
+        this.anims.create({
+            key: 'elemental_spirit_running',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `elemental_spirit_running_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
+        
+        this.anims.create({
+            key: 'elemental_spirit_dying',
+            frames: Array.from({ length: 15 }, (_, i) => ({ key: `elemental_spirit_dying_${String(i).padStart(3, '0')}` })),
+            frameRate: 20, // Faster framerate for death animation
+            repeat: 0 // Play once, don't loop
+        });
     }
 
     private startGame(archetypeType: PlayerArchetypeType): void {
-        // Hide class selection
+        // Destroy class selection UI completely to prevent invisible clicks
         this.classSelectionUI.hide();
+        // Destroy the container and all its interactive children after the fade animation
+        this.time.delayedCall(350, () => {
+            if (this.classSelectionUI) {
+                this.classSelectionUI.destroy();
+            }
+        });
         
         // Show game UI
         this.gameUI.setVisible(true);
@@ -554,10 +591,15 @@ export class Game extends Scene {
         this.enemySystem.update(playerPos.x, playerPos.y, deltaTime);
         
         // Update XP orb system
-        this.xpOrbSystem.update(deltaTime);
+        this.xpOrbSystem.update();
         
         // Check collisions
-        this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies());
+        this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies(), this.enemySystem.getShields());
+        this.player.checkCollisionWithProjectiles(this.enemySystem.getProjectiles());
+        this.player.checkCollisionWithMeleeAttacks(this.enemySystem.getMeleeAttacks());
+        this.player.checkCollisionWithConeAttacks(this.enemySystem.getConeAttacks());
+        this.player.checkCollisionWithVortexAttacks(this.enemySystem.getVortexAttacks());
+        this.player.checkCollisionWithExplosionAttacks(this.enemySystem.getExplosionAttacks());
         
         // Collect XP orbs
         this.player.collectXPOrbs(this.xpOrbSystem);

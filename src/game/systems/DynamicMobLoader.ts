@@ -9,8 +9,6 @@ import {
   MobAsset,
   MobLoadResult,
   MobLoadingProgress,
-  MobAtlasData,
-  MobAnimationConfig,
   MobConfig
 } from '../types/MobTypes';
 import { MOB_CONFIGS } from '../config/GameConfig';
@@ -20,16 +18,15 @@ export class DynamicMobLoader {
   private mobAssets: Map<string, MobAsset> = new Map();
   private loadingProgress: MobLoadingProgress;
   private onProgressCallback?: (progress: MobLoadingProgress) => void;
-  private onCompleteCallback?: (results: MobLoadResult[]) => void;
   private onErrorCallback?: (error: string, mobName?: string) => void;
 
   /**
-   * List of mob names to load - based on available assets
-   * Updated to use real assets with individual PNG files
+   * List of mob names to load.
    */
   private readonly MOB_NAMES = [
     'archer',
     'skeleton'
+    // Add other mob names here
   ];
 
   constructor(scene: Scene) {
@@ -47,11 +44,9 @@ export class DynamicMobLoader {
    */
   public setCallbacks(callbacks: {
     onProgress?: (progress: MobLoadingProgress) => void;
-    onComplete?: (results: MobLoadResult[]) => void;
     onError?: (error: string, mobName?: string) => void;
   }): void {
     this.onProgressCallback = callbacks.onProgress;
-    this.onCompleteCallback = callbacks.onComplete;
     this.onErrorCallback = callbacks.onError;
   }
 
@@ -63,19 +58,19 @@ export class DynamicMobLoader {
   }
 
   /**
-   * Scan the mobs directory and prepare asset list
-   * Updated to work with individual PNG files instead of atlas files
+   * Scan the mobs directory and prepare asset list for texture atlas loading.
    */
   private scanMobAssets(): MobAsset[] {
     const assets: MobAsset[] = [];
+    this.mobAssets.clear(); // Clear previous assets
     
     for (const mobName of this.MOB_NAMES) {
       const asset: MobAsset = {
         name: mobName,
-        textureKey: `${mobName}_texture`,
-        atlasKey: `${mobName}_atlas`,
-        imagePath: `assets/mobs/`, // Base path for individual PNG files
-        atlasPath: `assets/mobs/${mobName}.json`, // Keep for compatibility
+        // The atlas key is what we'll use to reference this mob's textures
+        atlasKey: mobName,
+        texturePath: `assets/mobs/${mobName}.png`,
+        atlasPath: `assets/mobs/${mobName}.json`,
         loaded: false
       };
       
@@ -87,134 +82,80 @@ export class DynamicMobLoader {
   }
 
   /**
-   * Load all mob assets using Phaser's loader
+   * Queues all mob assets for loading using Phaser's built-in loader.
+   * This leverages parallel loading and is more efficient than the previous sequential method.
    */
-  public async loadAllMobs(): Promise<MobLoadResult[]> {
-    const assets = this.scanMobAssets();
-    const results: MobLoadResult[] = [];
-    
-    this.loadingProgress.totalMobs = assets.length;
-    this.loadingProgress.loadedMobs = 0;
-    this.loadingProgress.failedMobs = 0;
-    this.loadingProgress.errors = [];
-    
-    this.notifyProgress();
-    
-    // Set up loader event listeners
-    this.setupLoaderEvents();
-    
-    // Load each mob asset
-    for (const asset of assets) {
-      try {
-        this.loadingProgress.currentMob = asset.name;
-        this.notifyProgress();
-        
-        await this.loadMobAsset(asset);
-        
-        const result: MobLoadResult = {
-          success: true,
-          mobName: asset.name
-        };
-        
-        results.push(result);
-        asset.loaded = true;
-        this.loadingProgress.loadedMobs++;
-        
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const result: MobLoadResult = {
-          success: false,
-          mobName: asset.name,
-          error: errorMessage
-        };
-        
-        results.push(result);
-        asset.error = errorMessage;
-        this.loadingProgress.failedMobs++;
-        this.loadingProgress.errors.push(`${asset.name}: ${errorMessage}`);
-        
-        if (this.onErrorCallback) {
-          this.onErrorCallback(errorMessage, asset.name);
-        }
-      }
+  public loadAllMobs(): Promise<MobLoadResult[]> {
+    return new Promise((resolve) => {
+      const assetsToLoad = this.scanMobAssets();
       
+      // Reset progress
+      this.loadingProgress = {
+        totalMobs: assetsToLoad.length,
+        loadedMobs: 0,
+        failedMobs: 0,
+        errors: []
+      };
       this.notifyProgress();
-    }
-    
-    if (this.onCompleteCallback) {
-      this.onCompleteCallback(results);
-    }
-    
-    return results;
-  }
 
-  /**
-   * Load a single mob asset (individual PNG files)
-   */
-  private async loadMobAsset(asset: MobAsset): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Get the frame names for this mob from the config
-      const mobConfig = this.getMobConfig(asset.name);
-      if (!mobConfig) {
-        reject(new Error(`No configuration found for mob: ${asset.name}`));
+      if (assetsToLoad.length === 0) {
+        resolve([]);
         return;
       }
+
+      // --- Use Phaser's Event-Driven Loader ---
       
-      // Collect all unique frame names from all animations
-      const frameNames = new Set<string>();
-      for (const animation of mobConfig.animations) {
-        for (const frameName of animation.frames) {
-          frameNames.add(frameName);
-        }
-      }
-      
-      const framesToLoad = Array.from(frameNames);
-      let loadedCount = 0;
-      const totalToLoad = framesToLoad.length;
-      let hasError = false;
-      
-      if (totalToLoad === 0) {
-        resolve();
-        return;
-      }
-      
-      const checkComplete = () => {
-        loadedCount++;
-        if (loadedCount >= totalToLoad && !hasError) {
-          resolve();
-        }
-      };
-      
-      const handleError = (error: string) => {
-        if (!hasError) {
-          hasError = true;
-          reject(new Error(error));
-        }
-      };
-      
-      // Load each individual frame as a separate image
-      for (const frameName of framesToLoad) {
-        const imagePath = `${asset.imagePath}${frameName}.png`;
-        this.scene.load.image(frameName, imagePath);
-      }
-      
-      // Set up one-time listeners for this specific load
       const onFileComplete = (key: string) => {
-        if (framesToLoad.includes(key)) {
-          checkComplete();
+        if (this.mobAssets.has(key)) {
+            const asset = this.mobAssets.get(key)!;
+            asset.loaded = true;
+            this.loadingProgress.loadedMobs++;
+            this.notifyProgress();
         }
       };
       
-      const onFileError = (file: any) => {
-        if (framesToLoad.includes(file.key)) {
-          handleError(`Failed to load ${asset.name} frame: ${file.src}`);
+      const onFileError = (file: Phaser.Loader.File) => {
+        // The key for an atlas is the json file key, not the texture key.
+        const mobName = file.key;
+        if (this.mobAssets.has(mobName)) {
+            const asset = this.mobAssets.get(mobName)!;
+            const errorMessage = `Failed to load ${file.type} for mob '${mobName}': ${file.url}`;
+            asset.error = errorMessage;
+            this.loadingProgress.failedMobs++;
+            this.loadingProgress.errors.push(errorMessage);
+
+            if (this.onErrorCallback) {
+              this.onErrorCallback(errorMessage, asset.name);
+            }
+            this.notifyProgress();
         }
       };
+
+      this.scene.load.on(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+      this.scene.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
       
-      this.scene.load.on('filecomplete', onFileComplete);
-      this.scene.load.on('loaderror', onFileError);
-      
-      // Start the load if not already loading
+      // When the entire queue is complete, resolve the promise.
+      this.scene.load.once(Phaser.Loader.Events.COMPLETE, () => {
+        this.scene.load.off(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+        this.scene.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
+
+        const results: MobLoadResult[] = Array.from(this.mobAssets.values()).map(asset => ({
+            success: asset.loaded,
+            mobName: asset.name,
+            error: asset.error,
+        }));
+        
+        resolve(results);
+      });
+
+      // Queue all assets. This does not start the load yet.
+      for (const asset of assetsToLoad) {
+        // As per Phaser docs, we use load.atlas to load the texture and its accompanying JSON data.
+        this.scene.load.atlas(asset.atlasKey, asset.texturePath, asset.atlasPath);
+      }
+
+      // Start loading if not already in progress.
+      // If called from a Scene's preload(), this isn't strictly necessary, but it makes the method robust.
       if (!this.scene.load.isLoading()) {
         this.scene.load.start();
       }
@@ -222,104 +163,76 @@ export class DynamicMobLoader {
   }
 
   /**
-   * Set up global loader event listeners
+   * Create animations for a loaded mob from its texture atlas.
    */
-  private setupLoaderEvents(): void {
-    this.scene.load.on('complete', () => {
-      // All assets loaded
-    });
-    
-    this.scene.load.on('loaderror', (file: any) => {
-      console.error('Asset loading error:', file);
-    });
-  }
-
-  /**
-   * Create animations for a loaded mob using individual images
-   */
-  public createMobAnimations(mobName: string, animationConfigs: MobAnimationConfig[]): void {
+  public createMobAnimations(mobName: string): void {
     const asset = this.mobAssets.get(mobName);
+    const mobConfig = this.getMobConfig(mobName);
+
     if (!asset || !asset.loaded) {
-      console.warn(`Cannot create animations for ${mobName}: asset not loaded`);
+      console.warn(`Cannot create animations for ${mobName}: asset not loaded.`);
+      return;
+    }
+    if (!mobConfig) {
+      console.warn(`Cannot create animations for ${mobName}: no config found.`);
       return;
     }
     
-    for (const config of animationConfigs) {
-      if (!this.scene.anims.exists(config.key)) {
-        // Create animation using individual image keys
-        const frames = config.frames.map(frameName => ({ key: frameName }));
-        
+    for (const animConfig of mobConfig.animations) {
+      if (!this.scene.anims.exists(animConfig.key)) {
+        // Create an array of frame identifiers for the animation manager
+        const frames = animConfig.frames.map(frameName => ({
+          key: asset.atlasKey, // The key of the texture atlas
+          frame: frameName   // The name of the frame within the atlas
+        }));
+
         this.scene.anims.create({
-          key: config.key,
+          key: animConfig.key,
           frames: frames,
-          frameRate: config.frameRate,
-          repeat: config.repeat
+          frameRate: animConfig.frameRate,
+          repeat: animConfig.repeat
         });
       }
     }
   }
 
   /**
-   * Get a loaded mob asset
-   */
-  public getMobAsset(mobName: string): MobAsset | undefined {
-    return this.mobAssets.get(mobName);
-  }
-
-  /**
-   * Get all loaded mob assets
-   */
-  public getAllMobAssets(): Map<string, MobAsset> {
-    return new Map(this.mobAssets);
-  }
-
-  /**
-   * Check if a mob is loaded
-   */
-  public isMobLoaded(mobName: string): boolean {
-    const asset = this.mobAssets.get(mobName);
-    return asset ? asset.loaded : false;
-  }
-
-  /**
-   * Get loading progress
-   */
-  public getLoadingProgress(): MobLoadingProgress {
-    return { ...this.loadingProgress };
-  }
-
-  /**
-   * Validate mob atlas data
+   * Validate mob atlas by checking if the texture exists in Phaser's Texture Manager.
    */
   public validateMobAtlas(mobName: string): boolean {
     const asset = this.mobAssets.get(mobName);
     if (!asset || !asset.loaded) {
       return false;
     }
-    
-    try {
-      const texture = this.scene.textures.get(asset.atlasKey);
-      return texture && texture.source && texture.source.length > 0;
-    } catch (error) {
-      console.error(`Error validating mob atlas for ${mobName}:`, error);
-      return false;
-    }
+    return this.scene.textures.exists(asset.atlasKey);
   }
 
-  /**
-   * Notify progress callback
-   */
+  // --- Helper and Getter methods ---
+
+  public getMobAsset(mobName: string): MobAsset | undefined {
+    return this.mobAssets.get(mobName);
+  }
+
+  public getAllMobAssets(): Map<string, MobAsset> {
+    return new Map(this.mobAssets);
+  }
+
+  public isMobLoaded(mobName: string): boolean {
+    const asset = this.mobAssets.get(mobName);
+    return asset ? asset.loaded : false;
+  }
+  
+  public getLoadingProgress(): MobLoadingProgress {
+    return { ...this.loadingProgress };
+  }
+  
   private notifyProgress(): void {
     if (this.onProgressCallback) {
       this.onProgressCallback({ ...this.loadingProgress });
     }
   }
 
-  /**
-   * Clean up resources
-   */
   public destroy(): void {
     this.mobAssets.clear();
-    this.scene.load.removeAllListeners();
   }
 }
