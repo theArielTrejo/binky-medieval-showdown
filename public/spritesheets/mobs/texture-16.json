@@ -1,0 +1,231 @@
+{
+  "frames": {
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Falling Down/0_Cursed_Alchemist_Falling Down_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 418,
+        "h": 621
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 93,
+        "w": 418,
+        "h": 621
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Run Slashing/0_Cursed_Alchemist_Run Slashing_008.png": {
+      "frame": {
+        "x": 0,
+        "y": 621,
+        "w": 620,
+        "h": 601
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 227,
+        "y": 142,
+        "w": 620,
+        "h": 601
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/PNG Sequences/Slashing in The Air/0_Cursed_Alchemist_Slashing in The Air_010.png": {
+      "frame": {
+        "x": 418,
+        "y": 0,
+        "w": 620,
+        "h": 592
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 191,
+        "y": 121,
+        "w": 620,
+        "h": 592
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Death_Knight_Slashing in The Air_008.png": {
+      "frame": {
+        "x": 0,
+        "y": 1241,
+        "w": 620,
+        "h": 589
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 215,
+        "y": 121,
+        "w": 620,
+        "h": 589
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Pirate_Captain_Slashing in The Air_006.png": {
+      "frame": {
+        "x": 589,
+        "y": 1241,
+        "w": 620,
+        "h": 583
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 213,
+        "y": 127,
+        "w": 620,
+        "h": 583
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_3/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_003.png": {
+      "frame": {
+        "x": 601,
+        "y": 620,
+        "w": 620,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 213,
+        "y": 135,
+        "w": 620,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Run Slashing/0_Skeleton_Death_Knight_Run Slashing_003.png": {
+      "frame": {
+        "x": 1172,
+        "y": 0,
+        "w": 620,
+        "h": 563
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 223,
+        "y": 168,
+        "w": 620,
+        "h": 563
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Slashing in The Air/0_Cursed_Alchemist_Slashing in The Air_008.png": {
+      "frame": {
+        "x": 1172,
+        "y": 1240,
+        "w": 619,
+        "h": 604
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 229,
+        "y": 106,
+        "w": 619,
+        "h": 604
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_2/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_010.png": {
+      "frame": {
+        "x": 1175,
+        "y": 620,
+        "w": 619,
+        "h": 592
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 201,
+        "y": 121,
+        "w": 619,
+        "h": 592
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-16.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1776,
+      "h": 1861
+    },
+    "scale": 1
+  }
+}

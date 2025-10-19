@@ -1,0 +1,447 @@
+{
+  "frames": {
+    "characters/magician/Magician_3/PNG/PNG Sequences/Jump Start/0_Magician_Jump Start_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 372,
+        "h": 551
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 216,
+        "y": 183,
+        "w": 372,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_2/PNG/PNG Sequences/Hurt/0_Paladin_Hurt_010.png": {
+      "frame": {
+        "x": 0,
+        "y": 551,
+        "w": 372,
+        "h": 551
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 217,
+        "y": 200,
+        "w": 372,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_2/PNG/PNG Sequences/Running/0_Paladin_Running_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 1102,
+        "w": 372,
+        "h": 551
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 215,
+        "y": 188,
+        "w": 372,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Throwing/0_Knight_Throwing_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 1653,
+        "w": 387,
+        "h": 539
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 226,
+        "y": 211,
+        "w": 387,
+        "h": 539
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_2/PNG/PNG Sequences/Run Throwing/0_Knight_Run Throwing_004.png": {
+      "frame": {
+        "x": 539,
+        "y": 1653,
+        "w": 387,
+        "h": 512
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 232,
+        "y": 223,
+        "w": 387,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_3/PNG/PNG Sequences/Throwing/0_Magician_Throwing_001.png": {
+      "frame": {
+        "x": 1051,
+        "y": 0,
+        "w": 370,
+        "h": 551
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 228,
+        "y": 200,
+        "w": 370,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Medieval Knight/PNG/PNG Sequences/Hurt/Hurt_005.png": {
+      "frame": {
+        "x": 1602,
+        "y": 0,
+        "w": 446,
+        "h": 546
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 160,
+        "y": 186,
+        "w": 446,
+        "h": 546
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_3/PNG/PNG Sequences/Walking/0_Magician_Walking_007.png": {
+      "frame": {
+        "x": 1051,
+        "y": 370,
+        "w": 370,
+        "h": 551
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 240,
+        "y": 199,
+        "w": 370,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_3/PNG/PNG Sequences/Walking/0_Magician_Walking_008.png": {
+      "frame": {
+        "x": 1051,
+        "y": 740,
+        "w": 370,
+        "h": 551
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 241,
+        "y": 200,
+        "w": 370,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Run Slashing/Run Slashing_001.png": {
+      "frame": {
+        "x": 1602,
+        "y": 546,
+        "w": 446,
+        "h": 537
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 214,
+        "y": 189,
+        "w": 446,
+        "h": 537
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Dying/Dying_010.png": {
+      "frame": {
+        "x": 372,
+        "y": 1110,
+        "w": 543,
+        "h": 449
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 100,
+        "y": 401,
+        "w": 543,
+        "h": 449
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Throwing in The Air/Throwing in The Air_004.png": {
+      "frame": {
+        "x": 821,
+        "y": 1110,
+        "w": 439,
+        "h": 543
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 230,
+        "y": 148,
+        "w": 439,
+        "h": 543
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Sliding/0_Knight_Sliding_003.png": {
+      "frame": {
+        "x": 1602,
+        "y": 1083,
+        "w": 444,
+        "h": 501
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 129,
+        "y": 294,
+        "w": 444,
+        "h": 501
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_3/PNG/PNG Sequences/Idle/0_Paladin_Idle_010.png": {
+      "frame": {
+        "x": 1260,
+        "y": 1110,
+        "w": 342,
+        "h": 536
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 251,
+        "y": 215,
+        "w": 342,
+        "h": 536
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Jump Start/Jump Start_004.png": {
+      "frame": {
+        "x": 1260,
+        "y": 1646,
+        "w": 402,
+        "h": 543
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 214,
+        "y": 166,
+        "w": 402,
+        "h": 543
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_3/PNG/PNG Sequences/Walking/0_Magician_Walking_021.png": {
+      "frame": {
+        "x": 372,
+        "y": 0,
+        "w": 370,
+        "h": 551
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 245,
+        "y": 202,
+        "w": 370,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_1/PNG/PNG Sequences/Dying/0_Paladin_Dying_002.png": {
+      "frame": {
+        "x": 372,
+        "y": 370,
+        "w": 370,
+        "h": 551
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 308,
+        "y": 190,
+        "w": 370,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_2/PNG/PNG Sequences/Dying/0_Paladin_Dying_002.png": {
+      "frame": {
+        "x": 372,
+        "y": 740,
+        "w": 370,
+        "h": 551
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 308,
+        "y": 190,
+        "w": 370,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-181.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

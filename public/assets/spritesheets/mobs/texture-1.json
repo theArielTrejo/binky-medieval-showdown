@@ -1,0 +1,879 @@
+{
+  "frames": {
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Run Slashing/0_Skeleton_Pirate_Captain_Run Slashing_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 663,
+        "h": 583
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 180,
+        "y": 148,
+        "w": 663,
+        "h": 583
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_003.png": {
+      "frame": {
+        "x": 663,
+        "y": 0,
+        "w": 663,
+        "h": 579
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 180,
+        "y": 161,
+        "w": 663,
+        "h": 579
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Pirate_Captain_Slashing in The Air_002.png": {
+      "frame": {
+        "x": 1326,
+        "y": 0,
+        "w": 662,
+        "h": 579
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 171,
+        "y": 132,
+        "w": 662,
+        "h": 579
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/spear/Spear_6/3.png": {
+      "frame": {
+        "x": 1988,
+        "y": 0,
+        "w": 367,
+        "h": 60
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 11,
+        "y": 34,
+        "w": 367,
+        "h": 60
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/spear/Spear_6/2.png": {
+      "frame": {
+        "x": 1988,
+        "y": 367,
+        "w": 360,
+        "h": 60
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 11,
+        "y": 34,
+        "w": 360,
+        "h": 60
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Run Slashing/0_Skeleton_Pirate_Captain_Run Slashing_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 727,
+        "w": 661,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 182,
+        "y": 170,
+        "w": 661,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Run Slashing/0_Skeleton_Death_Knight_Run Slashing_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 1388,
+        "w": 660,
+        "h": 580
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 183,
+        "y": 159,
+        "w": 660,
+        "h": 580
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/Vector Parts/Face 02.png": {
+      "frame": {
+        "x": 0,
+        "y": 583,
+        "w": 202,
+        "h": 144
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 69,
+        "y": 61,
+        "w": 202,
+        "h": 144
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/shield/Shield_5/2.png": {
+      "frame": {
+        "x": 202,
+        "y": 583,
+        "w": 136,
+        "h": 144
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 12,
+        "y": 8,
+        "w": 136,
+        "h": 144
+      },
+      "sourceSize": {
+        "w": 160,
+        "h": 160
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/shield/Shield_5/3.png": {
+      "frame": {
+        "x": 338,
+        "y": 583,
+        "w": 136,
+        "h": 144
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 12,
+        "y": 8,
+        "w": 136,
+        "h": 144
+      },
+      "sourceSize": {
+        "w": 160,
+        "h": 160
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/shield/Shield_3/1.png": {
+      "frame": {
+        "x": 474,
+        "y": 583,
+        "w": 106,
+        "h": 144
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 27,
+        "y": 8,
+        "w": 106,
+        "h": 144
+      },
+      "sourceSize": {
+        "w": 160,
+        "h": 160
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Run Slashing/0_Skeleton_Pirate_Captain_Run Slashing_002.png": {
+      "frame": {
+        "x": 575,
+        "y": 727,
+        "w": 660,
+        "h": 578
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 183,
+        "y": 161,
+        "w": 660,
+        "h": 578
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/Vector Parts/Face 01.png": {
+      "frame": {
+        "x": 663,
+        "y": 579,
+        "w": 284,
+        "h": 148
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 11,
+        "w": 284,
+        "h": 148
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/Vector Parts/Right Hand.png": {
+      "frame": {
+        "x": 580,
+        "y": 583,
+        "w": 81,
+        "h": 83
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 23,
+        "y": 23,
+        "w": 81,
+        "h": 83
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/Vector Parts/Face 01.png": {
+      "frame": {
+        "x": 947,
+        "y": 579,
+        "w": 284,
+        "h": 148
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 26,
+        "w": 284,
+        "h": 148
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_3/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Pirate_Captain_Slashing in The Air_002.png": {
+      "frame": {
+        "x": 580,
+        "y": 1387,
+        "w": 659,
+        "h": 588
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 174,
+        "y": 123,
+        "w": 659,
+        "h": 588
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Slashing/0_Skeleton_Pirate_Captain_Slashing_002.png": {
+      "frame": {
+        "x": 1153,
+        "y": 727,
+        "w": 659,
+        "h": 579
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 173,
+        "w": 659,
+        "h": 579
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/Vector Parts/Face 01.png": {
+      "frame": {
+        "x": 1231,
+        "y": 579,
+        "w": 284,
+        "h": 148
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 26,
+        "w": 284,
+        "h": 148
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_3/PNG/Vector Parts/Face 01.png": {
+      "frame": {
+        "x": 1515,
+        "y": 579,
+        "w": 284,
+        "h": 148
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 26,
+        "w": 284,
+        "h": 148
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/bow/Bow_3/4.png": {
+      "frame": {
+        "x": 1732,
+        "y": 727,
+        "w": 102,
+        "h": 316
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 2,
+        "w": 102,
+        "h": 316
+      },
+      "sourceSize": {
+        "w": 200,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/shield/Shield_1/5.png": {
+      "frame": {
+        "x": 1799,
+        "y": 579,
+        "w": 148,
+        "h": 156
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 6,
+        "y": 2,
+        "w": 148,
+        "h": 156
+      },
+      "sourceSize": {
+        "w": 160,
+        "h": 160
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Slashing in The Air/0_Gnoll_Slashing in The Air_002.png": {
+      "frame": {
+        "x": 1168,
+        "y": 1386,
+        "w": 658,
+        "h": 583
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 175,
+        "y": 139,
+        "w": 658,
+        "h": 583
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/Vector Parts/Bow.png": {
+      "frame": {
+        "x": 1751,
+        "y": 829,
+        "w": 94,
+        "h": 296
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 53,
+        "y": 12,
+        "w": 94,
+        "h": 296
+      },
+      "sourceSize": {
+        "w": 200,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/bow/Bow_4/4.png": {
+      "frame": {
+        "x": 1751,
+        "y": 923,
+        "w": 75,
+        "h": 296
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 45,
+        "y": 12,
+        "w": 75,
+        "h": 296
+      },
+      "sourceSize": {
+        "w": 200,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/spear/Spear_8/5.png": {
+      "frame": {
+        "x": 1732,
+        "y": 998,
+        "w": 388,
+        "h": 92
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 3,
+        "y": 21,
+        "w": 388,
+        "h": 92
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/Vector Parts/Body.png": {
+      "frame": {
+        "x": 1824,
+        "y": 998,
+        "w": 224,
+        "h": 217
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 55,
+        "y": 64,
+        "w": 224,
+        "h": 217
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/dagger/Dagger_8/2.png": {
+      "frame": {
+        "x": 1824,
+        "y": 1215,
+        "w": 224,
+        "h": 88
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 20,
+        "w": 224,
+        "h": 88
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/Vector Parts/Body.png": {
+      "frame": {
+        "x": 1824,
+        "y": 1303,
+        "w": 260,
+        "h": 223
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 32,
+        "w": 260,
+        "h": 223
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/dagger/Dagger_6/1.png": {
+      "frame": {
+        "x": 1751,
+        "y": 1386,
+        "w": 229,
+        "h": 73
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 27,
+        "w": 229,
+        "h": 73
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/Vector Parts/Face 03.png": {
+      "frame": {
+        "x": 1824,
+        "y": 1563,
+        "w": 223,
+        "h": 174
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 66,
+        "y": 30,
+        "w": 223,
+        "h": 174
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/Vector Parts/Left Hand.png": {
+      "frame": {
+        "x": 1751,
+        "y": 1615,
+        "w": 73,
+        "h": 72
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 27,
+        "y": 29,
+        "w": 73,
+        "h": 72
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/Vector Parts/Left Hand.png": {
+      "frame": {
+        "x": 1751,
+        "y": 1687,
+        "w": 73,
+        "h": 70
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 28,
+        "y": 29,
+        "w": 73,
+        "h": 70
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Weapons/PNG/bow/Bow_8/5.png": {
+      "frame": {
+        "x": 1751,
+        "y": 1757,
+        "w": 92,
+        "h": 290
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 39,
+        "y": 15,
+        "w": 92,
+        "h": 290
+      },
+      "sourceSize": {
+        "w": 200,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_1/PNG/Vector Parts/Body.png": {
+      "frame": {
+        "x": 1843,
+        "y": 1757,
+        "w": 192,
+        "h": 205
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 66,
+        "y": 62,
+        "w": 192,
+        "h": 205
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/Vector Parts/Right Leg.png": {
+      "frame": {
+        "x": 1843,
+        "y": 1949,
+        "w": 99,
+        "h": 90
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 17,
+        "y": 16,
+        "w": 99,
+        "h": 90
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/Vector Parts/Right Arm.png": {
+      "frame": {
+        "x": 1933,
+        "y": 1949,
+        "w": 81,
+        "h": 98
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 16,
+        "w": 81,
+        "h": 98
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-1.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

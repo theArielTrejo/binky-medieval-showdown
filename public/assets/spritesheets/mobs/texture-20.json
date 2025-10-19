@@ -1,0 +1,255 @@
+{
+  "frames": {
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Pirate_Captain_Slashing in The Air_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 615,
+        "h": 582
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 218,
+        "y": 128,
+        "w": 615,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Run Slashing/0_Cursed_Alchemist_Run Slashing_007.png": {
+      "frame": {
+        "x": 615,
+        "y": 0,
+        "w": 615,
+        "h": 577
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 228,
+        "y": 171,
+        "w": 615,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Kicking/0_Skeleton_Death_Knight_Kicking_005.png": {
+      "frame": {
+        "x": 1230,
+        "y": 0,
+        "w": 420,
+        "h": 615
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 192,
+        "y": 136,
+        "w": 420,
+        "h": 615
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Kicking/0_Cursed_Alchemist_Kicking_005.png": {
+      "frame": {
+        "x": 1230,
+        "y": 420,
+        "w": 401,
+        "h": 615
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 201,
+        "y": 136,
+        "w": 401,
+        "h": 615
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_3/PNG/PNG Sequences/Run Slashing/0_Skeleton_Death_Knight_Run Slashing_006.png": {
+      "frame": {
+        "x": 615,
+        "y": 577,
+        "w": 614,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 229,
+        "y": 157,
+        "w": 614,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_2/PNG/PNG Sequences/Run Slashing/0_Elemental_Spirits_Run Slashing_008.png": {
+      "frame": {
+        "x": 0,
+        "y": 582,
+        "w": 614,
+        "h": 585
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 221,
+        "y": 158,
+        "w": 614,
+        "h": 585
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_011.png": {
+      "frame": {
+        "x": 0,
+        "y": 1167,
+        "w": 614,
+        "h": 580
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 197,
+        "y": 177,
+        "w": 614,
+        "h": 580
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_2/PNG/PNG Sequences/Run Slashing/0_Skeleton_Viking_Run Slashing_005.png": {
+      "frame": {
+        "x": 1229,
+        "y": 821,
+        "w": 614,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 229,
+        "y": 171,
+        "w": 614,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_004.png": {
+      "frame": {
+        "x": 614,
+        "y": 1171,
+        "w": 614,
+        "h": 541
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 231,
+        "y": 208,
+        "w": 614,
+        "h": 541
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_2/PNG/PNG Sequences/Falling Down/0_Skeleton_Viking_Falling Down_003.png": {
+      "frame": {
+        "x": 1228,
+        "y": 1395,
+        "w": 468,
+        "h": 614
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 100,
+        "w": 468,
+        "h": 614
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-20.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1845,
+      "h": 2009
+    },
+    "scale": 1
+  }
+}

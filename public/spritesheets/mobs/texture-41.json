@@ -1,0 +1,327 @@
+{
+  "frames": {
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Dying/0_Cursed_Alchemist_Dying_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 405,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 298,
+        "y": 86,
+        "w": 405,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Dying/0_Cursed_Alchemist_Dying_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 602,
+        "w": 404,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 276,
+        "y": 107,
+        "w": 404,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Walking/0_Cursed_Alchemist_Walking_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 1204,
+        "w": 403,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 249,
+        "y": 154,
+        "w": 403,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Walking/0_Cursed_Alchemist_Walking_001.png": {
+      "frame": {
+        "x": 403,
+        "y": 1204,
+        "w": 403,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 249,
+        "y": 152,
+        "w": 403,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Walking/0_Cursed_Alchemist_Walking_003.png": {
+      "frame": {
+        "x": 404,
+        "y": 602,
+        "w": 403,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 244,
+        "y": 150,
+        "w": 403,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Walking/0_Cursed_Alchemist_Walking_017.png": {
+      "frame": {
+        "x": 806,
+        "y": 0,
+        "w": 402,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 236,
+        "y": 151,
+        "w": 402,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_2/PNG/PNG Sequences/Jump Loop/0_Skeleton_Viking_Jump Loop_003.png": {
+      "frame": {
+        "x": 405,
+        "y": 0,
+        "w": 401,
+        "h": 602
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 113,
+        "w": 401,
+        "h": 602
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Dying/0_Golem_Dying_010.png": {
+      "frame": {
+        "x": 1208,
+        "y": 0,
+        "w": 602,
+        "h": 376
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 422,
+        "w": 602,
+        "h": 376
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_1/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_003.png": {
+      "frame": {
+        "x": 1208,
+        "y": 376,
+        "w": 601,
+        "h": 592
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 232,
+        "y": 117,
+        "w": 601,
+        "h": 592
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Kicking/0_Cursed_Alchemist_Kicking_011.png": {
+      "frame": {
+        "x": 807,
+        "y": 602,
+        "w": 401,
+        "h": 601
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 221,
+        "y": 150,
+        "w": 401,
+        "h": 601
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/PNG Sequences/Slashing in The Air/0_Cursed_Alchemist_Slashing in The Air_004.png": {
+      "frame": {
+        "x": 1208,
+        "y": 968,
+        "w": 601,
+        "h": 591
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 232,
+        "y": 119,
+        "w": 601,
+        "h": 591
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Throwing in The Air/0_Cursed_Alchemist_Throwing in The Air_003.png": {
+      "frame": {
+        "x": 806,
+        "y": 1204,
+        "w": 402,
+        "h": 601
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 231,
+        "y": 108,
+        "w": 402,
+        "h": 601
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Sliding/0_Golem_Sliding_001.png": {
+      "frame": {
+        "x": 1208,
+        "y": 1559,
+        "w": 525,
+        "h": 489
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 10,
+        "y": 318,
+        "w": 525,
+        "h": 489
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-41.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1810,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

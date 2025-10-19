@@ -125,8 +125,19 @@ export function clampCollectionRange(range: number): number {
 
 /**
  * Utility function to clamp position within game bounds
+ * Now uses dynamic world bounds from the scene's physics world
  */
-export function clampToGameBounds(x: number, y: number): { x: number; y: number } {
+export function clampToGameBounds(x: number, y: number, scene?: Phaser.Scene): { x: number; y: number } {
+  // If scene is provided, use the actual world bounds
+  if (scene && scene.physics && scene.physics.world) {
+    const worldBounds = scene.physics.world.bounds;
+    return {
+      x: Math.max(worldBounds.x + 20, Math.min(worldBounds.width - 20, x)),
+      y: Math.max(worldBounds.y + 20, Math.min(worldBounds.height - 20, y))
+    };
+  }
+  
+  // Fallback to hardcoded bounds if scene is not available
   return {
     x: Math.max(XP_CONSTANTS.GAME_BOUNDS.MIN_X, Math.min(XP_CONSTANTS.GAME_BOUNDS.MAX_X, x)),
     y: Math.max(XP_CONSTANTS.GAME_BOUNDS.MIN_Y, Math.min(XP_CONSTANTS.GAME_BOUNDS.MAX_Y, y))

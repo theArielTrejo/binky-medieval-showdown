@@ -1,6 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
-import { PlayerArchetype } from './PlayerArchetype';
-import { EnemySystem, EnemyType } from './EnemySystem';
+import { Player } from './Player';
+import { EnemySystem } from './EnemySystem';
+import { EnemyType } from './types/EnemyTypes';
 
 // Enhanced AI Director with improved architecture and training
 
@@ -43,10 +44,10 @@ export interface GameState {
     playerMovementDistance: number;
     resourceGeneration: number;
     gameTimer: number;
-    enemyCountTanks: number;
-    enemyCountProjectiles: number;
-    enemyCountSpeedsters: number;
-    enemyCountBosses: number;
+    enemyCountSkeletonVikings: number;
+    enemyCountGolems: number;
+    enemyCountArchers: number;
+    enemyCountGnolls: number;
     difficultyLevel: number;
     playerStressLevel: number;
     engagementScore: number;
@@ -273,8 +274,8 @@ export class AIDirector {
         const playerThreat = (state.playerDPS / 100) * (state.playerHealthPercent / 100);
          
          // Enemy presence assessment
-         const totalEnemies = state.enemyCountTanks + state.enemyCountProjectiles + 
-                             state.enemyCountSpeedsters + state.enemyCountBosses;
+         const totalEnemies = state.enemyCountSkeletonVikings + state.enemyCountGolems + 
+                             state.enemyCountArchers + state.enemyCountGnolls;
          const enemyThreat = Math.min(totalEnemies / 20, 1.0);
          
          // Budget efficiency assessment
@@ -523,7 +524,7 @@ export class AIDirector {
      * @param enemySystem - The enemy system instance
      * @returns Current game state object with normalized values
      */
-    public getGameState(player: PlayerArchetype, enemySystem: EnemySystem): GameState {
+    public getGameState(player: Player, enemySystem: EnemySystem): GameState {
         const currentTime = Date.now();
         const gameTimer = (currentTime - this.gameStartTime) / 1000; // Game time in seconds
         
@@ -549,16 +550,16 @@ export class AIDirector {
             playerArchetype: player.getArchetypeVector(),
             playerHealthPercent: healthPercent,
             playerDPS: Math.min(playerDPS / 100, 1), // Normalize
-            playerPositionX: player.position.x / 1024, // Normalize to 0-1
-            playerPositionY: player.position.y / 768, // Normalize to 0-1
+            playerPositionX: (player.position.x - player.getScene().physics.world.bounds.x) / player.getScene().physics.world.bounds.width, // Normalize to 0-1 using actual world bounds
+            playerPositionY: (player.position.y - player.getScene().physics.world.bounds.y) / player.getScene().physics.world.bounds.height, // Normalize to 0-1 using actual world bounds
             damageTakenRecently: Math.min(player.getDamageTakenRecently() / 50, 1),
             playerMovementDistance: Math.min(movementDistance / 1000, 1), // Normalize
             resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1), // Normalize
             gameTimer: Math.min(gameTimer / 300, 1), // Normalize to 5 minutes max
-            enemyCountTanks: Math.min(enemySystem.getEnemyCountByType(EnemyType.TANK) / 10, 1),
-            enemyCountProjectiles: Math.min(enemySystem.getEnemyCountByType(EnemyType.PROJECTILE) / 20, 1),
-            enemyCountSpeedsters: Math.min(enemySystem.getEnemyCountByType(EnemyType.SPEEDSTER) / 30, 1),
-            enemyCountBosses: Math.min(enemySystem.getEnemyCountByType(EnemyType.BOSS) / 2, 1),
+            enemyCountSkeletonVikings: Math.min(enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING) / 10, 1),
+            enemyCountGolems: Math.min(enemySystem.getEnemyCountByType(EnemyType.GOLEM) / 8, 1),
+            enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 15, 1),
+            enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 20, 1),
             difficultyLevel: difficultyLevel,
             playerStressLevel: playerStressLevel,
             engagementScore: engagementScore
@@ -576,10 +577,10 @@ export class AIDirector {
             state.playerMovementDistance,
             state.resourceGeneration,
             state.gameTimer,
-            state.enemyCountTanks,
-            state.enemyCountProjectiles,
-            state.enemyCountSpeedsters,
-            state.enemyCountBosses,
+            state.enemyCountSkeletonVikings,
+            state.enemyCountGolems,
+            state.enemyCountArchers,
+            state.enemyCountGnolls,
             state.difficultyLevel,
             state.playerStressLevel,
             state.engagementScore
@@ -735,19 +736,19 @@ export class AIDirector {
             switch (action) {
                 case DirectorAction.SPAWN_TANKS:
                     if (spawnPlans.tanks > 0) {
-                        enemySystem.spawnWave(EnemyType.TANK, spawnPlans.tanks, 'near_player');
+                        enemySystem.spawnWave(EnemyType.GOLEM, spawnPlans.tanks, 'near_player');
                         this.spendBudget(spawnPlans.tankCost);
                     }
                     break;
                 case DirectorAction.SPAWN_PROJECTILES:
                     if (spawnPlans.projectiles > 0) {
-                        enemySystem.spawnWave(EnemyType.PROJECTILE, spawnPlans.projectiles, 'screen_edges');
+                        enemySystem.spawnWave(EnemyType.ARCHER, spawnPlans.projectiles, 'screen_edges');
                         this.spendBudget(spawnPlans.projectileCost);
                     }
                     break;
                 case DirectorAction.SPAWN_SPEEDSTERS:
                     if (spawnPlans.speedsters > 0) {
-                        enemySystem.spawnWave(EnemyType.SPEEDSTER, spawnPlans.speedsters, 'random_ambush');
+                        enemySystem.spawnWave(EnemyType.GNOLL, spawnPlans.speedsters, 'random_ambush');
                         this.spendBudget(spawnPlans.speedsterCost);
                     }
                     break;
@@ -759,25 +760,25 @@ export class AIDirector {
                     break;
                 case DirectorAction.SPAWN_ELITE_TANKS:
                     if (spawnPlans.eliteTanks > 0) {
-                        enemySystem.spawnWave(EnemyType.ELITE_TANK, spawnPlans.eliteTanks, 'near_player');
+                        enemySystem.spawnWave(EnemyType.SKELETON_VIKING, spawnPlans.eliteTanks, 'near_player');
                         this.spendBudget(spawnPlans.eliteTankCost);
                     }
                     break;
                 case DirectorAction.SPAWN_SNIPERS:
                     if (spawnPlans.snipers > 0) {
-                        enemySystem.spawnWave(EnemyType.SNIPER, spawnPlans.snipers, 'screen_edges');
+                        enemySystem.spawnWave(EnemyType.ARCHER, spawnPlans.snipers, 'screen_edges');
                         this.spendBudget(spawnPlans.sniperCost);
                     }
                     break;
                 case DirectorAction.SPAWN_SWARM:
                     if (spawnPlans.swarm > 0) {
-                        enemySystem.spawnWave(EnemyType.SWARM, spawnPlans.swarm, 'random');
+                        enemySystem.spawnWave(EnemyType.GNOLL, spawnPlans.swarm, 'random');
                         this.spendBudget(spawnPlans.swarmCost);
                     }
                     break;
                 case DirectorAction.SPAWN_BERSERKERS:
                     if (spawnPlans.berserkers > 0) {
-                        enemySystem.spawnWave(EnemyType.BERSERKER, spawnPlans.berserkers, 'random_ambush');
+                        enemySystem.spawnWave(EnemyType.SKELETON_VIKING, spawnPlans.berserkers, 'random_ambush');
                         this.spendBudget(spawnPlans.berserkerCost);
                     }
                     break;
@@ -874,7 +875,7 @@ export class AIDirector {
         return reward;
     }
 
-    public async update(player: PlayerArchetype, enemySystem: EnemySystem): Promise<void> {
+    public async update(player: Player, enemySystem: EnemySystem): Promise<void> {
         const currentTime = Date.now();
         
         // Only take action every few seconds
@@ -1491,14 +1492,14 @@ export class AIDirector {
         
         // Get current enemy counts to avoid oversaturation
          const currentEnemies = {
-             tanks: enemySystem.getEnemyCountByType(EnemyType.TANK),
-             projectiles: enemySystem.getEnemyCountByType(EnemyType.PROJECTILE),
-             speedsters: enemySystem.getEnemyCountByType(EnemyType.SPEEDSTER),
-             bosses: enemySystem.getEnemyCountByType(EnemyType.BOSS),
-             eliteTanks: enemySystem.getEnemyCountByType(EnemyType.ELITE_TANK),
-             snipers: enemySystem.getEnemyCountByType(EnemyType.SNIPER),
-             swarm: enemySystem.getEnemyCountByType(EnemyType.SWARM),
-             berserkers: enemySystem.getEnemyCountByType(EnemyType.BERSERKER)
+             tanks: enemySystem.getEnemyCountByType(EnemyType.GOLEM),
+             projectiles: enemySystem.getEnemyCountByType(EnemyType.ARCHER),
+             speedsters: enemySystem.getEnemyCountByType(EnemyType.GNOLL),
+             bosses: enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING), // Using SKELETON_VIKING as boss
+             eliteTanks: enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING),
+             snipers: enemySystem.getEnemyCountByType(EnemyType.ARCHER),
+             swarm: enemySystem.getEnemyCountByType(EnemyType.GNOLL),
+             berserkers: enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING)
          };
          
          // Calculate maximum spawns based on budget and current enemy limits
@@ -1725,5 +1726,73 @@ export class AIDirector {
 
     public setTargetPerformanceRange(min: number, max: number): void {
         this.targetPerformanceRange = { min: Math.max(0, min), max: Math.min(1, max) };
+    }
+
+    /**
+     * Get consolidated metrics for the AI Director
+     * This method provides a comprehensive overview of all AI Director metrics
+     */
+    public getMetrics(): any {
+        const avgPerformance = this.getAveragePerformance();
+        const recentThreat = this.threatAssessmentHistory.length > 0 ? 
+            this.threatAssessmentHistory[this.threatAssessmentHistory.length - 1].threat : 0;
+        
+        return {
+            // Training metrics
+            training: this.getTrainingMetrics(),
+            
+            // Model configuration
+            model: this.getModelConfig(),
+            
+            // Training status
+            trainingStatus: this.getTrainingStatus(),
+            
+            // Budget information
+            budget: {
+                current: this.currentBudget,
+                max: this.maxBudget,
+                percentage: (this.currentBudget / this.maxBudget) * 100,
+                regenRate: this.budgetRegenRate,
+                efficiency: this.budgetEfficiencyBonus,
+                emergency: this.emergencyBudgetMultiplier > 1.0,
+                status: this.getBudgetStatus()
+            },
+            
+            // Tactical information
+            tactical: {
+                strategy: this.adaptiveStrategy,
+                threatLevel: recentThreat,
+                memorySize: this.tacticalMemory.length,
+                status: this.getTacticalStatus()
+            },
+            
+            // Adaptive difficulty
+            adaptiveDifficulty: {
+                enabled: this.adaptiveDifficultyEnabled,
+                performance: avgPerformance,
+                performancePercent: avgPerformance * 100,
+                targetRange: this.targetPerformanceRange,
+                status: this.getAdaptiveDifficultyStatus()
+            },
+            
+            // Player performance
+            playerPerformance: this.getPlayerPerformanceMetrics(),
+            
+            // Strategic objectives
+            strategicObjectives: {
+                total: this.strategicObjectives.length,
+                status: this.getStrategicObjectivesStatus()
+            },
+            
+            // History data
+            history: {
+                threatAssessment: this.getThreatAssessmentHistory(),
+                budget: this.getBudgetHistory(),
+                performanceWindow: [...this.performanceWindow]
+            },
+            
+            // Timestamp
+            timestamp: Date.now()
+        };
     }
 }

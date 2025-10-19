@@ -1,0 +1,231 @@
+{
+  "frames": {
+    "Mobs/ElementalSpirites/Elemental_Spirits_1/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 580,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 253,
+        "y": 116,
+        "w": 580,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Slashing in The Air/0_Golem_Slashing in The Air_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 594,
+        "w": 579,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 119,
+        "w": 579,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_1/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_009.png": {
+      "frame": {
+        "x": 0,
+        "y": 1188,
+        "w": 577,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 215,
+        "y": 117,
+        "w": 577,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_1/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_004.png": {
+      "frame": {
+        "x": 577,
+        "y": 1188,
+        "w": 575,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 116,
+        "w": 575,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Slashing/0_Golem_Slashing_008.png": {
+      "frame": {
+        "x": 579,
+        "y": 594,
+        "w": 575,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 278,
+        "y": 159,
+        "w": 575,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_1/PNG/PNG Sequences/Slashing in The Air/0_Elemental_Spirits_Slashing in The Air_008.png": {
+      "frame": {
+        "x": 1152,
+        "y": 0,
+        "w": 561,
+        "h": 594
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 231,
+        "y": 116,
+        "w": 561,
+        "h": 594
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Slashing/0_Golem_Slashing_011.png": {
+      "frame": {
+        "x": 580,
+        "y": 0,
+        "w": 572,
+        "h": 587
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 166,
+        "w": 572,
+        "h": 587
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Run Slashing/0_Skeleton_Death_Knight_Run Slashing_006.png": {
+      "frame": {
+        "x": 1152,
+        "y": 1188,
+        "w": 594,
+        "h": 558
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 249,
+        "y": 193,
+        "w": 594,
+        "h": 558
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Slashing in The Air/0_Golem_Slashing in The Air_004.png": {
+      "frame": {
+        "x": 1154,
+        "y": 594,
+        "w": 594,
+        "h": 546
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 239,
+        "y": 170,
+        "w": 594,
+        "h": 546
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-65.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1713,
+      "h": 1782
+    },
+    "scale": 1
+  }
+}

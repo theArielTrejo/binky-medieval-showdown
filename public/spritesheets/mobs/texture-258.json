@@ -1,0 +1,543 @@
+{
+  "frames": {
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Dying/0_Archer_Dying_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 405,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 181,
+        "w": 405,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Idle Blinking/0_Archer_Idle Blinking_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 560,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 238,
+        "y": 191,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Idle Blinking/0_Archer_Idle Blinking_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 1120,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 235,
+        "y": 191,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Hurt/0_Golem_Hurt_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 1680,
+        "w": 367,
+        "h": 530
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 286,
+        "y": 222,
+        "w": 367,
+        "h": 530
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Throwing/0_Golem_Throwing_010.png": {
+      "frame": {
+        "x": 530,
+        "y": 1680,
+        "w": 367,
+        "h": 530
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 287,
+        "y": 222,
+        "w": 367,
+        "h": 530
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_3/PNG/PNG Sequences/Run Throwing/0_Golem_Run Throwing_007.png": {
+      "frame": {
+        "x": 1060,
+        "y": 1680,
+        "w": 367,
+        "h": 529
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 265,
+        "y": 219,
+        "w": 367,
+        "h": 529
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_3/PNG/PNG Sequences/Hurt/0_Cursed_Alchemist_Hurt_005.png": {
+      "frame": {
+        "x": 1589,
+        "y": 0,
+        "w": 450,
+        "h": 554
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 131,
+        "y": 197,
+        "w": 450,
+        "h": 554
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Run Shooting/0_Archer_Run Shooting_009.png": {
+      "frame": {
+        "x": 1589,
+        "y": 554,
+        "w": 449,
+        "h": 555
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 187,
+        "y": 184,
+        "w": 449,
+        "h": 555
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Dying/0_Golem_Dying_005.png": {
+      "frame": {
+        "x": 1589,
+        "y": 1109,
+        "w": 449,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 170,
+        "y": 115,
+        "w": 449,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/Vector Parts/Head.png": {
+      "frame": {
+        "x": 1589,
+        "y": 1658,
+        "w": 373,
+        "h": 415
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 57,
+        "y": 21,
+        "w": 373,
+        "h": 415
+      },
+      "sourceSize": {
+        "w": 480,
+        "h": 480
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Walking/0_Archer_Walking_004.png": {
+      "frame": {
+        "x": 404,
+        "y": 560,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 246,
+        "y": 193,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Walking/0_Archer_Walking_009.png": {
+      "frame": {
+        "x": 405,
+        "y": 0,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 241,
+        "y": 195,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Walking/0_Archer_Walking_022.png": {
+      "frame": {
+        "x": 809,
+        "y": 0,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 244,
+        "y": 195,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Jump Start/0_Archer_Jump Start_002.png": {
+      "frame": {
+        "x": 404,
+        "y": 1120,
+        "w": 402,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 228,
+        "y": 181,
+        "w": 402,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Jump Start/0_Golem_Jump Start_005.png": {
+      "frame": {
+        "x": 806,
+        "y": 1120,
+        "w": 373,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 169,
+        "w": 373,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Slashing in The Air/0_Golem_Slashing in The Air_001.png": {
+      "frame": {
+        "x": 808,
+        "y": 560,
+        "w": 373,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 161,
+        "w": 373,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Idle Blinking/0_Skeleton_Death_Knight_Idle Blinking_014.png": {
+      "frame": {
+        "x": 1179,
+        "y": 1120,
+        "w": 410,
+        "h": 559
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 235,
+        "y": 192,
+        "w": 410,
+        "h": 559
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Idle Blinking/0_Archer_Idle Blinking_002.png": {
+      "frame": {
+        "x": 1181,
+        "y": 560,
+        "w": 408,
+        "h": 559
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 239,
+        "y": 192,
+        "w": 408,
+        "h": 559
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Kicking/0_Gnoll_Kicking_004.png": {
+      "frame": {
+        "x": 1213,
+        "y": 0,
+        "w": 376,
+        "h": 518
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 223,
+        "y": 243,
+        "w": 376,
+        "h": 518
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Idle/0_Archer_Idle_002.png": {
+      "frame": {
+        "x": 1181,
+        "y": 560,
+        "w": 408,
+        "h": 559
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 239,
+        "y": 192,
+        "w": 408,
+        "h": 559
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Idle/0_Archer_Idle_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 560,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 238,
+        "y": 191,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Idle/0_Archer_Idle_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 1120,
+        "w": 404,
+        "h": 560
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 235,
+        "y": 191,
+        "w": 404,
+        "h": 560
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-258.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2039,
+      "h": 2047
+    },
+    "scale": 1
+  }
+}

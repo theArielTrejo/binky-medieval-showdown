@@ -1,0 +1,279 @@
+{
+  "frames": {
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Running/Running_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 370,
+        "h": 625
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 95,
+        "w": 370,
+        "h": 625
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Walking/Walking_015.png": {
+      "frame": {
+        "x": 0,
+        "y": 625,
+        "w": 370,
+        "h": 625
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 284,
+        "y": 111,
+        "w": 370,
+        "h": 625
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Run Slashing/Run Slashing_010.png": {
+      "frame": {
+        "x": 0,
+        "y": 1250,
+        "w": 595,
+        "h": 624
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 240,
+        "y": 96,
+        "w": 595,
+        "h": 624
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Slashing in The Air/Slashing in The Air_002.png": {
+      "frame": {
+        "x": 595,
+        "y": 1250,
+        "w": 624,
+        "h": 554
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 138,
+        "w": 624,
+        "h": 554
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Slashing in The Air/0_Knight_Slashing in The Air_009.png": {
+      "frame": {
+        "x": 1149,
+        "y": 0,
+        "w": 624,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 225,
+        "y": 172,
+        "w": 624,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Run Slashing/0_Knight_Run Slashing_009.png": {
+      "frame": {
+        "x": 370,
+        "y": 549,
+        "w": 624,
+        "h": 544
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 212,
+        "y": 182,
+        "w": 624,
+        "h": 544
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_3/PNG/PNG Sequences/Slashing in The Air/0_Knight_Slashing in The Air_008.png": {
+      "frame": {
+        "x": 370,
+        "y": 0,
+        "w": 615,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 171,
+        "w": 615,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Shooting/0_Archer_Shooting_001.png": {
+      "frame": {
+        "x": 914,
+        "y": 549,
+        "w": 520,
+        "h": 624
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 127,
+        "w": 520,
+        "h": 624
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_2/PNG/PNG Sequences/Slashing in The Air/0_Magician_Slashing in The Air_011.png": {
+      "frame": {
+        "x": 1434,
+        "y": 549,
+        "w": 614,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 146,
+        "w": 614,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_1/PNG/PNG Sequences/Slashing/0_Magician_Slashing_002.png": {
+      "frame": {
+        "x": 1434,
+        "y": 1118,
+        "w": 614,
+        "h": 567
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 249,
+        "y": 185,
+        "w": 614,
+        "h": 567
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_3/PNG/PNG Sequences/Kicking/0_Paladin_Kicking_008.png": {
+      "frame": {
+        "x": 1149,
+        "y": 1685,
+        "w": 363,
+        "h": 556
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 217,
+        "y": 195,
+        "w": 363,
+        "h": 556
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-18.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

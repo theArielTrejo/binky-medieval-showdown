@@ -1,0 +1,543 @@
+{
+  "frames": {
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Walking/0_Gnoll_Walking_015.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 392,
+        "h": 511
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 246,
+        "y": 245,
+        "w": 392,
+        "h": 511
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Walking/0_Gnoll_Walking_016.png": {
+      "frame": {
+        "x": 0,
+        "y": 511,
+        "w": 390,
+        "h": 511
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 239,
+        "y": 244,
+        "w": 390,
+        "h": 511
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Kicking/0_Gnoll_Kicking_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 1022,
+        "w": 386,
+        "h": 511
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 216,
+        "y": 239,
+        "w": 386,
+        "h": 511
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Slashing in The Air/0_Gnoll_Slashing in The Air_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 1533,
+        "w": 385,
+        "h": 511
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 198,
+        "y": 211,
+        "w": 385,
+        "h": 511
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Jump Start/0_Gnoll_Jump Start_004.png": {
+      "frame": {
+        "x": 385,
+        "y": 1533,
+        "w": 382,
+        "h": 511
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 205,
+        "y": 223,
+        "w": 382,
+        "h": 511
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Throwing/0_Gnoll_Run Throwing_007.png": {
+      "frame": {
+        "x": 386,
+        "y": 1022,
+        "w": 391,
+        "h": 510
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 235,
+        "y": 234,
+        "w": 391,
+        "h": 510
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Running/0_Gnoll_Running_007.png": {
+      "frame": {
+        "x": 390,
+        "y": 511,
+        "w": 391,
+        "h": 510
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 235,
+        "y": 234,
+        "w": 391,
+        "h": 510
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_010.png": {
+      "frame": {
+        "x": 392,
+        "y": 0,
+        "w": 387,
+        "h": 510
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 278,
+        "y": 252,
+        "w": 387,
+        "h": 510
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Throwing/0_Gnoll_Run Throwing_002.png": {
+      "frame": {
+        "x": 779,
+        "y": 0,
+        "w": 384,
+        "h": 510
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 219,
+        "y": 225,
+        "w": 384,
+        "h": 510
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Running/0_Gnoll_Running_002.png": {
+      "frame": {
+        "x": 767,
+        "y": 1532,
+        "w": 384,
+        "h": 510
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 219,
+        "y": 225,
+        "w": 384,
+        "h": 510
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Jump Start/0_Gnoll_Jump Start_003.png": {
+      "frame": {
+        "x": 777,
+        "y": 1021,
+        "w": 383,
+        "h": 510
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 211,
+        "y": 228,
+        "w": 383,
+        "h": 510
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Dying/0_Skeleton_Pirate_Captain_Dying_006.png": {
+      "frame": {
+        "x": 1151,
+        "y": 510,
+        "w": 494,
+        "h": 509
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 123,
+        "y": 131,
+        "w": 494,
+        "h": 509
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_009.png": {
+      "frame": {
+        "x": 1645,
+        "y": 510,
+        "w": 402,
+        "h": 507
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 266,
+        "y": 243,
+        "w": 402,
+        "h": 507
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Hurt/0_Gnoll_Hurt_002.png": {
+      "frame": {
+        "x": 1163,
+        "y": 0,
+        "w": 392,
+        "h": 509
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 241,
+        "w": 392,
+        "h": 509
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_001.png": {
+      "frame": {
+        "x": 1555,
+        "y": 0,
+        "w": 391,
+        "h": 509
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 233,
+        "w": 391,
+        "h": 509
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Slashing/0_Gnoll_Run Slashing_000.png": {
+      "frame": {
+        "x": 1645,
+        "y": 1017,
+        "w": 401,
+        "h": 505
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 245,
+        "w": 401,
+        "h": 505
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Jump Start/0_Gnoll_Jump Start_002.png": {
+      "frame": {
+        "x": 781,
+        "y": 510,
+        "w": 363,
+        "h": 508
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 239,
+        "y": 242,
+        "w": 363,
+        "h": 508
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Running/0_Gnoll_Running_001.png": {
+      "frame": {
+        "x": 1151,
+        "y": 1531,
+        "w": 391,
+        "h": 509
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 233,
+        "w": 391,
+        "h": 509
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Walking/0_Gnoll_Walking_001.png": {
+      "frame": {
+        "x": 1542,
+        "y": 1522,
+        "w": 394,
+        "h": 506
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 253,
+        "y": 246,
+        "w": 394,
+        "h": 506
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_1/PNG/PNG Sequences/Throwing in The Air/0_Gnoll_Throwing in The Air_004.png": {
+      "frame": {
+        "x": 1160,
+        "y": 1019,
+        "w": 382,
+        "h": 507
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 265,
+        "y": 213,
+        "w": 382,
+        "h": 507
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Run Throwing/0_Gnoll_Run Throwing_001.png": {
+      "frame": {
+        "x": 1555,
+        "y": 0,
+        "w": 391,
+        "h": 509
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 233,
+        "w": 391,
+        "h": 509
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Throwing in The Air/0_Gnoll_Throwing in The Air_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 1533,
+        "w": 385,
+        "h": 511
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 198,
+        "y": 211,
+        "w": 385,
+        "h": 511
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-313.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2044
+    },
+    "scale": 1
+  }
+}

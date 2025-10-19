@@ -1,0 +1,495 @@
+{
+  "frames": {
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_3/PNG/PNG Sequences/Running/0_Skeleton_Pirate_Captain_Running_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 469,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 469,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Running/0_Skeleton_Pirate_Captain_Running_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 574,
+        "w": 451,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 211,
+        "y": 177,
+        "w": 451,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_1/PNG/PNG Sequences/Throwing/0_Skeleton_Death_Knight_Throwing_008.png": {
+      "frame": {
+        "x": 0,
+        "y": 1148,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 283,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Dying/0_Skeleton_Pirate_Captain_Dying_000.png": {
+      "frame": {
+        "x": 448,
+        "y": 1148,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Idle Blinking/0_Skeleton_Pirate_Captain_Idle Blinking_000.png": {
+      "frame": {
+        "x": 451,
+        "y": 574,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Hurt/0_Cursed_Alchemist_Hurt_011.png": {
+      "frame": {
+        "x": 896,
+        "y": 0,
+        "w": 443,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 197,
+        "y": 177,
+        "w": 443,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Deathknight/Skeleton_Death_Knight_2/PNG/PNG Sequences/Falling Down/0_Skeleton_Death_Knight_Falling Down_001.png": {
+      "frame": {
+        "x": 469,
+        "y": 0,
+        "w": 427,
+        "h": 571
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 261,
+        "y": 140,
+        "w": 427,
+        "h": 571
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle Blinking/0_Cursed_Alchemist_Idle Blinking_012.png": {
+      "frame": {
+        "x": 1339,
+        "y": 0,
+        "w": 441,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 441,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle Blinking/0_Cursed_Alchemist_Idle Blinking_013.png": {
+      "frame": {
+        "x": 1339,
+        "y": 441,
+        "w": 441,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 177,
+        "w": 441,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle Blinking/0_Cursed_Alchemist_Idle Blinking_014.png": {
+      "frame": {
+        "x": 899,
+        "y": 574,
+        "w": 440,
+        "h": 573
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 207,
+        "y": 178,
+        "w": 440,
+        "h": 573
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Jump Start/0_Cursed_Alchemist_Jump Start_001.png": {
+      "frame": {
+        "x": 1339,
+        "y": 882,
+        "w": 439,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 209,
+        "y": 172,
+        "w": 439,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Dying/0_Cursed_Alchemist_Dying_002.png": {
+      "frame": {
+        "x": 896,
+        "y": 1148,
+        "w": 443,
+        "h": 572
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 261,
+        "y": 137,
+        "w": 443,
+        "h": 572
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle Blinking/0_Cursed_Alchemist_Idle Blinking_006.png": {
+      "frame": {
+        "x": 1339,
+        "y": 1321,
+        "w": 437,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 213,
+        "y": 177,
+        "w": 437,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle/0_Cursed_Alchemist_Idle_006.png": {
+      "frame": {
+        "x": 1339,
+        "y": 1321,
+        "w": 437,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 213,
+        "y": 177,
+        "w": 437,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle/0_Cursed_Alchemist_Idle_012.png": {
+      "frame": {
+        "x": 1339,
+        "y": 0,
+        "w": 441,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 441,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Idle/0_Cursed_Alchemist_Idle_013.png": {
+      "frame": {
+        "x": 1339,
+        "y": 441,
+        "w": 441,
+        "h": 574
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 177,
+        "w": 441,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Hurt/0_Skeleton_Pirate_Captain_Hurt_000.png": {
+      "frame": {
+        "x": 448,
+        "y": 1148,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Idle/0_Skeleton_Pirate_Captain_Idle_000.png": {
+      "frame": {
+        "x": 451,
+        "y": 574,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Jump Start/0_Skeleton_Pirate_Captain_Jump Start_000.png": {
+      "frame": {
+        "x": 451,
+        "y": 574,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Kicking/0_Skeleton_Pirate_Captain_Kicking_000.png": {
+      "frame": {
+        "x": 451,
+        "y": 574,
+        "w": 448,
+        "h": 574
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 177,
+        "w": 448,
+        "h": 574
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-207.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1913,
+      "h": 1758
+    },
+    "scale": 1
+  }
+}

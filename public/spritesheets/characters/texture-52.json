@@ -1,0 +1,351 @@
+{
+  "frames": {
+    "characters/paladin knight/Paladin_2/PNG/PNG Sequences/Blessed/0_Paladin_Blessed_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 491,
+        "h": 597
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 200,
+        "y": 154,
+        "w": 491,
+        "h": 597
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/paladin knight/Paladin_3/PNG/PNG Sequences/Blessed/0_Paladin_Blessed_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 597,
+        "w": 491,
+        "h": 597
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 200,
+        "y": 154,
+        "w": 491,
+        "h": 597
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Throwing in The Air/0_Archer_Throwing in The Air_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 1194,
+        "w": 454,
+        "h": 597
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 148,
+        "y": 122,
+        "w": 454,
+        "h": 597
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Slashing/Slashing_006.png": {
+      "frame": {
+        "x": 454,
+        "y": 1194,
+        "w": 571,
+        "h": 596
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 305,
+        "y": 134,
+        "w": 571,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Templar Knight/PNG/PNG Sequences/Run Slashing/Run Slashing_003.png": {
+      "frame": {
+        "x": 1025,
+        "y": 1194,
+        "w": 596,
+        "h": 538
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 272,
+        "y": 174,
+        "w": 596,
+        "h": 538
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Hurt/0_Archer_Hurt_008.png": {
+      "frame": {
+        "x": 1563,
+        "y": 0,
+        "w": 485,
+        "h": 562
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 96,
+        "y": 189,
+        "w": 485,
+        "h": 562
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Medieval Knight/PNG/PNG Sequences/Sliding/Sliding_000.png": {
+      "frame": {
+        "x": 1563,
+        "y": 562,
+        "w": 489,
+        "h": 485
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 66,
+        "y": 298,
+        "w": 489,
+        "h": 485
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_3/PNG/PNG Sequences/Sliding/0_Magician_Sliding_000.png": {
+      "frame": {
+        "x": 1563,
+        "y": 1051,
+        "w": 485,
+        "h": 482
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 45,
+        "y": 320,
+        "w": 485,
+        "h": 482
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Sliding/Sliding_003.png": {
+      "frame": {
+        "x": 1563,
+        "y": 1533,
+        "w": 485,
+        "h": 479
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 76,
+        "y": 304,
+        "w": 485,
+        "h": 479
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Hurt/0_Archer_Hurt_010.png": {
+      "frame": {
+        "x": 491,
+        "y": 0,
+        "w": 428,
+        "h": 596
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 150,
+        "y": 155,
+        "w": 428,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Shooting in The Air/0_Archer_Shooting in The Air_006.png": {
+      "frame": {
+        "x": 1087,
+        "y": 0,
+        "w": 476,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 151,
+        "y": 174,
+        "w": 476,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Throwing/Throwing_006.png": {
+      "frame": {
+        "x": 491,
+        "y": 428,
+        "w": 412,
+        "h": 596
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 305,
+        "y": 134,
+        "w": 412,
+        "h": 596
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Shooting/0_Archer_Shooting_006.png": {
+      "frame": {
+        "x": 1087,
+        "y": 549,
+        "w": 476,
+        "h": 536
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 158,
+        "y": 215,
+        "w": 476,
+        "h": 536
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/knight/Knight_1/PNG/PNG Sequences/Walking/0_Knight_Walking_013.png": {
+      "frame": {
+        "x": 491,
+        "y": 840,
+        "w": 354,
+        "h": 552
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 280,
+        "y": 205,
+        "w": 354,
+        "h": 552
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-52.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2012
+    },
+    "scale": 1
+  }
+}

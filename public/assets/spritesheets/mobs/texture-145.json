@@ -1,0 +1,327 @@
+{
+  "frames": {
+    "Mobs/CursedAlchemist/Cursed_Alchemist_2/PNG/PNG Sequences/Slashing/0_Cursed_Alchemist_Slashing_010.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 582,
+        "h": 576
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 175,
+        "w": 582,
+        "h": 576
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_3/PNG/PNG Sequences/Slashing/0_Skeleton_Pirate_Captain_Slashing_011.png": {
+      "frame": {
+        "x": 582,
+        "y": 0,
+        "w": 570,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 200,
+        "y": 170,
+        "w": 570,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_3/PNG/PNG Sequences/Run Shooting/0_Archer_Run Shooting_003.png": {
+      "frame": {
+        "x": 1164,
+        "y": 0,
+        "w": 551,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 145,
+        "y": 157,
+        "w": 551,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_3/PNG/PNG Sequences/Run Slashing/0_Skeleton_Viking_Run Slashing_010.png": {
+      "frame": {
+        "x": 1164,
+        "y": 551,
+        "w": 582,
+        "h": 551
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 205,
+        "y": 191,
+        "w": 582,
+        "h": 551
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_1/PNG/PNG Sequences/Run Slashing/0_Skeleton_Viking_Run Slashing_010.png": {
+      "frame": {
+        "x": 582,
+        "y": 570,
+        "w": 582,
+        "h": 547
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 207,
+        "y": 195,
+        "w": 582,
+        "h": 547
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Slashing/0_Golem_Slashing_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 576,
+        "w": 582,
+        "h": 542
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 281,
+        "y": 216,
+        "w": 582,
+        "h": 542
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_1/PNG/PNG Sequences/Slashing/0_Golem_Slashing_006.png": {
+      "frame": {
+        "x": 1164,
+        "y": 1102,
+        "w": 582,
+        "h": 542
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 281,
+        "y": 216,
+        "w": 582,
+        "h": 542
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Slashing/0_Skeleton_Pirate_Captain_Slashing_011.png": {
+      "frame": {
+        "x": 582,
+        "y": 1117,
+        "w": 541,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 210,
+        "y": 170,
+        "w": 541,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_2/PNG/PNG Sequences/Idle Blinking/0_Elemental_Spirits_Idle Blinking_008.png": {
+      "frame": {
+        "x": 1164,
+        "y": 1644,
+        "w": 404,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 216,
+        "y": 169,
+        "w": 404,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_3/PNG/PNG Sequences/Slashing in The Air/0_Skeleton_Viking_Slashing in The Air_007.png": {
+      "frame": {
+        "x": 0,
+        "y": 1118,
+        "w": 582,
+        "h": 541
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 251,
+        "y": 169,
+        "w": 582,
+        "h": 541
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Slashing/0_Golem_Slashing_000.png": {
+      "frame": {
+        "x": 582,
+        "y": 1658,
+        "w": 390,
+        "h": 570
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 219,
+        "y": 183,
+        "w": 390,
+        "h": 570
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Golem/Golem_2/PNG/PNG Sequences/Walking/0_Golem_Walking_021.png": {
+      "frame": {
+        "x": 0,
+        "y": 1659,
+        "w": 374,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 174,
+        "w": 374,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_2/PNG/PNG Sequences/Idle/0_Elemental_Spirits_Idle_008.png": {
+      "frame": {
+        "x": 1164,
+        "y": 1644,
+        "w": 404,
+        "h": 582
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 216,
+        "y": 169,
+        "w": 404,
+        "h": 582
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-145.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1746,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

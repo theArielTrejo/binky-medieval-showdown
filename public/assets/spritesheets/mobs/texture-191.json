@@ -1,0 +1,399 @@
+{
+  "frames": {
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Hurt/0_Gnoll_Hurt_009.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 452,
+        "h": 577
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 152,
+        "y": 184,
+        "w": 452,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Walking/0_Skeleton_Pirate_Captain_Walking_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 577,
+        "w": 452,
+        "h": 577
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 223,
+        "y": 179,
+        "w": 452,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Hurt/0_Gnoll_Hurt_010.png": {
+      "frame": {
+        "x": 0,
+        "y": 1154,
+        "w": 448,
+        "h": 577
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 169,
+        "y": 184,
+        "w": 448,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_009.png": {
+      "frame": {
+        "x": 448,
+        "y": 1154,
+        "w": 448,
+        "h": 577
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 185,
+        "w": 448,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Idle Blinking/0_Skeleton_Pirate_Captain_Idle Blinking_015.png": {
+      "frame": {
+        "x": 896,
+        "y": 0,
+        "w": 446,
+        "h": 577
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 195,
+        "y": 174,
+        "w": 446,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_1/PNG/PNG Sequences/Dying/0_Skeleton_Viking_Dying_009.png": {
+      "frame": {
+        "x": 452,
+        "y": 0,
+        "w": 577,
+        "h": 444
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 326,
+        "w": 577,
+        "h": 444
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Idle/0_Skeleton_Pirate_Captain_Idle_015.png": {
+      "frame": {
+        "x": 452,
+        "y": 577,
+        "w": 446,
+        "h": 577
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 195,
+        "y": 174,
+        "w": 446,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_2/PNG/PNG Sequences/Run Slashing/0_Skeleton_Viking_Run Slashing_008.png": {
+      "frame": {
+        "x": 1473,
+        "y": 0,
+        "w": 563,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 233,
+        "y": 168,
+        "w": 563,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Throwing/0_Skeleton_Pirate_Captain_Throwing_009.png": {
+      "frame": {
+        "x": 898,
+        "y": 446,
+        "w": 477,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 246,
+        "y": 176,
+        "w": 477,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonViking/Skeleton_Viking_3/PNG/PNG Sequences/Falling Down/0_Skeleton_Viking_Falling Down_003.png": {
+      "frame": {
+        "x": 1473,
+        "y": 563,
+        "w": 476,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 255,
+        "y": 139,
+        "w": 476,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Running/0_Skeleton_Pirate_Captain_Running_005.png": {
+      "frame": {
+        "x": 898,
+        "y": 923,
+        "w": 474,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 182,
+        "y": 170,
+        "w": 474,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Idle Blinking/0_Skeleton_Pirate_Captain_Idle Blinking_008.png": {
+      "frame": {
+        "x": 1473,
+        "y": 1039,
+        "w": 473,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 181,
+        "y": 176,
+        "w": 473,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_2/PNG/PNG Sequences/Idle Blinking/0_Skeleton_Pirate_Captain_Idle Blinking_014.png": {
+      "frame": {
+        "x": 896,
+        "y": 1397,
+        "w": 445,
+        "h": 577
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 174,
+        "w": 445,
+        "h": 577
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Idle Blinking/0_Skeleton_Pirate_Captain_Idle Blinking_010.png": {
+      "frame": {
+        "x": 1473,
+        "y": 1512,
+        "w": 472,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 179,
+        "y": 176,
+        "w": 472,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Idle/0_Skeleton_Pirate_Captain_Idle_008.png": {
+      "frame": {
+        "x": 1473,
+        "y": 1039,
+        "w": 473,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 181,
+        "y": 176,
+        "w": 473,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/PNG/PNG Sequences/Idle/0_Skeleton_Pirate_Captain_Idle_010.png": {
+      "frame": {
+        "x": 1473,
+        "y": 1512,
+        "w": 472,
+        "h": 575
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 179,
+        "y": 176,
+        "w": 472,
+        "h": 575
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-191.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 1984
+    },
+    "scale": 1
+  }
+}

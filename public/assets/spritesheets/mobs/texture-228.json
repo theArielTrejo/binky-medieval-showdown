@@ -1,0 +1,327 @@
+{
+  "frames": {
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 462,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 284,
+        "y": 193,
+        "w": 462,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Throwing/0_Gnoll_Throwing_007.png": {
+      "frame": {
+        "x": 0,
+        "y": 569,
+        "w": 462,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 283,
+        "y": 193,
+        "w": 462,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/PNG Sequences/Dying/0_Cursed_Alchemist_Dying_005.png": {
+      "frame": {
+        "x": 0,
+        "y": 1138,
+        "w": 451,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 159,
+        "y": 93,
+        "w": 451,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/Gnoll/Gnoll_2/PNG/PNG Sequences/Dying/0_Gnoll_Dying_008.png": {
+      "frame": {
+        "x": 451,
+        "y": 1138,
+        "w": 569,
+        "h": 451
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 55,
+        "y": 284,
+        "w": 569,
+        "h": 451
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/PNG Sequences/Throwing/0_Cursed_Alchemist_Throwing_004.png": {
+      "frame": {
+        "x": 462,
+        "y": 0,
+        "w": 449,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 286,
+        "y": 183,
+        "w": 449,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/CursedAlchemist/Cursed_Alchemist_1/PNG/PNG Sequences/Hurt/0_Cursed_Alchemist_Hurt_007.png": {
+      "frame": {
+        "x": 462,
+        "y": 569,
+        "w": 442,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 138,
+        "y": 182,
+        "w": 442,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Falling Down/0_Archer_Falling Down_001.png": {
+      "frame": {
+        "x": 902,
+        "y": 1138,
+        "w": 429,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 268,
+        "y": 149,
+        "w": 429,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_2/PNG/PNG Sequences/Falling Down/0_Archer_Falling Down_005.png": {
+      "frame": {
+        "x": 904,
+        "y": 569,
+        "w": 429,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 268,
+        "y": 149,
+        "w": 429,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Run Shooting/0_Archer_Run Shooting_005.png": {
+      "frame": {
+        "x": 911,
+        "y": 0,
+        "w": 412,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 219,
+        "y": 188,
+        "w": 412,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Shooting in The Air/0_Archer_Shooting in The Air_005.png": {
+      "frame": {
+        "x": 1323,
+        "y": 0,
+        "w": 412,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 213,
+        "y": 154,
+        "w": 412,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Shooting in The Air/0_Archer_Shooting in The Air_006.png": {
+      "frame": {
+        "x": 1333,
+        "y": 569,
+        "w": 412,
+        "h": 569
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 214,
+        "y": 154,
+        "w": 412,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ArcherMob/Archer_1/PNG/PNG Sequences/Shooting in The Air/0_Archer_Shooting in The Air_007.png": {
+      "frame": {
+        "x": 1333,
+        "y": 981,
+        "w": 412,
+        "h": 569
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 215,
+        "y": 154,
+        "w": 412,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Mobs/ElementalSpirites/Elemental_Spirits_3/PNG/PNG Sequences/Walking/0_Elemental_Spirits_Walking_008.png": {
+      "frame": {
+        "x": 1331,
+        "y": 1393,
+        "w": 410,
+        "h": 569
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 212,
+        "y": 182,
+        "w": 410,
+        "h": 569
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-228.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1902,
+      "h": 1962
+    },
+    "scale": 1
+  }
+}

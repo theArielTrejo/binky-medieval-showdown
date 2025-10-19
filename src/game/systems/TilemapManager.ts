@@ -118,6 +118,20 @@ export class TilemapManager {
   // The private `loadTilemapJSON` and `loadTilesetImage` methods are no longer needed.
 
   /**
+   * Register an already-loaded tilemap asset (for assets loaded in preload)
+   */
+  public registerLoadedTilemap(config: TilemapConfig): void {
+    const asset: TilemapAsset = {
+      name: config.name,
+      key: config.key,
+      jsonPath: config.jsonPath,
+      tilesets: config.tilesets,
+      loaded: true // Mark as loaded since it's already loaded
+    };
+    this.tilemapAssets.set(config.name, asset);
+  }
+
+  /**
    * Create tilemap from loaded assets
    */
   public createTilemap(config: TilemapConfig): Phaser.Tilemaps.Tilemap | null {
@@ -171,7 +185,7 @@ export class TilemapManager {
   }
 
   /**
-   * Set up collision for tilemap layers
+   * Set up collision for tilemap layers with enhanced collision detection
    */
   public setupCollisions(tilemapName: string, collisionConfigs: CollisionConfig[]): void {
     const map = this.loadedTilemaps.get(tilemapName);
@@ -188,13 +202,82 @@ export class TilemapManager {
       }
       
       if (config.collisionTiles) {
-        layer.setCollision(config.collisionTiles);
+        // Set collision on specific tile IDs
+        layer.setCollision(config.collisionTiles, true, true);
       } else if (config.collisionProperty) {
-        layer.setCollisionByProperty({ [config.collisionProperty]: true });
+        // Set collision based on tile properties
+        layer.setCollisionByProperty({ [config.collisionProperty]: true }, true);
       } else {
-        layer.setCollisionByExclusion([-1]); // Set collision on all tiles except -1 (empty)
+        // Set collision on all non-empty tiles (default behavior)
+        layer.setCollisionByExclusion([-1, 0], true); // Exclude empty tiles (0 and -1)
       }
+      
+      console.log(`Collision setup complete for layer: ${config.layerName}`);
     }
+  }
+
+  /**
+   * Set up collision for specific tile ranges
+   */
+  public setupCollisionRange(tilemapName: string, layerName: string, startTile: number, endTile: number): void {
+    const map = this.loadedTilemaps.get(tilemapName);
+    if (!map) {
+      console.error(`Cannot setup collision range: tilemap ${tilemapName} not found`);
+      return;
+    }
+    
+    const layer = map.getLayer(layerName)?.tilemapLayer;
+    if (!layer) {
+      console.warn(`Layer ${layerName} not found for collision range setup`);
+      return;
+    }
+    
+    layer.setCollisionBetween(startTile, endTile, true, true);
+    console.log(`Collision range setup complete for layer: ${layerName}, tiles: ${startTile}-${endTile}`);
+  }
+
+  /**
+   * Apply scaling to tilemap layers for consistent proportions
+   */
+  public applyScaling(tilemapName: string, scale: number = 1): void {
+    const map = this.loadedTilemaps.get(tilemapName);
+    if (!map) {
+      console.error(`Cannot apply scaling: tilemap ${tilemapName} not found`);
+      return;
+    }
+    
+    // Apply scaling to all layers
+    map.layers.forEach(layerData => {
+      if (layerData.tilemapLayer) {
+        layerData.tilemapLayer.setScale(scale);
+      }
+    });
+    
+    // Update physics world bounds to match scaled tilemap
+    const scaledWidth = map.widthInPixels * scale;
+    const scaledHeight = map.heightInPixels * scale;
+    this.scene.physics.world.setBounds(0, 0, scaledWidth, scaledHeight);
+    
+    console.log(`Scaling applied to tilemap: ${tilemapName}, scale: ${scale}`);
+  }
+
+  /**
+   * Get collision layer for physics interactions
+   */
+  public getCollisionLayer(tilemapName: string, layerName: string): Phaser.Tilemaps.TilemapLayer | null {
+    const map = this.loadedTilemaps.get(tilemapName);
+    if (!map) {
+      console.error(`Cannot get collision layer: tilemap ${tilemapName} not found`);
+      return null;
+    }
+    
+    const layer = map.getLayer(layerName)?.tilemapLayer;
+    if (!layer) {
+      console.warn(`Layer ${layerName} not found`);
+      return null;
+    }
+    
+    return layer;
   }
 
   /**

@@ -1,0 +1,543 @@
+{
+  "frames": {
+    "characters/ninja/Black Ninja/PNG/PNG Sequences/Kicking/Kicking_010.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 421,
+        "h": 550
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 205,
+        "y": 182,
+        "w": 421,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Dying/0_Archer_Dying_011.png": {
+      "frame": {
+        "x": 0,
+        "y": 550,
+        "w": 550,
+        "h": 418
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 108,
+        "y": 482,
+        "w": 550,
+        "h": 418
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Walking/Walking_022.png": {
+      "frame": {
+        "x": 0,
+        "y": 1100,
+        "w": 418,
+        "h": 550
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 242,
+        "y": 184,
+        "w": 418,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Assassin Guy/PNG/PNG Sequences/Walking/Walking_018.png": {
+      "frame": {
+        "x": 0,
+        "y": 1650,
+        "w": 398,
+        "h": 546
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 258,
+        "y": 188,
+        "w": 398,
+        "h": 546
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/Assassin Guy/PNG/PNG Sequences/Hurt/Hurt_003.png": {
+      "frame": {
+        "x": 546,
+        "y": 1650,
+        "w": 398,
+        "h": 545
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 245,
+        "y": 187,
+        "w": 398,
+        "h": 545
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_3/PNG/PNG Sequences/Dying/0_Archer_Dying_006.png": {
+      "frame": {
+        "x": 1091,
+        "y": 0,
+        "w": 412,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 235,
+        "y": 120,
+        "w": 412,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Idle Blinking/Idle Blinking_008.png": {
+      "frame": {
+        "x": 1641,
+        "y": 0,
+        "w": 407,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 183,
+        "w": 407,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Run Throwing/Run Throwing_002.png": {
+      "frame": {
+        "x": 1091,
+        "y": 412,
+        "w": 411,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 168,
+        "w": 411,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Jump Start/Jump Start_001.png": {
+      "frame": {
+        "x": 1641,
+        "y": 549,
+        "w": 407,
+        "h": 548
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 236,
+        "y": 179,
+        "w": 407,
+        "h": 548
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Running/Running_002.png": {
+      "frame": {
+        "x": 1091,
+        "y": 823,
+        "w": 411,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 168,
+        "w": 411,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Throwing in The Air/0_Archer_Throwing in The Air_006.png": {
+      "frame": {
+        "x": 1641,
+        "y": 1097,
+        "w": 407,
+        "h": 547
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 237,
+        "y": 169,
+        "w": 407,
+        "h": 547
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_3/PNG/PNG Sequences/Run Throwing/0_Archer_Run Throwing_003.png": {
+      "frame": {
+        "x": 1091,
+        "y": 1234,
+        "w": 410,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 186,
+        "w": 410,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Idle Blinking/Idle Blinking_009.png": {
+      "frame": {
+        "x": 1091,
+        "y": 1644,
+        "w": 404,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 182,
+        "w": 404,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_3/PNG/PNG Sequences/Run Throwing/0_Archer_Run Throwing_010.png": {
+      "frame": {
+        "x": 421,
+        "y": 0,
+        "w": 410,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 195,
+        "y": 194,
+        "w": 410,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_3/PNG/PNG Sequences/Running/0_Archer_Running_003.png": {
+      "frame": {
+        "x": 421,
+        "y": 410,
+        "w": 410,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 193,
+        "y": 186,
+        "w": 410,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_3/PNG/PNG Sequences/Running/0_Archer_Running_010.png": {
+      "frame": {
+        "x": 418,
+        "y": 820,
+        "w": 410,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 195,
+        "y": 194,
+        "w": 410,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Dying/Dying_005.png": {
+      "frame": {
+        "x": 418,
+        "y": 1230,
+        "w": 420,
+        "h": 544
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 214,
+        "y": 95,
+        "w": 420,
+        "h": 544
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Dying/0_Archer_Dying_012.png": {
+      "frame": {
+        "x": 0,
+        "y": 550,
+        "w": 550,
+        "h": 418
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 108,
+        "y": 482,
+        "w": 550,
+        "h": 418
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Dying/0_Archer_Dying_013.png": {
+      "frame": {
+        "x": 0,
+        "y": 550,
+        "w": 550,
+        "h": 418
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 108,
+        "y": 482,
+        "w": 550,
+        "h": 418
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/archer/Archer_1/PNG/PNG Sequences/Dying/0_Archer_Dying_014.png": {
+      "frame": {
+        "x": 0,
+        "y": 550,
+        "w": 550,
+        "h": 418
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 108,
+        "y": 482,
+        "w": 550,
+        "h": 418
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Idle/Idle_008.png": {
+      "frame": {
+        "x": 1641,
+        "y": 0,
+        "w": 407,
+        "h": 549
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 183,
+        "w": 407,
+        "h": 549
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Idle/Idle_009.png": {
+      "frame": {
+        "x": 1091,
+        "y": 1644,
+        "w": 404,
+        "h": 550
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 234,
+        "y": 182,
+        "w": 404,
+        "h": 550
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-184.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

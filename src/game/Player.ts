@@ -1,56 +1,105 @@
 import { Scene } from 'phaser';
 import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
-import { Enemy, EnemyType } from './EnemySystem';
+import { Enemy, Projectile, MeleeAttack, ConeAttack, VortexAttack, ExplosionAttack } from './EnemySystem';
+import { EnemyType } from './types/EnemyTypes';
 import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
+import { AnimationMapper, CharacterAnimationSet } from './config/AnimationMappings';
 
 export class Player {
-    public sprite: Phaser.GameObjects.Sprite;
-    public archetype: PlayerArchetype;
+    public sprite: Phaser.Physics.Arcade.Sprite;
+    private archetype: PlayerArchetype;
+    private currentAnimation: string = '';
     private scene: Scene;
+
+	private characterVariant: string = 'Knight_1'; // Default to standardized knight variant
+	private characterAnimations: CharacterAnimationSet;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     private wasdKeys: any;
+    private pointerDownHandler?: (pointer: Phaser.Input.Pointer) => void;
     private lastAttackTime: number = 0;
     private attackCooldown: number;
     private bullets: Phaser.GameObjects.Rectangle[] = [];
     private healthBar: Phaser.GameObjects.Rectangle;
     private healthBarBg: Phaser.GameObjects.Rectangle;
     private archetypeText: Phaser.GameObjects.Text;
-    private lastDamageTime: number = 0;
-    private damageCooldown: number = 1000; // 1 second invincibility frames
+    private activeEffects: Phaser.GameObjects.GameObject[] = [];
+    public lastDamageTime: number = 0;
+    public damageCooldown: number = 1000; // 1 second invincibility frames
     private isInvulnerable: boolean = false;
-    private isMoving: boolean = false;
-    private currentAnimation: string = '';
     private onEnemyDeathCallback: ((x: number, y: number, enemyType: EnemyType, xpValue: number) => void) | null = null;
+    private slowMultiplier: number = 1.0; // Current speed multiplier (1.0 = normal, 0.5 = 50% speed)
+    private slowEndTime: number = 0; // Timestamp when slow effect ends
+    private lastVortexHitTime: number = 0; // Last time player was hit by vortex
+    private vortexHitCooldown: number = 500; // Cooldown between vortex hits (ms)
 
     constructor(scene: Scene, x: number, y: number, archetypeType: PlayerArchetypeType) {
         this.scene = scene;
         this.archetype = new PlayerArchetype(archetypeType);
         this.attackCooldown = 1000 / this.archetype.stats.attackSpeed; // Convert to milliseconds
         
-        // Create player sprite using Dark Oracle character
-        const spriteKey = this.getSpriteKeyForArchetype();
-        this.sprite = scene.add.sprite(x, y, spriteKey);
+        // Use random character selection for players (mobs use hardcoded system)
+        // Note: Player character selection remains random for variety, only mob skins are hardcoded
+        this.characterVariant = AnimationMapper.getRandomCharacterForArchetype(this.archetype.type);
+        this.characterAnimations = AnimationMapper.getCharacterAnimations(this.characterVariant);
+        
+        console.log(`🎮 Selected character variant: ${this.characterVariant} for archetype: ${this.archetype.type}`);
+        console.log('🎮 Character animations:', this.characterAnimations);
+        
+        // Character animations are now directly accessible via this.characterAnimations
+        
+        // Use the texture from hardcoded mappings
+        const textureKey = this.characterAnimations.texture;
+        
+        // Create player physics sprite with the determined texture
+        this.sprite = scene.physics.add.sprite(x, y, textureKey);
+        console.log(`🎮 Created player sprite with texture: ${textureKey}`);
         this.sprite.setScale(0.15); // Scale down significantly to match enemy proportions
+        
+        // Enable crisp pixel rendering for better sprite quality
+        this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+        
+        // Set up physics body with improved settings
+        if (this.sprite.body) {
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            body.setCollideWorldBounds(true);
+            body.setSize(32, 32); // Set collision box size
+            body.setDrag(800); // Add drag for smoother movement
+        }
         
         // Start with idle animation
         this.playAnimation('idle');
-        
-        // Create health bar
-        this.healthBarBg = scene.add.rectangle(x, y - 40, 40, 6, 0x333333);
-        this.healthBar = scene.add.rectangle(x, y - 40, 40, 6, 0x00ff00);
-        
-        // Create archetype display using Enhanced Design System
-        this.archetypeText = scene.add.text(
-            x, 
-            y - 60, 
-            this.getArchetypeDisplayName(), 
-            EnhancedStyleHelpers.archetype.getStyle(archetypeType)
-        ).setOrigin(0.5);
         
         // Set up input
         this.cursors = scene.input.keyboard!.createCursorKeys();
         this.wasdKeys = scene.input.keyboard!.addKeys('W,S,A,D,SPACE');
         
+        // Create health bar background
+        this.healthBarBg = scene.add.rectangle(x, y - 35, 50, 8, 0x000000);
+        this.healthBarBg.setDepth(15);
+
+        // Create health bar
+        this.healthBar = scene.add.rectangle(x, y - 35, 48, 6, 0x00ff00);
+        this.healthBar.setDepth(16);
+
+        // Create archetype text
+        this.archetypeText = scene.add.text(x, y - 50, this.getArchetypeDisplayName(), {
+            fontSize: '12px',
+            color: EnhancedStyleHelpers.archetype.getColor(this.archetype.type),
+            fontFamily: 'Arial',
+            stroke: '#000000',
+            strokeThickness: 2
+        });
+        this.archetypeText.setOrigin(0.5);
+        this.archetypeText.setDepth(17);
+
+        // Set up mouse input for attacks
+        this.pointerDownHandler = (pointer: Phaser.Input.Pointer) => {
+            if (pointer.leftButtonDown()) {
+                this.performAttack(pointer);
+            }
+        };
+        scene.input.on('pointerdown', this.pointerDownHandler);
+
         // Update archetype position
         this.archetype.updatePosition(x, y);
     }
@@ -66,14 +115,12 @@ export class Player {
         }
     }
 
-    private getSpriteKeyForArchetype(): string {
-        // All archetypes now use the medieval knight
-        return 'medieval_knight_idle';
-    }
 
-    private getArchetypeColor(): number {
-        return EnhancedStyleHelpers.archetype.getColorHex(this.archetype.type);
-    }
+
+    // Commented out to resolve unused function warning - may be useful for future UI features
+    // private getArchetypeColor(): number {
+    //     return EnhancedStyleHelpers.archetype.getColorHex(this.archetype.type);
+    // }
 
     /**
      * Sets the callback function to be called when an enemy dies
@@ -101,7 +148,7 @@ export class Player {
      * @param deltaTime - Time elapsed since last frame in seconds
      */
     public update(enemies: Enemy[], deltaTime: number): void {
-        this.handleMovement(deltaTime);
+        this.handleMovement();
         this.handleAttack(enemies);
         this.updateBullets(deltaTime);
         this.updateHealthBar();
@@ -109,7 +156,12 @@ export class Player {
         this.updateInvulnerability();
     }
 
-    private handleMovement(deltaTime: number): void {
+    private handleMovement(): void {
+        if (!this.sprite.body) return;
+        
+        // Update slow effect
+        this.updateSlowEffect();
+        
         let velocityX = 0;
         let velocityY = 0;
         
@@ -132,38 +184,84 @@ export class Player {
             velocityY = this.archetype.stats.speed;
         }
         
+        // Apply slow effect
+        velocityX *= this.slowMultiplier;
+        velocityY *= this.slowMultiplier;
+        
         // Normalize diagonal movement
         if (velocityX !== 0 && velocityY !== 0) {
             velocityX *= 0.707; // 1/sqrt(2)
             velocityY *= 0.707;
         }
         
-        // Check if player is moving and update animations
-        const moved = velocityX !== 0 || velocityY !== 0;
-        if (moved !== this.isMoving) {
-            this.isMoving = moved;
-            this.playAnimation(moved ? 'running' : 'idle');
+        // Improved movement detection - check if any movement keys are pressed
+        const isMoving = leftPressed || rightPressed || upPressed || downPressed;
+        
+		// Determine target animation based on movement state
+		const targetAnimation = isMoving ? 'walk' : 'idle';
+        
+        // Only change animation if it's different from current
+        // The flipping logic is now handled inside playAnimation() to avoid conflicts
+        if (this.currentAnimation !== targetAnimation) {
+            this.playAnimation(targetAnimation);
         }
         
-        // Apply movement with actual delta time
-        this.sprite.x += velocityX * deltaTime;
-        this.sprite.y += velocityY * deltaTime;
-        
-        // Keep player within world bounds (will be set by the game scene)
-        const worldBounds = this.scene.physics.world.bounds;
-        if (worldBounds.width > 0 && worldBounds.height > 0) {
-            this.sprite.x = Phaser.Math.Clamp(this.sprite.x, worldBounds.x + 15, worldBounds.x + worldBounds.width - 15);
-            this.sprite.y = Phaser.Math.Clamp(this.sprite.y, worldBounds.y + 15, worldBounds.y + worldBounds.height - 15);
-        }
+        // Apply movement using physics velocity
+        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+        body.setVelocity(velocityX, velocityY);
         
         // Update archetype position
         this.archetype.updatePosition(this.sprite.x, this.sprite.y);
         
-        // Update UI elements position
-        this.healthBarBg.setPosition(this.sprite.x, this.sprite.y - 40);
-        this.healthBar.setPosition(this.sprite.x, this.sprite.y - 40);
-        this.archetypeText.setPosition(this.sprite.x, this.sprite.y - 60);
+        // Update UI element positions
+        this.healthBarBg.setPosition(this.sprite.x, this.sprite.y - 35);
+        this.healthBar.setPosition(this.sprite.x, this.sprite.y - 35);
+        this.archetypeText.setPosition(this.sprite.x, this.sprite.y - 50);
     }
+
+    private performAttack(pointer: Phaser.Input.Pointer): void {
+        const currentTime = Date.now();
+        
+        if (currentTime - this.lastAttackTime > this.attackCooldown) {
+            switch (this.archetype.type) {
+                case PlayerArchetypeType.TANK:
+                    this.meleeAttack([]);
+                    break;
+                case PlayerArchetypeType.EVASIVE:
+                    this.aoeAttack([]);
+                    break;
+                case PlayerArchetypeType.GLASS_CANNON:
+                default:
+                    // Convert pointer coordinates to world coordinates
+                    const worldPoint = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
+                    this.projectileAttackTowardsMouse(worldPoint.x, worldPoint.y);
+                    break;
+            }
+            this.lastAttackTime = currentTime;
+        }
+    }
+
+    private projectileAttackTowardsMouse(targetX: number, targetY: number): void {
+        // Glass Cannon shoots towards target position
+        const bullet = this.scene.add.rectangle(this.sprite.x, this.sprite.y, 8, 8, 0xffff00);
+        bullet.setDepth(5);
+        
+        // Set bullet properties
+        (bullet as any).damage = this.archetype.stats.damage;
+        (bullet as any).range = this.archetype.stats.attackRange;
+        (bullet as any).speed = 400;
+        (bullet as any).distanceTraveled = 0;
+        
+        // Calculate direction towards target
+        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, targetX, targetY);
+        
+        (bullet as any).velocityX = Math.cos(angle) * (bullet as any).speed;
+        (bullet as any).velocityY = Math.sin(angle) * (bullet as any).speed;
+        
+        this.bullets.push(bullet);
+    }
+
+
 
     private handleAttack(enemies: Enemy[]): void {
         const currentTime = Date.now();
@@ -171,7 +269,12 @@ export class Player {
         // Safe input handling for attack
         const attackPressed = this.isKeyPressed(this.cursors?.space) || this.isKeyPressed(this.wasdKeys?.SPACE);
         
+        if (attackPressed) {
+            // console.log('Attack key pressed, cooldown check:', currentTime - this.lastAttackTime, '>', this.attackCooldown);
+        }
+        
         if (attackPressed && currentTime - this.lastAttackTime > this.attackCooldown) {
+            // console.log('Attacking with archetype:', this.archetype.type, 'damage:', this.archetype.stats.damage);
             this.attack(enemies);
             this.lastAttackTime = currentTime;
         }
@@ -209,13 +312,16 @@ export class Player {
             0xff0000,
             0.3
         );
+        this.activeEffects.push(meleeEffect);
         
         // Remove effect after short duration
         this.scene.time.delayedCall(150, () => {
             meleeEffect.destroy();
+            this.activeEffects = this.activeEffects.filter(e => e !== meleeEffect);
         });
         
         // Damage all enemies within melee range
+        // console.log('Melee attack: checking', enemies.length, 'enemies, range:', meleeRange, 'damage:', meleeDamage);
         enemies.forEach(enemy => {
             const distance = Phaser.Math.Distance.Between(
                 this.sprite.x,
@@ -224,11 +330,16 @@ export class Player {
                 enemy.sprite.y
             );
             
+            // console.log('Enemy distance:', distance, 'vs range:', meleeRange, 'enemy health:', enemy.currentHealth);
+            
             if (distance <= meleeRange) {
+                // console.log('Enemy in range! Applying', meleeDamage, 'damage');
                 const enemyDied = enemy.takeDamage(meleeDamage);
                 if (enemyDied) {
+                    // console.log('Enemy died!');
                     this.handleEnemyDeath(enemy, meleeDamage);
                 } else {
+                    // console.log('Enemy survived with', enemy.currentHealth, 'health');
                     this.archetype.dealDamage(meleeDamage);
                 }
             }
@@ -257,10 +368,12 @@ export class Player {
                 0x00ff00,
                 0.4
             );
+            this.activeEffects.push(explosion);
             
             // Remove effect after short duration
             this.scene.time.delayedCall(200, () => {
                 explosion.destroy();
+                this.activeEffects = this.activeEffects.filter(e => e !== explosion);
             });
             
             // Damage enemies within explosion radius
@@ -368,8 +481,10 @@ export class Player {
                 return false;
             }
             
-            // Check screen bounds
-            if (bullet.x < 0 || bullet.x > 1024 || bullet.y < 0 || bullet.y > 768) {
+            // Check world bounds instead of hardcoded screen bounds
+            const worldBounds = this.scene.physics.world.bounds;
+            if (bullet.x < worldBounds.x || bullet.x > worldBounds.width || 
+                bullet.y < worldBounds.y || bullet.y > worldBounds.height) {
                 bullet.destroy();
                 return false;
             }
@@ -378,21 +493,7 @@ export class Player {
         });
     }
 
-    private updateHealthBar(): void {
-        const healthPercent = this.archetype.getHealthPercentage();
-        this.healthBar.scaleX = healthPercent;
-        
-        // Use Enhanced Design System for health bar colors
-        const healthColor = EnhancedStyleHelpers.enemy.getHealthBarColor(healthPercent);
-        this.healthBar.setFillStyle(healthColor);
-    }
 
-    private updateArchetype(): void {
-        // Update sprite tint based on archetype (only if not invulnerable)
-        if (!this.isInvulnerable) {
-            this.sprite.setTint(this.getArchetypeColor());
-        }
-    }
 
     private updateInvulnerability(): void {
         if (this.isInvulnerable) {
@@ -418,6 +519,7 @@ export class Player {
      * @param enemies - Array of enemies to check collision against
      */
     public checkCollisionWithEnemies(enemies: Enemy[]): void {
+        // console.log('checkCollisionWithEnemies called with', enemies.length, 'enemies');
         const bulletsToRemove: Phaser.GameObjects.Rectangle[] = [];
         
         enemies.forEach(enemy => {
@@ -453,6 +555,93 @@ export class Player {
         this.bullets = this.bullets.filter(bullet => !bulletsToRemove.includes(bullet));
     }
 
+    public checkCollisionWithProjectiles(projectiles: Projectile[]): void {
+        projectiles.forEach(projectile => {
+            if (projectile.isActive()) {
+                const distance = Phaser.Math.Distance.Between(
+                    this.sprite.x, this.sprite.y,
+                    projectile.sprite.x, projectile.sprite.y
+                );
+                
+                if (distance < 8 + 16) { // 8 is projectile radius, 16 is player radius
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                        this.takeDamage(projectile.damage);
+                        this.lastDamageTime = currentTime;
+                        this.isInvulnerable = true;
+                    }
+                    projectile.destroy();
+                }
+            }
+        });
+    }
+
+    public checkCollisionWithMeleeAttacks(meleeAttacks: MeleeAttack[]): void {
+        meleeAttacks.forEach(attack => {
+            if (attack.isActive()) {
+                const distance = Phaser.Math.Distance.Between(
+                    this.sprite.x, this.sprite.y,
+                    attack.x, attack.y
+                );
+                
+                const attackRadius = Math.max(attack.width, attack.height) / 2;
+                if (distance <= attackRadius) {
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                        this.takeDamage(attack.damage);
+                        this.lastDamageTime = currentTime;
+                        this.isInvulnerable = true;
+                    }
+                }
+            }
+        });
+    }
+
+    public checkCollisionWithConeAttacks(coneAttacks: ConeAttack[]): void {
+        coneAttacks.forEach(attack => {
+            if (attack.isActive() && attack.isPointInCone(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+            }
+        });
+    }
+
+    public checkCollisionWithVortexAttacks(vortexAttacks: VortexAttack[]): void {
+        vortexAttacks.forEach(attack => {
+            if (attack.isActive() && attack.isPointInVortex(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+                
+                // Apply slow effect if player can be hit by vortex
+                if (this.canBeHitByVortex()) {
+                    this.applySlow(0.3, 2000); // 70% speed reduction for 2 seconds
+                    this.hitByVortex();
+                }
+            }
+        });
+    }
+
+    public checkCollisionWithExplosionAttacks(explosionAttacks: ExplosionAttack[]): void {
+        explosionAttacks.forEach(attack => {
+            if (attack.isActive() && attack.isPointInExplosion(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+            }
+        });
+    }
+
     private checkCollision(obj1: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle, obj2: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle): boolean {
         const bounds1 = obj1.getBounds();
         const bounds2 = obj2.getBounds();
@@ -466,10 +655,15 @@ export class Player {
     public takeDamage(amount: number): void {
         this.archetype.takeDamage(amount);
         
+        // Update damage timing for invulnerability frames
+        this.lastDamageTime = Date.now();
+        this.isInvulnerable = true;
+        
         // Visual feedback - brief red tint, then invulnerability will take over
         this.sprite.setTint(0xff0000);
-        this.scene.time.delayedCall(50, () => {
-            // Don't restore tint here - let invulnerability system handle it
+        this.scene.time.delayedCall(120, () => {
+            // Clear damage tint shortly after hit so it doesn't persist
+            this.sprite.clearTint();
         });
     }
 
@@ -505,33 +699,139 @@ export class Player {
         return this.bullets;
     }
 
+    /**
+     * Gets the player's current health percentage
+     * @returns Health percentage (0-1)
+     */
+    public getHealthPercentage(): number {
+        return this.archetype.getHealthPercentage();
+    }
+
+    /**
+     * Gets the player's DPS over the last ten seconds
+     * @returns DPS value
+     */
+    public getDPSOverLastTenSeconds(): number {
+        return this.archetype.getDPSOverLastTenSeconds();
+    }
+
+    /**
+     * Gets the player's movement distance over the last ten seconds
+     * @returns Movement distance
+     */
+    public getMovementDistanceLastTenSeconds(): number {
+        return this.archetype.getMovementDistanceLastTenSeconds();
+    }
+
+    /**
+     * Gets the damage taken recently by the player
+     * @returns Recent damage taken
+     */
+    public getDamageTakenRecently(): number {
+        return this.archetype.getDamageTakenRecently();
+    }
+
+    /**
+     * Gets the player's XP generation rate
+     * @returns XP generation rate
+     */
+    public getXPGenerationRate(): number {
+        return this.archetype.getXPGenerationRate();
+    }
+
+    /**
+     * Gets the player's archetype as a vector representation
+     * @returns Archetype vector
+     */
+    public getArchetypeVector(): number[] {
+        return this.archetype.getArchetypeVector();
+    }
+
+    /**
+     * Gets the player's current position
+     * @returns Position object with x and y coordinates
+     */
+    public get position(): { x: number; y: number } {
+        return { x: this.sprite.x, y: this.sprite.y };
+    }
+
+    /**
+     * Gets the player's current health
+     * @returns Current health value
+     */
+    public get currentHealth(): number {
+        return this.archetype.currentHealth;
+    }
+
+    /**
+     * Gets the player's scene for accessing world bounds
+     * @returns The scene instance
+     */
+    public getScene(): Scene {
+        return this.scene;
+    }
+
     private playAnimation(animationName: string): void {
         if (this.currentAnimation !== animationName) {
             this.currentAnimation = animationName;
+            console.log(`🎬 Attempting to play animation: ${animationName}`);
+            
             try {
-                // Map animation names to medieval knight animations
-                let animKey = '';
-                if (animationName === 'idle') {
-                    animKey = 'medieval_knight_idle';
-                } else if (animationName === 'running') {
-                    animKey = 'medieval_knight_walk';
-                } else {
-                    // Default to walking animation for any movement
-                    animKey = 'medieval_knight_walk';
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                let targetAnimation: string;
+                
+                // Check for directional animations first
+                if (body && Math.abs(body.velocity.x) > 10) {
+                    const direction = body.velocity.x < 0 ? 'left' : 'right';
+                    const directionalKey = animationName === 'idle' ? 
+                        (direction === 'left' ? this.characterAnimations.idle_left : this.characterAnimations.idle_right) :
+                        (direction === 'left' ? this.characterAnimations.walk_left : this.characterAnimations.walk_right);
+                    
+                    if (directionalKey && this.scene.anims.exists(directionalKey)) {
+                        console.log(`✅ Playing directional animation: ${directionalKey}`);
+                        this.sprite.play(directionalKey);
+                        return;
+                    }
                 }
                 
-                if (this.scene.anims.exists(animKey)) {
-                    this.sprite.play(animKey);
-                } else {
-                    console.warn(`Animation ${animKey} not found, using static frame`);
-                    // Fallback to static medieval knight frame
-                    this.sprite.setTexture('medieval_knight_idle');
+                // Use hardcoded animation mappings
+                targetAnimation = animationName === 'idle' ? 
+                    this.characterAnimations.idle : 
+                    this.characterAnimations.walk;
+                
+                if (this.scene.anims.exists(targetAnimation)) {
+                    console.log(`✅ Playing hardcoded animation: ${targetAnimation}`);
+                    this.sprite.play(targetAnimation);
+                    
+                    // Apply flipping for non-directional animations
+                    if (body && Math.abs(body.velocity.x) > 10) {
+                        this.sprite.setFlipX(body.velocity.x < 0);
+                    }
+                    return;
                 }
+                
+                // Fallback to generic animations
+                const fallbackAnimation = animationName === 'idle' ? 'player_idle' : 'player_walk';
+                if (this.scene.anims.exists(fallbackAnimation)) {
+                    console.log(`⚠️ Using fallback animation: ${fallbackAnimation}`);
+                    this.sprite.play(fallbackAnimation);
+                    
+                    if (body && Math.abs(body.velocity.x) > 10) {
+                        this.sprite.setFlipX(body.velocity.x < 0);
+                    }
+                    return;
+                }
+                
+                console.warn(`❌ No animation found for ${animationName}, keeping current texture`);
+                
             } catch (error) {
                 console.warn(`Failed to play animation ${animationName}:`, error);
             }
         }
     }
+
+	// Attempt to resolve archetype-specific animation keys (idle/walk)
+
 
     /**
      * Collects XP orbs within range and adds XP to the player
@@ -539,19 +839,108 @@ export class Player {
      */
     public collectXPOrbs(xpOrbSystem: any): void {
         const playerPos = this.getPosition();
-        xpOrbSystem.collectOrbs(playerPos.x, playerPos.y, (xp: number) => {
+        // console.log('Player collecting XP orbs at position:', playerPos.x, playerPos.y);
+        const totalCollected = xpOrbSystem.collectOrbs(playerPos.x, playerPos.y, (xp: number) => {
+            // console.log('Player gained XP:', xp);
             this.archetype.gainXP(xp);
         });
+        if (totalCollected > 0) {
+            // console.log('Total XP collected this frame:', totalCollected);
+        }
+    }
+
+    /**
+     * Updates the health bar display
+     */
+    private updateHealthBar(): void {
+        const healthPercent = this.archetype.currentHealth / this.archetype.stats.maxHealth;
+        const maxWidth = 48;
+        const currentWidth = maxWidth * healthPercent;
+        
+        this.healthBar.setSize(currentWidth, 6);
+        
+        // Color based on health percentage using EnhancedStyleHelpers
+        const healthColor = EnhancedStyleHelpers.enemy.getHealthBarColor(healthPercent);
+        this.healthBar.setFillStyle(healthColor);
+    }
+
+    /**
+     * Updates the archetype sprite tinting
+     */
+    private updateArchetype(): void {
+        if (!this.isInvulnerable) {
+            const archetypeColor = EnhancedStyleHelpers.archetype.getColorHex(this.archetype.type);
+            this.sprite.setTint(archetypeColor);
+        }
+    }
+
+    /**
+     * Updates the slow effect on the player
+     */
+    private updateSlowEffect(): void {
+        const currentTime = Date.now();
+        if (currentTime >= this.slowEndTime) {
+            this.slowMultiplier = 1.0; // Reset to normal speed
+            // Remove slow visual effect
+            if (!this.isInvulnerable) {
+                const archetypeColor = EnhancedStyleHelpers.archetype.getColorHex(this.archetype.type);
+                this.sprite.setTint(archetypeColor);
+            }
+        } else {
+            // Apply slow visual effect (cyan tint)
+            this.sprite.setTint(0x00ffff);
+        }
+    }
+
+    /**
+     * Applies a slow effect to the player
+     * @param slowAmount - Multiplier for speed (0.5 = 50% speed)
+     * @param duration - Duration of slow effect in milliseconds
+     */
+    public applySlow(slowAmount: number, duration: number): void {
+        this.slowMultiplier = Math.min(this.slowMultiplier, slowAmount); // Take the stronger slow effect
+        this.slowEndTime = Math.max(this.slowEndTime, Date.now() + duration); // Extend duration if needed
+    }
+
+    /**
+     * Checks if the player can be hit by vortex (respects cooldown)
+     * @returns True if player can be hit by vortex
+     */
+    public canBeHitByVortex(): boolean {
+        const currentTime = Date.now();
+        return currentTime - this.lastVortexHitTime >= this.vortexHitCooldown;
+    }
+
+    /**
+     * Marks the player as hit by vortex (updates cooldown)
+     */
+    public hitByVortex(): void {
+        this.lastVortexHitTime = Date.now();
     }
 
     /**
      * Destroys the player and cleans up all associated resources
      */
     public destroy(): void {
+        // Unregister input handlers
+        if (this.pointerDownHandler) {
+            this.scene.input.off('pointerdown', this.pointerDownHandler);
+        }
+    
+        // Destroy player sprite
         this.sprite.destroy();
-        this.healthBar.destroy();
-        this.healthBarBg.destroy();
-        this.archetypeText.destroy();
+    
+        // Destroy UI elements
+        if (this.healthBar) this.healthBar.destroy();
+        if (this.healthBarBg) this.healthBarBg.destroy();
+        if (this.archetypeText) this.archetypeText.destroy();
+    
+        // Destroy bullets and clear array
         this.bullets.forEach(bullet => bullet.destroy());
+        this.bullets = [];
+    
+        // Destroy transient attack visuals
+        this.activeEffects.forEach(effect => effect.destroy());
+        this.activeEffects = [];
     }
 }

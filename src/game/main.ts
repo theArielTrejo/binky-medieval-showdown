@@ -13,6 +13,11 @@ const config: Types.Core.GameConfig = {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH
     },
+    fps: {
+        target: 60,
+        min: 20,
+        limit: 0  // 0 means no limit, allows game to run at monitor's refresh rate
+    },
     physics: {
         default: 'arcade',
         arcade: {
