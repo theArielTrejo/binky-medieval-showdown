@@ -1,5 +1,4 @@
 import { Scene } from 'phaser';
-import { DynamicMobLoader } from './DynamicMobLoader';
 import { TilemapManager } from './TilemapManager';
 import { SpriteSheetManager, SpriteSheetLoadResult } from './SpriteSheetManager';
 import {
@@ -10,7 +9,6 @@ import {
   AssetLoadingState,
   AssetValidationResult
 } from '../types/AssetTypes';
-import { MobLoadResult } from '../types/MobTypes';
 import { TilemapConfig, TilemapLoadResult } from '../types/TilemapTypes';
 
 // Define constants for registry keys to avoid typos and for better maintainability.
@@ -26,14 +24,12 @@ export const REGISTRY_KEYS = {
 
 export class AssetManager {
   private scene: Scene;
-  private mobLoader: DynamicMobLoader;
   private tilemapManager: TilemapManager;
   private spritesheetManager: SpriteSheetManager;
   private config: AssetLoadingConfig;
 
   constructor(scene: Scene, config?: Partial<AssetLoadingConfig>) {
     this.scene = scene;
-    this.mobLoader = new DynamicMobLoader(scene);
     this.tilemapManager = new TilemapManager(scene);
     this.spritesheetManager = new SpriteSheetManager(scene);
 
@@ -118,28 +114,7 @@ export class AssetManager {
     }
   }
 
-  private async loadMobs(): Promise<MobLoadResult[]> {
-    const results = await this.mobLoader.loadAllMobs();
-    
-    // Update registry after all mobs are processed
-    for (const result of results) {
-      const assetInfo: AssetInfo = {
-        key: result.mobName,
-        type: AssetType.MOB,
-        path: `assets/mobs/${result.mobName}`,
-        state: result.success ? AssetLoadingState.LOADED : AssetLoadingState.FAILED,
-        error: result.error,
-        retryCount: 0,
-        maxRetries: this.config.maxRetries
-      };
-      
-      // Store individual asset info in the registry
-      this.scene.registry.set(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${result.mobName}`, assetInfo);
-
-      this.updateOverallProgress(result.success, result.error);
-    }
-    return results;
-  }
+  // Removed unused loadMobs method (mobs are now handled via spritesheets)
   
   private loadSpritesheets(): SpriteSheetLoadResult[] {
     const results = this.spritesheetManager.loadEssentialSpritesheets();
@@ -246,20 +221,11 @@ export class AssetManager {
               if (assetInfo.state === AssetLoadingState.FAILED) {
                   result.valid = false;
                   result.errors.push(assetInfo.error || 'Asset failed to load');
-              } else if (assetInfo.type === AssetType.MOB) {
-                  if (!this.mobLoader.validateMobAtlas(assetInfo.key)) {
-                      result.valid = false;
-                      result.errors.push('Mob atlas validation failed');
-                  }
               }
               results.push(result);
           }
       }
       return results;
-  }
-
-  public getMobLoader(): DynamicMobLoader {
-    return this.mobLoader;
   }
 
   public getTilemapManager(): TilemapManager {
@@ -274,7 +240,6 @@ export class AssetManager {
    * Clean up resources and reset registry keys if desired.
    */
   public destroy(): void {
-    this.mobLoader.destroy();
     this.tilemapManager.destroy();
     this.spritesheetManager.destroy();
     // Optionally remove all asset-related keys from the registry

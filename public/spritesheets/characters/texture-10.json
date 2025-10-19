@@ -1,0 +1,423 @@
+{
+  "frames": {
+    "characters/knight/Knight_3/PNG/PNG Sequences/Slashing in The Air/0_Knight_Slashing in The Air_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 632,
+        "h": 547
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 217,
+        "y": 173,
+        "w": 632,
+        "h": 547
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/PNG Sequences/Run Slashing/Run Slashing_005.png": {
+      "frame": {
+        "x": 632,
+        "y": 0,
+        "w": 632,
+        "h": 547
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 236,
+        "y": 178,
+        "w": 632,
+        "h": 547
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Run Shooting/0_Archer_Run Shooting_000.png": {
+      "frame": {
+        "x": 1264,
+        "y": 0,
+        "w": 526,
+        "h": 632
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 207,
+        "y": 128,
+        "w": 526,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Run Shooting/0_Archer_Run Shooting_001.png": {
+      "frame": {
+        "x": 1264,
+        "y": 526,
+        "w": 520,
+        "h": 632
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 203,
+        "y": 120,
+        "w": 520,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Slashing in The Air/Slashing in The Air_011.png": {
+      "frame": {
+        "x": 0,
+        "y": 1046,
+        "w": 459,
+        "h": 632
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 70,
+        "w": 459,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/magician/Magician_2/PNG/PNG Sequences/Dying/0_Magician_Dying_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 547,
+        "w": 499,
+        "h": 504
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 118,
+        "y": 140,
+        "w": 499,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Dying/Dying_011.png": {
+      "frame": {
+        "x": 0,
+        "y": 1678,
+        "w": 632,
+        "h": 370
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 431,
+        "w": 632,
+        "h": 370
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Kicking/0_Archer_Kicking_010.png": {
+      "frame": {
+        "x": 632,
+        "y": 547,
+        "w": 410,
+        "h": 632
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 187,
+        "y": 119,
+        "w": 410,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/elf archer/Archer_2/PNG/PNG Sequences/Walking/0_Archer_Walking_003.png": {
+      "frame": {
+        "x": 632,
+        "y": 957,
+        "w": 402,
+        "h": 632
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 229,
+        "y": 122,
+        "w": 402,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Throwing in The Air/Throwing in The Air_011.png": {
+      "frame": {
+        "x": 632,
+        "y": 1359,
+        "w": 371,
+        "h": 632
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 252,
+        "y": 70,
+        "w": 371,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/ninja/White Ninja/PNG/Vector Parts/Body.png": {
+      "frame": {
+        "x": 632,
+        "y": 1730,
+        "w": 208,
+        "h": 192
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 57,
+        "y": 70,
+        "w": 208,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/Medieval Knight/PNG/Vector Parts/Body.png": {
+      "frame": {
+        "x": 824,
+        "y": 1730,
+        "w": 208,
+        "h": 188
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 56,
+        "y": 66,
+        "w": 208,
+        "h": 188
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 320
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Throwing in The Air/Throwing in The Air_008.png": {
+      "frame": {
+        "x": 1264,
+        "y": 1046,
+        "w": 369,
+        "h": 632
+      },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 285,
+        "y": 70,
+        "w": 369,
+        "h": 632
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Slashing in The Air/Slashing in The Air_007.png": {
+      "frame": {
+        "x": 1264,
+        "y": 1415,
+        "w": 571,
+        "h": 631
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 291,
+        "y": 71,
+        "w": 571,
+        "h": 631
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Dying/Dying_012.png": {
+      "frame": {
+        "x": 0,
+        "y": 1678,
+        "w": 632,
+        "h": 370
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 431,
+        "w": 632,
+        "h": 370
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Dying/Dying_013.png": {
+      "frame": {
+        "x": 0,
+        "y": 1678,
+        "w": 632,
+        "h": 370
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 431,
+        "w": 632,
+        "h": 370
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "characters/armored knight/White Armored Knight/PNG/PNG Sequences/Dying/Dying_014.png": {
+      "frame": {
+        "x": 0,
+        "y": 1678,
+        "w": 632,
+        "h": 370
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 431,
+        "w": 632,
+        "h": 370
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture-10.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1896,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

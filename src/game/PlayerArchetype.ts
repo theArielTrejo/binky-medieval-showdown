@@ -4,6 +4,30 @@ export enum PlayerArchetypeType {
     EVASIVE = 'evasive'
 }
 
+// Mapping between PlayerArchetypeType and character classes in sprite sheets
+export const PLAYER_ARCHETYPE_TO_CHARACTER_MAPPING: Record<PlayerArchetypeType, string[]> = {
+    [PlayerArchetypeType.TANK]: [
+        'knight', 'armored knight', 'paladin knight'
+    ],
+    [PlayerArchetypeType.GLASS_CANNON]: [
+        'magician'
+    ],
+    [PlayerArchetypeType.EVASIVE]: [
+        'ninja', 'archer', 'elf archer'
+    ]
+};
+
+// Character variants for each character class
+export const CHARACTER_VARIANTS: Record<string, string[]> = {
+    'knight': ['Knight_1', 'Knight_2', 'Knight_3'],
+    'armored knight': ['White Armored Knight', 'Medieval Knight', 'Templar Knight'],
+    'paladin knight': ['Paladin_1', 'Paladin_2', 'Paladin_3'],
+    'magician': ['Magician_1', 'Magician_2', 'Magician_3'],
+    'ninja': ['Black Ninja', 'White Ninja', 'Assassin Guy'],
+    'archer': ['Archer_1', 'Archer_3'],
+    'elf archer': ['Archer_1', 'Archer_2']
+};
+
 export interface PlayerStats {
     maxHealth: number;
     speed: number;

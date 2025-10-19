@@ -369,22 +369,14 @@ export const EnhancedStyleHelpers = {
   enemy: {
     getColor: (type: EnemyType): number => {
       switch (type) {
-        case EnemyType.TANK:
+        case EnemyType.GOLEM:
           return parseInt(EnhancedDesignSystem.colors.enemy.tank.replace('#', '0x'));
-        case EnemyType.PROJECTILE:
+        case EnemyType.ARCHER:
           return parseInt(EnhancedDesignSystem.colors.enemy.projectile.replace('#', '0x'));
-        case EnemyType.SPEEDSTER:
+        case EnemyType.GNOLL:
           return parseInt(EnhancedDesignSystem.colors.enemy.speedster.replace('#', '0x'));
-        case EnemyType.BOSS:
-          return parseInt(EnhancedDesignSystem.colors.enemy.boss.replace('#', '0x'));
-        case EnemyType.ELITE_TANK:
+        case EnemyType.SKELETON_VIKING:
           return parseInt(EnhancedDesignSystem.colors.enemy.eliteTank.replace('#', '0x'));
-        case EnemyType.SNIPER:
-          return parseInt(EnhancedDesignSystem.colors.enemy.sniper.replace('#', '0x'));
-        case EnemyType.SWARM:
-          return parseInt(EnhancedDesignSystem.colors.enemy.swarm.replace('#', '0x'));
-        case EnemyType.BERSERKER:
-          return parseInt(EnhancedDesignSystem.colors.enemy.berserker.replace('#', '0x'));
         default:
           return 0x666666;
       }

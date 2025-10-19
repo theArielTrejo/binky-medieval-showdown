@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { XPOrb } from './XPOrb';
-import { EnemyType } from './EnemySystem';
+import { EnemyType } from './types/EnemyTypes';
 import { XP_CONSTANTS, getOrbConfigForEnemyType, clampCollectionRange, clampToGameBounds } from './constants/XPConstants';
 // REMOVED: No longer need your custom math utility for this
 // import { randomBetween } from './utils/MathUtils';
@@ -35,7 +35,7 @@ export class XPOrbSystem {
                 const orbX = x + Math.cos(angle) * distance;
                 const orbY = y + Math.sin(angle) * distance;
                 
-                const clampedPos = clampToGameBounds(orbX, orbY);
+                const clampedPos = clampToGameBounds(orbX, orbY, this.scene);
                 
                 orb.launch(clampedPos.x, clampedPos.y, orbConfig.xpPerOrb);
             }
@@ -110,5 +110,15 @@ export class XPOrbSystem {
             }
         });
         return totalXP;
+    }
+
+    /**
+     * Update method called each frame
+     * The orbs are automatically updated by Phaser's group system with runChildUpdate: true
+     * This method can be used for additional system-level updates if needed
+     */
+    public update(): void {
+        // Currently no additional updates needed as orbs are handled by Phaser's group system
+        // This method exists to satisfy the interface expected by Game.ts
     }
 }
