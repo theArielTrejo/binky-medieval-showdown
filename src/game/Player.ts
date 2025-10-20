@@ -53,7 +53,8 @@ export class Player {
         // Create player physics sprite with the determined texture
         this.sprite = scene.physics.add.sprite(x, y, textureKey);
         console.log(`🎮 Created player sprite with texture: ${textureKey}`);
-        this.sprite.setScale(0.15); // Scale down significantly to match enemy proportions
+        this.sprite.setScale(0.05); // Scale down significantly to match enemy proportions
+        this.sprite.setDepth(3); // Correct layer of characters
         
         // Enable crisp pixel rendering for better sprite quality
         this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);

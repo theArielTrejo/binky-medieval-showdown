@@ -707,15 +707,15 @@ export class Enemy {
     private getScaleForType(type: EnemyType): number {
         switch (type) {
             case EnemyType.SKELETON_VIKING:
-                return 0.35;
+                return 0.1;
             case EnemyType.GOLEM:
-                return 0.45;
+                return 0.1;
             case EnemyType.ARCHER:
-                return 0.3;
+                return 0.1;
             case EnemyType.GNOLL:
-                return 0.28;
+                return 0.1;
             default:
-                return 0.3;
+                return 0.1;
         }
     }
 

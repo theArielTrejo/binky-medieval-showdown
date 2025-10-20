@@ -25,7 +25,7 @@ export class Game extends Scene {
     private gameStarted: boolean = false;
     private selectedArchetype: PlayerArchetypeType | null = null;
     private spriteSheetManager!: SpriteSheetManager;
-    private readonly GAME_SCALE = 2; // Scaling factor for consistent proportions
+    // private readonly GAME_SCALE = 2; // Scaling factor for consistent proportions
     
     // Restart functionality properties
     private restartInstructionText: Phaser.GameObjects.Text | null = null;
@@ -140,12 +140,12 @@ export class Game extends Scene {
             ],
             layers: [
                 { name: 'background', tilesets: [], depth: 0, visible: true, collides: false },
-                { name: 'foreground', tilesets: [], depth: 1, visible: true, collides: true }, // Houses, walls, buildings
+                { name: 'foreground', tilesets: [], depth: 1, visible: true, collides: false }, // Houses, walls, buildings
                 { name: 'objects', tilesets: [], depth: 2, visible: true, collides: false }, // Decorative only (grass, small rocks, etc.)
-                { name: 'foregroundobjects', tilesets: [], depth: 3, visible: true, collides: true }, // Solid structures
-                { name: 'Trees', tilesets: [], depth: 4, visible: true, collides: true }, // Trees are solid
-                { name: 'collisions', tilesets: [], depth: 5, visible: false, collides: true }, // Dedicated collision layer
-                { name: 'objectcollisions', tilesets: [], depth: 6, visible: false, collides: true } // Object collision layer
+                { name: 'foregroundobjects', tilesets: [], depth: 4, visible: true, collides: false }, // Solid structures
+                { name: 'Trees', tilesets: [], depth: 5, visible: true, collides: false }, // Trees are solid
+                { name: 'collisions', tilesets: [], visible: true, collides: true }, // Dedicated collision layer
+                { name: 'objectcollisions', tilesets: [], visible: true, collides: true } // Object collision layer
             ]
         };
         
@@ -162,7 +162,7 @@ export class Game extends Scene {
         this.tilemap = map;
         
         // Apply scaling for consistent proportions
-        this.tilemapManager.applyScaling('binkyMap', this.GAME_SCALE);
+        //this.tilemapManager.applyScaling('binkyMap', this.GAME_SCALE);
         
         // Set up collision system exactly like the working example
         const collisionsLayer = map.getLayer('collisions')?.tilemapLayer;
@@ -170,7 +170,7 @@ export class Game extends Scene {
             // Mark every non-empty tile as collidable (like the example)
             collisionsLayer.setCollisionByExclusion([-1]);
             // Keep collision layer visible for debugging (can be set to false later)
-            collisionsLayer.setVisible(false);
+            collisionsLayer.setVisible(true);
             this.collisionLayers.push(collisionsLayer);
         }
         
@@ -185,9 +185,8 @@ export class Game extends Scene {
         }
         
         // Set up camera bounds (scaled)
-        const scaledWidth = map.widthInPixels * this.GAME_SCALE;
-        const scaledHeight = map.heightInPixels * this.GAME_SCALE;
-        this.cameras.main.setBounds(0, 0, scaledWidth, scaledHeight);
+        const scaledWidth = map.widthInPixels; //* this.GAME_SCALE;
+        const scaledHeight = map.heightInPixels; //* this.GAME_SCALE;
         
         console.log('Tilemap created successfully with TilemapManager');
         console.log('Map dimensions (scaled):', scaledWidth, 'x', scaledHeight);
@@ -232,16 +231,16 @@ export class Game extends Scene {
         if (spawnLayer) {
             const spawnPoint = this.tilemap.findObject('StartSpawnPoint', obj => obj.name === 'playerSpawn');
             if (spawnPoint && spawnPoint.x !== undefined && spawnPoint.y !== undefined) {
-                spawnX = spawnPoint.x * this.GAME_SCALE;
-                spawnY = spawnPoint.y * this.GAME_SCALE;
+                spawnX = spawnPoint.x; //* this.GAME_SCALE;
+                spawnY = spawnPoint.y; //* this.GAME_SCALE;
                 console.log('Using tilemap spawn point:', spawnX, spawnY);
             }
         }
         
         // Fallback to top right area if no spawn point found
         if (!spawnX || !spawnY) {
-            const mapWidth = this.tilemap.widthInPixels * this.GAME_SCALE;
-            const mapHeight = this.tilemap.heightInPixels * this.GAME_SCALE;
+            const mapWidth = this.tilemap.widthInPixels; //* this.GAME_SCALE;
+            const mapHeight = this.tilemap.heightInPixels; //* this.GAME_SCALE;
             spawnX = mapWidth * 0.70; // 70% to the right (top right area, closer to center)
             spawnY = mapHeight * 0.30; // 30% from top (top right area, closer to center)
             console.log('Using fallback spawn position:', spawnX, spawnY);
@@ -250,11 +249,11 @@ export class Game extends Scene {
         this.player = new Player(this, spawnX, spawnY, this.selectedArchetype!);
         
         // Scale the player sprite to match the tilemap scaling
-        this.player.sprite.setScale(0.15 * this.GAME_SCALE);
+        this.player.sprite.setScale(0.05); //* this.GAME_SCALE);
         
         // Set up tilemap collision detection for player
         this.setupPlayerTilemapCollisions();
-        
+
         // Initialize XP Orb System
         this.xpOrbSystem = new XPOrbSystem(this);
         
@@ -270,9 +269,13 @@ export class Game extends Scene {
             this.spawnEnemyAtPosition(type, x, y);
         });
         
-        // Set up camera to follow player
-        this.cameras.main.startFollow(this.player.sprite);
-        this.cameras.main.setLerp(0.1, 0.1);
+        // --- CAMERA SETUP (matches JS version) ---
+        const mapWidth = this.tilemap.widthInPixels;
+        const mapHeight = this.tilemap.heightInPixels;
+
+        this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1); // smooth follow
+        this.cameras.main.setZoom(3); // same as JS
+        this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
         
         // Start spawning enemies
         this.enemySystem.startSpawning();
@@ -296,7 +299,7 @@ export class Game extends Scene {
         
         console.log('Game systems initialized with simplified collision system');
         console.log('Player spawn position (top right, closer to center):', spawnX, spawnY);
-        console.log('Player scale:', 0.15 * this.GAME_SCALE);
+        console.log('Player scale:', 0.05); // * this.GAME_SCALE);
     }
 
     private restartGame(): void {
@@ -373,11 +376,11 @@ export class Game extends Scene {
         // Set up object collision system (like the example)
         this.objectCollisionObstacles.forEach(obj => {
             // Tiled objects are top-left anchored; Arcade bodies are center-anchored
-            const x = (obj.x + obj.width / 2) * this.GAME_SCALE;
-            const y = (obj.y + obj.height / 2) * this.GAME_SCALE;
+            const x = (obj.x + obj.width / 2); //* this.GAME_SCALE;
+            const y = (obj.y + obj.height / 2); //* this.GAME_SCALE;
             
             // Create an invisible rectangle and give it a STATIC Arcade body
-            const rect = this.add.rectangle(x, y, obj.width * this.GAME_SCALE, obj.height * this.GAME_SCALE).setVisible(false);
+            const rect = this.add.rectangle(x, y, obj.width, obj.height).setVisible(true);//* this.GAME_SCALE,  //* this.GAME_SCALE).setVisible(true);
             this.physics.add.existing(rect, true); // true => static body
             
             // Add collision between player and this object
@@ -388,7 +391,7 @@ export class Game extends Scene {
     }
 
     private createAnimations(): void {
-        // console.log('🎬 Starting animation creation...');
+        // console.log(' Starting animation creation...');
         
         // Player animations from ALL loaded character atlases
         const characterAtlasKeys = this.spriteSheetManager

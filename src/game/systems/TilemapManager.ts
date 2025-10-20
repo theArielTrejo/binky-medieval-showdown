@@ -140,49 +140,74 @@ export class TilemapManager {
       console.error(`Cannot create tilemap ${config.name}: assets not loaded or failed to load`);
       return null;
     }
-    
+
     try {
       const map = this.scene.make.tilemap({ key: config.key });
       const tilesets: Phaser.Tilemaps.Tileset[] = [];
-      
+
+      // --- Add all tilesets ---
       for (const tilesetConfig of config.tilesets) {
         const tileset = map.addTilesetImage(tilesetConfig.name, tilesetConfig.imageKey);
         if (tileset) {
           tilesets.push(tileset);
         } else {
-          console.warn(`Failed to add tileset '${tilesetConfig.name}' to map '${config.name}'. Is the tileset name in your config correct?`);
+          console.warn(`⚠️ Failed to add tileset '${tilesetConfig.name}' to map '${config.name}'. Check spelling in Tiled.`);
         }
       }
-      
+
+      // --- Correct depth map (matches your working JS version) ---
+      const depthMap: Record<string, number> = {
+        background: 0,
+        foreground: 1,
+        objects: 2,
+        foregroundobjects: 4,
+        Trees: 5,
+        collisions: 10,
+        objectcollisions: 11
+      };
+
+      // --- Create each layer ---
       for (const layerConfig of config.layers) {
-        const layerTilesets = layerConfig.tilesets.length > 0 
+        const layerTilesets = layerConfig.tilesets.length > 0
           ? tilesets.filter(ts => layerConfig.tilesets.includes(ts.name))
           : tilesets;
-        
+
         const layer = map.createLayer(layerConfig.name, layerTilesets, 0, 0);
-        if (layer) {
-          if (layerConfig.depth !== undefined) layer.setDepth(layerConfig.depth);
-          if (layerConfig.alpha !== undefined) layer.setAlpha(layerConfig.alpha);
-          if (layerConfig.visible !== undefined) layer.setVisible(layerConfig.visible);
-        } else {
-          console.warn(`Failed to create layer '${layerConfig.name}' in map '${config.name}'. Is the layer name correct?`);
+        if (!layer) {
+          console.warn(`⚠️ Could not create layer '${layerConfig.name}' in map '${config.name}'.`);
+          continue;
+        }
+
+        // Apply visibility and transparency
+        if (layerConfig.visible !== undefined) layer.setVisible(layerConfig.visible);
+        if (layerConfig.alpha !== undefined) layer.setAlpha(layerConfig.alpha);
+
+        // ✅ Apply correct depth order
+        const setDepth = depthMap[layerConfig.name] ?? layerConfig.depth ?? 0;
+        layer.setDepth(setDepth);
+
+        // ✅ Set up collisions automatically
+        if (layerConfig.collides) {
+          layer.setCollisionByExclusion([-1]);
+          console.log(`✅ Collision enabled for layer: ${layerConfig.name}`);
         }
       }
-      
+
+      // --- Set physics world bounds ---
       if (config.worldBounds) {
         this.scene.physics.world.setBounds(0, 0, config.worldBounds.width, config.worldBounds.height);
       } else {
         this.scene.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
       }
-      
+
       this.loadedTilemaps.set(config.name, map);
       return map;
-      
     } catch (error) {
-      console.error(`Error creating tilemap ${config.name}:`, error);
+      console.error(`❌ Error creating tilemap ${config.name}:`, error);
       return null;
     }
   }
+
 
   /**
    * Set up collision for tilemap layers with enhanced collision detection
