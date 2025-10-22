@@ -170,7 +170,7 @@ export class Game extends Scene {
             // Mark every non-empty tile as collidable (like the example)
             collisionsLayer.setCollisionByExclusion([-1]);
             // Keep collision layer visible for debugging (can be set to false later)
-            collisionsLayer.setVisible(true);
+            collisionsLayer.setVisible(false);
             this.collisionLayers.push(collisionsLayer);
         }
         
@@ -257,11 +257,12 @@ export class Game extends Scene {
         // Initialize XP Orb System
         this.xpOrbSystem = new XPOrbSystem(this);
         
-        // Initialize Enemy System
-        this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem);
+        // TO SHOW MOBS UNCOMMENT Enemy System & AI Director
+        // Initialize Enemy System 
+        //this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem);
         
         // Initialize AI Director
-        this.aiDirector = new AIDirector();
+        //this.aiDirector = new AIDirector();
         
         // Initialize Enhanced Mob Spawner UI
         this.mobSpawnerUI = new MobSpawnerUI(this);
@@ -273,9 +274,17 @@ export class Game extends Scene {
         const mapWidth = this.tilemap.widthInPixels;
         const mapHeight = this.tilemap.heightInPixels;
 
-        this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1); // smooth follow
-        this.cameras.main.setZoom(3); // same as JS
-        this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+        // ✅ Match JS exactly
+        const camera = this.cameras.main;
+        camera.startFollow(this.player.sprite, true, 0.1, 0.1);
+        camera.setZoom(3);
+        camera.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
+
+        // Optional smooth camera lag (for cinematic movement)
+        camera.setLerp(0.15, 0.15);
+
+        // ✅ Center camera on spawn when starting (prevents snapping)
+        camera.centerOn(this.player.sprite.x, this.player.sprite.y);
         
         // Start spawning enemies
         this.enemySystem.startSpawning();
@@ -367,28 +376,87 @@ export class Game extends Scene {
         (this as any).gameOverRestartText = restartText;
     }
 
+    private debugEnabled = true; // start ON so you can see everything
+    private collisionDebugGfx!: Phaser.GameObjects.Graphics;
+    private playerDebugGfx!: Phaser.GameObjects.Graphics;
+    private objectRects: Phaser.GameObjects.Rectangle[] = [];
+
     private setupPlayerTilemapCollisions(): void {
-        // Set up collision detection between player and tilemap layers (like the example)
-        this.collisionLayers.forEach(layer => {
-            this.physics.add.collider(this.player.sprite, layer, undefined, undefined, this);
-        });
-        
-        // Set up object collision system (like the example)
-        this.objectCollisionObstacles.forEach(obj => {
-            // Tiled objects are top-left anchored; Arcade bodies are center-anchored
-            const x = (obj.x + obj.width / 2); //* this.GAME_SCALE;
-            const y = (obj.y + obj.height / 2); //* this.GAME_SCALE;
-            
-            // Create an invisible rectangle and give it a STATIC Arcade body
-            const rect = this.add.rectangle(x, y, obj.width, obj.height).setVisible(true);//* this.GAME_SCALE,  //* this.GAME_SCALE).setVisible(true);
-            this.physics.add.existing(rect, true); // true => static body
-            
-            // Add collision between player and this object
-            this.physics.add.collider(this.player.sprite, rect);
-        });
-        
-        console.log(`Player collision setup complete for ${this.collisionLayers.length} layers and ${this.objectCollisionObstacles.length} object obstacles`);
+    // --- Tile layer collisions ---
+    this.collisionLayers.forEach(layer => {
+        this.physics.add.collider(this.player.sprite, layer);
+    });
+
+    // --- Object rectangles from "objectcollisions" ---
+    this.objectRects = []; // reset in case of restart
+
+    this.objectCollisionObstacles.forEach(obj => {
+        // Tiled objects are top-left; Arcade bodies are center-based
+        const x = obj.x + obj.width / 2;
+        const y = obj.y + obj.height / 2;
+
+        const rect = this.add
+        .rectangle(x, y, obj.width, obj.height)
+        .setOrigin(0.5)
+        .setVisible(false);         // keep invisible; we’ll draw debug separately
+
+        // Add STATIC physics body
+        this.physics.add.existing(rect, true);
+
+        // Collide player with this static rect
+        this.physics.add.collider(this.player.sprite, rect);
+
+        // Keep a reference for debug drawing
+        this.objectRects.push(rect);
+    });
+
+    // --- Create debug graphics layers (on top) ---
+    this.collisionDebugGfx = this.add.graphics().setDepth(10000).setAlpha(0.85);
+    this.playerDebugGfx = this.add.graphics().setDepth(10001).setAlpha(0.95);
+
+    // --- Hotkey to toggle debug ---
+    this.input.keyboard!.on('keydown-F1', () => {
+        this.debugEnabled = !this.debugEnabled;
+        this.collisionDebugGfx.clear();
+        this.playerDebugGfx.clear();
+    });
+
+    console.log(
+        `✅ Player collision setup: ${this.collisionLayers.length} tile layers + ${this.objectRects.length} object rects`
+    );
     }
+
+    private renderCollisionDebug(): void {
+    if (!this.debugEnabled) return;
+
+    // Clear previous frame
+    this.collisionDebugGfx.clear();
+    this.playerDebugGfx.clear();
+
+    // 1) Colliding Tiles (orange)
+    this.collisionLayers.forEach(layer => {
+        // Phaser has a debug helper for tile collisions:
+        layer.renderDebug(this.collisionDebugGfx, {
+        tileColor: null, // non-colliding tiles
+        collidingTileColor: new Phaser.Display.Color(243, 134, 48, 180), // orange
+        faceColor: new Phaser.Display.Color(40, 39, 37, 255)            // faces
+        });
+    });
+
+    // 2) Object Rectangles (red outlines)
+    this.collisionDebugGfx.lineStyle(2, 0xff0000, 1);
+    this.objectRects.forEach(rect => {
+        const body = (rect.body as Phaser.Physics.Arcade.StaticBody);
+        // Static body has x/y/width/height in world coords
+        this.collisionDebugGfx.strokeRect(body.x, body.y, body.width, body.height);
+    });
+
+    // 3) Player body (lime outline)
+    const pb = this.player.sprite.body as Phaser.Physics.Arcade.Body;
+    this.playerDebugGfx.lineStyle(2, 0x00ff00, 1);
+    this.playerDebugGfx.strokeRect(pb.x, pb.y, pb.width, pb.height);
+    }
+
 
     private createAnimations(): void {
         // console.log(' Starting animation creation...');
@@ -920,7 +988,9 @@ export class Game extends Scene {
             this.handleGameOver();
             return;
         }
-        
+        // Collision Detection
+        this.renderCollisionDebug();
+
         // Convert delta from milliseconds to seconds
         const deltaTime = delta / 1000;
         

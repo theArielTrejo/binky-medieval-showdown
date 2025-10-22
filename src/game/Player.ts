@@ -59,14 +59,17 @@ export class Player {
         // Enable crisp pixel rendering for better sprite quality
         this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
         
-        // Set up physics body with improved settings
-        if (this.sprite.body) {
-            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-            body.setCollideWorldBounds(true);
-            body.setSize(32, 32); // Set collision box size
-            body.setDrag(800); // Add drag for smoother movement
-        }
-        
+        // ✅ Big hitbox like your working JS
+        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+        body.setCollideWorldBounds(true);
+
+        // These are WORLD pixels (not scaled texture pixels) — same values you used in GameScence.js
+        body.setSize(410, 545);     // width, height
+        body.setOffset(265, 175);   // shift right (x), shift down (y)
+
+        // Optional: if drag was added earlier, keep it
+        body.setDrag(800);
+
         // Start with idle animation
         this.playAnimation('idle');
         
