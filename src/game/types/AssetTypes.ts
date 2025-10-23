@@ -21,6 +21,7 @@ export enum AssetLoadingState {
 export enum AssetType {
   MOB = 'mob',
   TILEMAP = 'tilemap',
+  SPRITESHEET = 'spritesheet',
   IMAGE = 'image',
   AUDIO = 'audio',
   JSON = 'json'
@@ -76,6 +77,7 @@ export interface AssetLoadingResult {
   errors: string[];
   mobResults?: MobLoadResult[];
   tilemapResults?: TilemapLoadResult[];
+  spritesheetResults?: any[]; // Will be properly typed when SpriteSheetLoadResult is imported
   duration: number;
 }
 

@@ -1,6 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
-import { PlayerArchetype } from './PlayerArchetype';
-import { EnemySystem, EnemyType } from './EnemySystem';
+import { Player } from './Player';
+import { EnemySystem } from './EnemySystem';
+import { EnemyType } from './types/EnemyTypes';
 
 // Enhanced AI Director with improved architecture and training
 
@@ -40,9 +41,9 @@ export interface GameState {
     resourceGeneration: number;
     gameTimer: number;
     enemyCountSkeletonVikings: number;
+    enemyCountGolems: number;
     enemyCountArchers: number;
     enemyCountGnolls: number;
-    enemyCountGolems: number;
     difficultyLevel: number;
     playerStressLevel: number;
     engagementScore: number;
@@ -300,8 +301,8 @@ export class AIDirector {
         const playerThreat = (state.playerDPS / 100) * (state.playerHealthPercent / 100);
          
          // Enemy presence assessment
-         const totalEnemies = state.enemyCountTanks + state.enemyCountProjectiles + 
-                             state.enemyCountSpeedsters + state.enemyCountBosses;
+         const totalEnemies = state.enemyCountSkeletonVikings + state.enemyCountGolems + 
+                             state.enemyCountArchers + state.enemyCountGnolls;
          const enemyThreat = Math.min(totalEnemies / 20, 1.0);
          
          // Budget efficiency assessment
@@ -547,7 +548,7 @@ export class AIDirector {
      * @param enemySystem - The enemy system instance
      * @returns Current game state object with normalized values
      */
-    public getGameState(player: PlayerArchetype, enemySystem: EnemySystem): GameState {
+    public getGameState(player: Player, enemySystem: EnemySystem): GameState {
         const currentTime = Date.now();
         const gameTimer = (currentTime - this.gameStartTime) / 1000; // Game time in seconds
         
@@ -573,16 +574,16 @@ export class AIDirector {
             playerArchetype: player.getArchetypeVector(),
             playerHealthPercent: healthPercent,
             playerDPS: Math.min(playerDPS / 100, 1), // Normalize
-            playerPositionX: player.position.x / 1024, // Normalize to 0-1
-            playerPositionY: player.position.y / 768, // Normalize to 0-1
+            playerPositionX: (player.position.x - player.getScene().physics.world.bounds.x) / player.getScene().physics.world.bounds.width, // Normalize to 0-1 using actual world bounds
+            playerPositionY: (player.position.y - player.getScene().physics.world.bounds.y) / player.getScene().physics.world.bounds.height, // Normalize to 0-1 using actual world bounds
             damageTakenRecently: Math.min(player.getDamageTakenRecently() / 50, 1),
-            playerMovementDistance: Math.min(movementDistance / 1000, 1),
-            resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1),
-            gameTimer: Math.min(gameTimer / 300, 1),
-            enemyCountSkeletonVikings: Math.min(enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING) / 8, 1),
-            enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 12, 1),
-            enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 15, 1),
-            enemyCountGolems: Math.min(enemySystem.getEnemyCountByType(EnemyType.GOLEM) / 4, 1),
+            playerMovementDistance: Math.min(movementDistance / 1000, 1), // Normalize
+            resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1), // Normalize
+            gameTimer: Math.min(gameTimer / 300, 1), // Normalize to 5 minutes max
+            enemyCountSkeletonVikings: Math.min(enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING) / 10, 1),
+            enemyCountGolems: Math.min(enemySystem.getEnemyCountByType(EnemyType.GOLEM) / 8, 1),
+            enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 15, 1),
+            enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 20, 1),
             difficultyLevel: difficultyLevel,
             playerStressLevel: playerStressLevel,
             engagementScore: engagementScore
@@ -600,10 +601,10 @@ export class AIDirector {
             state.playerMovementDistance,
             state.resourceGeneration,
             state.gameTimer,
-            state.enemyCountTanks,
-            state.enemyCountProjectiles,
-            state.enemyCountSpeedsters,
-            state.enemyCountBosses,
+            state.enemyCountSkeletonVikings,
+            state.enemyCountGolems,
+            state.enemyCountArchers,
+            state.enemyCountGnolls,
             state.difficultyLevel,
             state.playerStressLevel,
             state.engagementScore
@@ -876,7 +877,7 @@ export class AIDirector {
         return reward;
     }
 
-    public async update(player: PlayerArchetype, enemySystem: EnemySystem): Promise<void> {
+    public async update(player: Player, enemySystem: EnemySystem): Promise<void> {
         const currentTime = Date.now();
         
         // Only take action every few seconds
@@ -1685,5 +1686,73 @@ export class AIDirector {
 
     public setTargetPerformanceRange(min: number, max: number): void {
         this.targetPerformanceRange = { min: Math.max(0, min), max: Math.min(1, max) };
+    }
+
+    /**
+     * Get consolidated metrics for the AI Director
+     * This method provides a comprehensive overview of all AI Director metrics
+     */
+    public getMetrics(): any {
+        const avgPerformance = this.getAveragePerformance();
+        const recentThreat = this.threatAssessmentHistory.length > 0 ? 
+            this.threatAssessmentHistory[this.threatAssessmentHistory.length - 1].threat : 0;
+        
+        return {
+            // Training metrics
+            training: this.getTrainingMetrics(),
+            
+            // Model configuration
+            model: this.getModelConfig(),
+            
+            // Training status
+            trainingStatus: this.getTrainingStatus(),
+            
+            // Budget information
+            budget: {
+                current: this.currentBudget,
+                max: this.maxBudget,
+                percentage: (this.currentBudget / this.maxBudget) * 100,
+                regenRate: this.budgetRegenRate,
+                efficiency: this.budgetEfficiencyBonus,
+                emergency: this.emergencyBudgetMultiplier > 1.0,
+                status: this.getBudgetStatus()
+            },
+            
+            // Tactical information
+            tactical: {
+                strategy: this.adaptiveStrategy,
+                threatLevel: recentThreat,
+                memorySize: this.tacticalMemory.length,
+                status: this.getTacticalStatus()
+            },
+            
+            // Adaptive difficulty
+            adaptiveDifficulty: {
+                enabled: this.adaptiveDifficultyEnabled,
+                performance: avgPerformance,
+                performancePercent: avgPerformance * 100,
+                targetRange: this.targetPerformanceRange,
+                status: this.getAdaptiveDifficultyStatus()
+            },
+            
+            // Player performance
+            playerPerformance: this.getPlayerPerformanceMetrics(),
+            
+            // Strategic objectives
+            strategicObjectives: {
+                total: this.strategicObjectives.length,
+                status: this.getStrategicObjectivesStatus()
+            },
+            
+            // History data
+            history: {
+                threatAssessment: this.getThreatAssessmentHistory(),
+                budget: this.getBudgetHistory(),
+                performanceWindow: [...this.performanceWindow]
+            },
+            
+            // Timestamp
+            timestamp: Date.now()
+        };
     }
 }

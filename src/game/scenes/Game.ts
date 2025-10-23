@@ -1,40 +1,35 @@
 import { Scene } from 'phaser';
 import { Player } from '../Player';
-import { EnemySystem, EnemyType } from '../EnemySystem';
+import { EnemySystem } from '../EnemySystem';
+import { EnemyType } from '../types/EnemyTypes';
 import { AIDirector } from '../AIDirector';
 import { PlayerArchetypeType } from '../PlayerArchetype';
-import { AIMetricsDashboard } from '../../ui/AIMetricsDashboard';
 import { ClassSelectionUI } from '../../ui/ClassSelectionUI';
-import { EnemySpawnerUI } from '../../ui/EnemySpawnerUI';
+import { MobSpawnerUI } from '../../ui/MobSpawnerUI';
 import { XPOrbSystem } from '../XPOrbSystem';
-import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
-import { AssetManager } from '../systems/AssetManager';
-import { MobSpawner } from '../systems/MobSpawner';
-import { MOB_CONFIGS, MAIN_TILEMAP_CONFIG, COLLISION_CONFIG } from '../config/GameConfig';
-import { AssetLoadingProgress, AssetLoadingResult } from '../types/AssetTypes';
-import { MobConfig } from '../types/MobTypes';
+import { SpriteSheetManager } from '../systems/SpriteSheetManager';
+import { TilemapManager } from '../systems/TilemapManager';
+import { TilemapConfig } from '../types/TilemapTypes';
 
 export class Game extends Scene {
     private player!: Player;
     private enemySystem!: EnemySystem;
     private aiDirector!: AIDirector;
-    private aiDashboard!: AIMetricsDashboard;
-    private enemySpawnerUI!: EnemySpawnerUI;
-    private xpOrbSystem!: XPOrbSystem;
-    private gameStarted: boolean = false;
     private classSelectionUI!: ClassSelectionUI;
-    private gameUI: Phaser.GameObjects.Group;
-    private gameOverText: Phaser.GameObjects.Text | null = null;
-    private statsText: Phaser.GameObjects.Text;
-    private directorStatsText: Phaser.GameObjects.Text;
-    private aiControlsText!: Phaser.GameObjects.Text;
-    private restartInstructionText: Phaser.GameObjects.Text | null = null;
-    
-    // New asset management systems
-    private assetManager!: AssetManager;
+    private mobSpawnerUI!: MobSpawnerUI;
+    private xpOrbSystem!: XPOrbSystem;
     private tilemap!: Phaser.Tilemaps.Tilemap;
-    private mobSpawner!: MobSpawner;
-    private assetsLoaded: boolean = false;
+    private tilemapManager!: TilemapManager;
+    private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
+    private objectCollisionObstacles: any[] = [];
+    private gameStarted: boolean = false;
+    private selectedArchetype: PlayerArchetypeType | null = null;
+    private spriteSheetManager!: SpriteSheetManager;
+    // private readonly GAME_SCALE = 2; // Scaling factor for consistent proportions
+    
+    // Restart functionality properties
+    private restartInstructionText: Phaser.GameObjects.Text | null = null;
+    private gameOverText: Phaser.GameObjects.Text | null = null;
 
     constructor() {
         super('Game');
@@ -44,410 +39,170 @@ export class Game extends Scene {
         this.load.setPath('assets');
         this.load.image('logo', 'logo.png');
         
-        // Load tilemap assets
+        // Load tilemap JSON
         this.load.tilemapTiledJSON('map', 'tilemaps/binkymap1.json');
-        this.load.image('castlewall', 'tilemaps/castlewall.png');
+        
+        // Load ALL tileset images (complete set from tilemaps folder)
         this.load.image('floor1', 'tilemaps/floor1.png');
-        this.load.image('objectskeletonstatues', 'tilemaps/objectskeletonstatues.png');
-        this.load.image('tiledwallandfloor', 'tilemaps/tiledwallandfloor.png');
         this.load.image('GraveyardTileset', 'tilemaps/GraveyardTileset.png');
-        this.load.image('houses1', 'tilemaps/houses1.png');
-        this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
+        this.load.image('tiledwallandfloor', 'tilemaps/tiledwallandfloor.png');
+        this.load.image('gatedoorandflags', 'tilemaps/gatedoorandflags.png');
+        this.load.image('castlewall', 'tilemaps/castlewall.png');
         this.load.image('objecthouserocksstatues', 'tilemaps/objecthouserocksstatues.png');
-        this.load.image('objectlogs', 'tilemaps/objectlogs.png');
-        this.load.image('tents', 'tilemaps/tents.png');
+        this.load.image('houses1', 'tilemaps/houses1.png');
         this.load.image('treesandplants', 'tilemaps/treesandplants.png');
+        this.load.image('objectlogs', 'tilemaps/objectlogs.png');
+        this.load.image('objectskeletonstatues', 'tilemaps/objectskeletonstatues.png');
+        this.load.image('grassclippings1', 'tilemaps/grassclippings1.png');
         this.load.image('waggonsandmore', 'tilemaps/waggonsandmore.png');
         this.load.image('brokenspikedfence', 'tilemaps/brokenspikedfence.png');
-        this.load.image('gatedoorandflags', 'tilemaps/gatedoorandflags.png');
-        this.load.image('grassclippings1', 'tilemaps/grassclippings1.png');
+        this.load.image('tents', 'tilemaps/tents.png');
+        this.load.image('farmhouses', 'tilemaps/farmhouses.png');
+        this.load.image('farmgrass', 'tilemaps/farmgrass.png');
+        this.load.image('farmobjects', 'tilemaps/farmobjects.png');
+        this.load.image('collision', 'tilemaps/collision.png');
+        this.load.image('D_CastleGate', 'tilemaps/D_CastleGate.png');
+        this.load.image('Portcullis', 'tilemaps/Portcullis.png');
         this.load.image('grassclippings2', 'tilemaps/grassclippings2.png');
+        this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
+
+        // Load available assets only
         
-        // Load Medieval Knight character assets
-        for (let i = 1; i <= 23; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`medieval_knight_${i}`, `characters/medieval-knight/Walking_${frameNum}.png`);
-        }
+        // Load XP orb (use existing green orb)
+        // Load XP orb (match key used by XPOrb class)
+        this.load.image('green_orb', 'images/green_orb.png');
         
-        // Create a static image for idle state (using first frame)
-        this.load.image('medieval_knight_idle', 'characters/medieval-knight/Walking_001.png');
-        
-        // Load mob assets
-        // Skeleton Viking
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`skeleton_viking_idle_${frameNum}`, `mobs/skeleton-viking/0_Skeleton_Viking_Idle_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 11; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`skeleton_viking_running_${frameNum}`, `mobs/skeleton-viking/0_Skeleton_Viking_Running_${frameNum}.png`);
-        }
-        this.load.image('skeleton_viking_idle', 'mobs/skeleton-viking/0_Skeleton_Viking_Idle_000.png');
-        
-        // Archer Mob
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`archer_mob_idle_${frameNum}`, `mobs/archer-mob/0_Archer_Idle_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 11; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`archer_mob_running_${frameNum}`, `mobs/archer-mob/0_Archer_Running_${frameNum}.png`);
-        }
-        this.load.image('archer_mob_idle', 'mobs/archer-mob/0_Archer_Idle_000.png');
-        
-        // Gnoll
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`gnoll_idle_${frameNum}`, `mobs/gnoll/0_Gnoll_Idle_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 11; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`gnoll_running_${frameNum}`, `mobs/gnoll/0_Gnoll_Running_${frameNum}.png`);
-        }
-        this.load.image('gnoll_idle', 'mobs/gnoll/0_Gnoll_Idle_000.png');
-        
-        // Golem
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`golem_idle_${frameNum}`, `mobs/golem/0_Golem_Idle_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 23; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`golem_walking_${frameNum}`, `mobs/golem/0_Golem_Walking_${frameNum}.png`);
-        }
-        this.load.image('golem_idle', 'mobs/golem/0_Golem_Idle_000.png');
-        
-        // Skeleton Pirate
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`skeleton_pirate_idle_${frameNum}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Idle_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 11; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`skeleton_pirate_running_${frameNum}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Running_${frameNum}.png`);
-        }
-        this.load.image('skeleton_pirate_idle', 'mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Idle_000.png');
-        
-        // Elemental Spirit
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`elemental_spirit_idle_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Idle_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 11; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`elemental_spirit_running_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Running_${frameNum}.png`);
-        }
-        for (let i = 0; i <= 14; i++) {
-            const frameNum = String(i).padStart(3, '0');
-            this.load.image(`elemental_spirit_dying_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Dying_${frameNum}.png`);
-        }
-        this.load.image('elemental_spirit_idle', 'mobs/elemental-spirit/0_Elemental_Spirits_Idle_000.png');
-        
-        // Initialize the new asset management system (for tilemap only - mobs are loaded manually above)
-        this.assetManager = new AssetManager(this);
-        
-        // Note: We're not using AssetManager for mobs since we load individual sprite frames manually
-        // Only use it for tilemap loading if needed in the future
-        // For now, mark assets as loaded since we handle everything in preload()
-                this.assetsLoaded = true;
+        // Load player sprite (use first available character texture)
+
+        // Load essential spritesheets (characters and mobs) for animations
+        this.spriteSheetManager = new SpriteSheetManager(this);
+        this.spriteSheetManager.loadEssentialSpritesheets();
     }
 
     create() {
-        // Create tilemap as background
+        // console.log('Game scene created');
+        
+        // Enable crisp pixel rendering for better sprite quality
+        // Use proper Phaser configuration for pixel-perfect rendering
+        if (this.game.renderer.type === Phaser.WEBGL) {
+            const gl = (this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).gl;
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        }
+        
+        // Create tilemap exactly like the working example
         this.createTilemap();
         
-        // Initialize UI groups
-        this.gameUI = this.add.group();
+        // Initialize UI systems
+        this.initializeUI();
         
-        // Create enhanced class selection screen
-        this.classSelectionUI = new ClassSelectionUI(this, {
-            onClassSelected: (archetype: PlayerArchetypeType) => {
-                this.startGame(archetype);
-            },
-            position: { x: 512, y: 384 },
-            visible: true
-        });
-        
-        // Initialize systems (but don't start yet)
-        this.enemySystem = new EnemySystem(this);
-        this.aiDirector = new AIDirector();
-        this.xpOrbSystem = new XPOrbSystem(this);
-        this.mobSpawner = new MobSpawner(this);
-        
-        // Initialize AI Dashboard with design system positioning
-        this.aiDashboard = new AIMetricsDashboard(this, this.aiDirector, {
-            position: { x: EnhancedDesignSystem.spacing.md, y: EnhancedDesignSystem.spacing.md },
-            size: { width: 520, height: 420 },
-            visible: false // Initially hidden until game starts
-        });
-        
-        // Set enemy system reference for cost tracking
-        this.aiDashboard.setEnemySystem(this.enemySystem);
-        
-        // Initialize Enemy Spawner UI for testing
-        this.enemySpawnerUI = new EnemySpawnerUI(this);
-        this.enemySpawnerUI.setSpawnCallback((type: EnemyType, x: number, y: number) => {
-            this.spawnEnemyAtPosition(type, x, y);
-        });
-        
-        // Create animations
+        // Create animations after all assets are loaded
         this.createAnimations();
         
-        // Create game UI (initially hidden)
-        this.createGameUI();
-        
-        // Set up AI control keys
-        this.setupAIControls();
-        
-        // Spawn demo mobs for testing
-        this.spawnDemoMobs();
+        // Show class selection
+        this.showClassSelection();
     }
 
     private createTilemap(): void {
-        // Create tilemap
-        const map = this.make.tilemap({ key: 'map' });
+        console.log('Creating tilemap with TilemapManager...');
         
-        // Add all tilesets
-        const allTilesets = [
-            map.addTilesetImage('castlewall', 'castlewall'),
-            map.addTilesetImage('floor1', 'floor1'),
-            map.addTilesetImage('objectskeletonstatues', 'objectskeletonstatues'),
-            map.addTilesetImage('tiledwallandfloor', 'tiledwallandfloor'),
-            map.addTilesetImage('GraveyardTileset', 'GraveyardTileset'),
-            map.addTilesetImage('houses1', 'houses1'),
-            map.addTilesetImage('objectbrickstools', 'objectbrickstools'),
-            map.addTilesetImage('objecthouserocksstatues', 'objecthouserocksstatues'),
-            map.addTilesetImage('objectlogs', 'objectlogs'),
-            map.addTilesetImage('tents', 'tents'),
-            map.addTilesetImage('treesandplants', 'treesandplants'),
-            map.addTilesetImage('waggonsandmore', 'waggonsandmore'),
-            map.addTilesetImage('brokenspikedfence', 'brokenspikedfence'),
-            map.addTilesetImage('gatedoorandflags', 'gatedoorandflags'),
-            map.addTilesetImage('grassclippings1', 'grassclippings1'),
-            map.addTilesetImage('grassclippings2', 'grassclippings2')
-        ];
-
-        // Filter out null tilesets and create map layers
-        const validTilesets = allTilesets.filter(tileset => tileset !== null);
-        map.createLayer('background', validTilesets, 0, 0);
-        map.createLayer('foreground', validTilesets, 0, 0);
-        const objects = map.createLayer('objects', validTilesets, 0, 0);
-
-        // Set up collisions if needed
-        if (objects) {
-            objects.setCollisionByProperty({ collides: true });
+        // Initialize TilemapManager
+        this.tilemapManager = new TilemapManager(this);
+        
+        // Define tilemap configuration
+        const tilemapConfig: TilemapConfig = {
+            name: 'binkyMap',
+            key: 'map',
+            jsonPath: 'assets/tilemaps/binkymap1.json',
+            tilesets: [
+                { name: 'floor1', imageKey: 'floor1', imagePath: 'assets/tilemaps/floor1.png' },
+                { name: 'GraveyardTileset', imageKey: 'GraveyardTileset', imagePath: 'assets/tilemaps/GraveyardTileset.png' },
+                { name: 'tiledwallandfloor', imageKey: 'tiledwallandfloor', imagePath: 'assets/tilemaps/tiledwallandfloor.png' },
+                { name: 'gatedoorandflags', imageKey: 'gatedoorandflags', imagePath: 'assets/tilemaps/gatedoorandflags.png' },
+                { name: 'castlewall', imageKey: 'castlewall', imagePath: 'assets/tilemaps/castlewall.png' },
+                { name: 'objecthouserocksstatues', imageKey: 'objecthouserocksstatues', imagePath: 'assets/tilemaps/objecthouserocksstatues.png' },
+                { name: 'houses1', imageKey: 'houses1', imagePath: 'assets/tilemaps/houses1.png' },
+                { name: 'treesandplants', imageKey: 'treesandplants', imagePath: 'assets/tilemaps/treesandplants.png' },
+                { name: 'objectlogs', imageKey: 'objectlogs', imagePath: 'assets/tilemaps/objectlogs.png' },
+                { name: 'objectskeletonstatues', imageKey: 'objectskeletonstatues', imagePath: 'assets/tilemaps/objectskeletonstatues.png' },
+                { name: 'grassclippings1', imageKey: 'grassclippings1', imagePath: 'assets/tilemaps/grassclippings1.png' },
+                { name: 'waggonsandmore', imageKey: 'waggonsandmore', imagePath: 'assets/tilemaps/waggonsandmore.png' },
+                { name: 'brokenspikedfence', imageKey: 'brokenspikedfence', imagePath: 'assets/tilemaps/brokenspikedfence.png' },
+                { name: 'tents', imageKey: 'tents', imagePath: 'assets/tilemaps/tents.png' },
+                { name: 'farmhouses', imageKey: 'farmhouses', imagePath: 'assets/tilemaps/farmhouses.png' },
+                { name: 'farmgrass', imageKey: 'farmgrass', imagePath: 'assets/tilemaps/farmgrass.png' },
+                { name: 'farmobjects', imageKey: 'farmobjects', imagePath: 'assets/tilemaps/farmobjects.png' },
+                { name: 'collision', imageKey: 'collision', imagePath: 'assets/tilemaps/collision.png' },
+                { name: 'D_CastleGate', imageKey: 'D_CastleGate', imagePath: 'assets/tilemaps/D_CastleGate.png' },
+                { name: 'Portcullis', imageKey: 'Portcullis', imagePath: 'assets/tilemaps/Portcullis.png' },
+                { name: 'grassclippings2', imageKey: 'grassclippings2', imagePath: 'assets/tilemaps/grassclippings2.png' },
+                { name: 'objectbrickstools', imageKey: 'objectbrickstools', imagePath: 'assets/tilemaps/objectbrickstools.png' }
+            ],
+            layers: [
+                { name: 'background', tilesets: [], depth: 0, visible: true, collides: false },
+                { name: 'foreground', tilesets: [], depth: 1, visible: true, collides: false }, // Houses, walls, buildings
+                { name: 'objects', tilesets: [], depth: 2, visible: true, collides: false }, // Decorative only (grass, small rocks, etc.)
+                { name: 'foregroundobjects', tilesets: [], depth: 4, visible: true, collides: false }, // Solid structures
+                { name: 'Trees', tilesets: [], depth: 5, visible: true, collides: false }, // Trees are solid
+                { name: 'collisions', tilesets: [], visible: true, collides: true }, // Dedicated collision layer
+                { name: 'objectcollisions', tilesets: [], visible: true, collides: true } // Object collision layer
+            ]
+        };
+        
+        // Register the already loaded tilemap assets
+        this.tilemapManager.registerLoadedTilemap(tilemapConfig);
+        
+        // Create the tilemap
+        const map = this.tilemapManager.createTilemap(tilemapConfig);
+        if (!map) {
+            console.error('Failed to create tilemap');
+            return;
         }
-
-        // Store tilemap reference
+        
         this.tilemap = map;
-
-        // Update camera bounds to match tilemap
-        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         
-        // Set physics world bounds to match tilemap for full exploration
-        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    }
-
-
-
-    /**
-     * Spawn demo mobs to showcase the dynamic loading system
-     */
-    private spawnDemoMobs(): void {
-        if (!this.assetsLoaded || !this.mobSpawner) {
-            console.warn('Cannot spawn demo mobs: assets not loaded or spawner not initialized');
-            return;
+        // Apply scaling for consistent proportions
+        //this.tilemapManager.applyScaling('binkyMap', this.GAME_SCALE);
+        
+        // Set up collision system exactly like the working example
+        const collisionsLayer = map.getLayer('collisions')?.tilemapLayer;
+        if (collisionsLayer) {
+            // Mark every non-empty tile as collidable (like the example)
+            collisionsLayer.setCollisionByExclusion([-1]);
+            // Keep collision layer visible for debugging (can be set to false later)
+            collisionsLayer.setVisible(false);
+            this.collisionLayers.push(collisionsLayer);
         }
-
-        // Spawn mobs at predefined locations
-        const spawnPoints = MAIN_TILEMAP_CONFIG.spawnPoints?.enemies || [];
         
-        if (spawnPoints.length > 0) {
-            this.mobSpawner.spawnMobsAtSpawnPoints(spawnPoints);
-            console.log(`Spawned ${spawnPoints.length} demo mobs`);
-        } else {
-            // Fallback: spawn some mobs at default locations
-            this.mobSpawner.spawnMob('skeleton', 600, 300);
-            this.mobSpawner.spawnMob('goblin', 400, 500);
-            this.mobSpawner.spawnMob('archer', 800, 200);
-            console.log('Spawned fallback demo mobs');
+        // Handle object collisions from objectcollisions layer (like the example)
+        const objectCollisionLayer = map.getObjectLayer('objectcollisions');
+        if (objectCollisionLayer) {
+            const obstacles = objectCollisionLayer.objects || [];
+            console.log('Found', obstacles.length, 'object collision obstacles');
+            
+            // Store obstacles for later use in initializeGameSystems
+            this.objectCollisionObstacles = obstacles;
         }
+        
+        // Set up camera bounds (scaled)
+        const scaledWidth = map.widthInPixels; //* this.GAME_SCALE;
+        const scaledHeight = map.heightInPixels; //* this.GAME_SCALE;
+        
+        console.log('Tilemap created successfully with TilemapManager');
+        console.log('Map dimensions (scaled):', scaledWidth, 'x', scaledHeight);
+        console.log('Collision layers:', this.collisionLayers.length);
     }
 
-    /**
-     * Spawn a specific enemy type at a given position (for testing/debugging)
-     */
-    private spawnEnemyAtPosition(type: EnemyType, x: number, y: number): void {
-        if (!this.gameStarted) {
-            console.warn('Cannot spawn enemy: game not started yet');
-            return;
-        }
-
-        // Create an enemy directly through the enemy system
-        this.enemySystem.spawnEnemy(type, x, y);
-        console.log(`Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)})`);
-    }
-
-
-
-
-
-    private createGameUI(): void {
-        // Stats display with design system styling
-        this.statsText = this.add.text(
-            EnhancedDesignSystem.spacing.xl, 
-            EnhancedDesignSystem.spacing.xl, 
-            '', 
-            EnhancedStyleHelpers.createTextStyle({
-                size: 'lg',
-                color: EnhancedDesignSystem.colors.primary,
-                stroke: true,
-                background: true
-            })
-        );
-        this.statsText.setDepth(EnhancedDesignSystem.zIndex.ui);
-        this.statsText.setScrollFactor(0); // Make UI fixed to screen
-        this.gameUI.add(this.statsText);
-
-        // AI Director stats with design system styling
-        this.directorStatsText = this.add.text(
-            EnhancedDesignSystem.spacing.xl, 
-            120, 
-            '', 
-            EnhancedStyleHelpers.createTextStyle({
-                size: 'md',
-                color: EnhancedDesignSystem.colors.primaryDark,
-                stroke: true,
-                background: true
-            })
-        );
-        this.directorStatsText.setDepth(EnhancedDesignSystem.zIndex.ui);
-        this.directorStatsText.setScrollFactor(0); // Make UI fixed to screen
-        this.gameUI.add(this.directorStatsText);
-
-        // Initially hide game UI
-        this.gameUI.setVisible(false);
-    }
-
-    private createAnimations(): void {
-        // Create walking animation for Medieval Knight (used for all archetypes)
-        this.anims.create({
-            key: 'medieval_knight_walk',
-            frames: Array.from({ length: 23 }, (_, i) => ({ key: `medieval_knight_${i + 1}` })),
-            frameRate: 10,
-            repeat: -1
-        });
+    private initializeUI(): void {
+        // Initialize Enhanced Design System
+        // EnhancedDesignSystem.initialize(this); // Temporarily disabled due to TypeError
         
-        // Create idle animation (just the first frame)
-        this.anims.create({
-            key: 'medieval_knight_idle',
-            frames: [{ key: 'medieval_knight_idle' }],
-            frameRate: 1,
-            repeat: 0
-        });
-        
-        // Create aliases for different archetypes (all use the same medieval knight)
-        this.anims.create({
-            key: 'medieval_knight_1_idle',
-            frames: [{ key: 'medieval_knight_idle' }],
-            frameRate: 1,
-            repeat: 0
-        });
-        
-        this.anims.create({
-            key: 'medieval_knight_1_running',
-            frames: Array.from({ length: 23 }, (_, i) => ({ key: `medieval_knight_${i + 1}` })),
-            frameRate: 10,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'medieval_knight_2_idle',
-            frames: [{ key: 'medieval_knight_idle' }],
-            frameRate: 1,
-            repeat: 0
-        });
-        
-        this.anims.create({
-            key: 'medieval_knight_2_running',
-            frames: Array.from({ length: 23 }, (_, i) => ({ key: `medieval_knight_${i + 1}` })),
-            frameRate: 10,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'medieval_knight_3_idle',
-            frames: [{ key: 'medieval_knight_idle' }],
-            frameRate: 1,
-            repeat: 0
-        });
-        
-        this.anims.create({
-            key: 'medieval_knight_3_running',
-            frames: Array.from({ length: 23 }, (_, i) => ({ key: `medieval_knight_${i + 1}` })),
-            frameRate: 10,
-            repeat: -1
-        });
-        
-        // Create mob animations
-        // Skeleton Viking animations
-        this.anims.create({
-            key: 'skeleton_viking_idle',
-            frames: Array.from({ length: 18 }, (_, i) => ({ key: `skeleton_viking_idle_${String(i).padStart(3, '0')}` })),
-            frameRate: 8,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'skeleton_viking_running',
-            frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_viking_running_${String(i).padStart(3, '0')}` })),
-            frameRate: 12,
-            repeat: -1
-        });
-        
-        // Archer Mob animations
-        this.anims.create({
-            key: 'archer_mob_idle',
-            frames: Array.from({ length: 18 }, (_, i) => ({ key: `archer_mob_idle_${String(i).padStart(3, '0')}` })),
-            frameRate: 8,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'archer_mob_running',
-            frames: Array.from({ length: 12 }, (_, i) => ({ key: `archer_mob_running_${String(i).padStart(3, '0')}` })),
-            frameRate: 12,
-            repeat: -1
-        });
-        
-        // Gnoll animations
-        this.anims.create({
-            key: 'gnoll_idle',
-            frames: Array.from({ length: 18 }, (_, i) => ({ key: `gnoll_idle_${String(i).padStart(3, '0')}` })),
-            frameRate: 8,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'gnoll_running',
-            frames: Array.from({ length: 12 }, (_, i) => ({ key: `gnoll_running_${String(i).padStart(3, '0')}` })),
-            frameRate: 12,
-            repeat: -1
-        });
-        
-        // Golem animations
-        this.anims.create({
-            key: 'golem_idle',
-            frames: Array.from({ length: 18 }, (_, i) => ({ key: `golem_idle_${String(i).padStart(3, '0')}` })),
-            frameRate: 6,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'golem_walking',
-            frames: Array.from({ length: 24 }, (_, i) => ({ key: `golem_walking_${String(i).padStart(3, '0')}` })),
-            frameRate: 8,
-            repeat: -1
+        // Create Class Selection UI
+        this.classSelectionUI = new ClassSelectionUI(this, {
+            onClassSelected: (archetype) => {
+                this.selectedArchetype = archetype;
+                this.startGame();
+            }
         });
         
         // Skeleton Pirate animations
@@ -488,8 +243,17 @@ export class Game extends Scene {
         });
     }
 
-    private startGame(archetypeType: PlayerArchetypeType): void {
-        // Destroy class selection UI completely to prevent invisible clicks
+    private showClassSelection(): void {
+        this.classSelectionUI.show();
+    }
+
+    private startGame(): void {
+        if (this.gameStarted || !this.selectedArchetype) return;
+        
+        this.gameStarted = true;
+        // console.log('Starting game with archetype:', this.selectedArchetype);
+        
+        // Hide class selection
         this.classSelectionUI.hide();
         // Destroy the container and all its interactive children after the fade animation
         this.time.delayedCall(350, () => {
@@ -498,30 +262,80 @@ export class Game extends Scene {
             }
         });
         
-        // Show game UI
-        this.gameUI.setVisible(true);
+        // Initialize game systems
+        this.initializeGameSystems();
+    }
+
+    private initializeGameSystems(): void {
+        // Try to use spawn point from tilemap (like the example)
+        let spawnX, spawnY;
         
-        // Create player
-        this.player = new Player(this, 512, 384, archetypeType);
+        const spawnLayer = this.tilemap.getObjectLayer('StartSpawnPoint');
+        if (spawnLayer) {
+            const spawnPoint = this.tilemap.findObject('StartSpawnPoint', obj => obj.name === 'playerSpawn');
+            if (spawnPoint && spawnPoint.x !== undefined && spawnPoint.y !== undefined) {
+                spawnX = spawnPoint.x; //* this.GAME_SCALE;
+                spawnY = spawnPoint.y; //* this.GAME_SCALE;
+                console.log('Using tilemap spawn point:', spawnX, spawnY);
+            }
+        }
         
-        // Make camera follow the player for full map exploration
-        this.cameras.main.startFollow(this.player.sprite);
-        this.cameras.main.setLerp(0.1, 0.1); // Smooth camera following
+        // Fallback to top right area if no spawn point found
+        if (!spawnX || !spawnY) {
+            const mapWidth = this.tilemap.widthInPixels; //* this.GAME_SCALE;
+            const mapHeight = this.tilemap.heightInPixels; //* this.GAME_SCALE;
+            spawnX = mapWidth * 0.70; // 70% to the right (top right area, closer to center)
+            spawnY = mapHeight * 0.30; // 30% from top (top right area, closer to center)
+            console.log('Using fallback spawn position:', spawnX, spawnY);
+        }
         
-        // Set up enemy death callback to spawn XP orbs
-        this.player.setEnemyDeathCallback((x: number, y: number, enemyType: EnemyType, xpValue: number) => {
-            this.xpOrbSystem.spawnXPOrbs(x, y, enemyType, xpValue);
+        this.player = new Player(this, spawnX, spawnY, this.selectedArchetype!);
+        
+        // Scale the player sprite to match the tilemap scaling
+        this.player.sprite.setScale(0.05); //* this.GAME_SCALE);
+        
+        // Set up tilemap collision detection for player
+        this.setupPlayerTilemapCollisions();
+
+        // Initialize XP Orb System
+        this.xpOrbSystem = new XPOrbSystem(this);
+        
+        // TO SHOW MOBS UNCOMMENT Enemy System & AI Director
+        // Initialize Enemy System 
+        //this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem);
+        
+        // Initialize AI Director
+        //this.aiDirector = new AIDirector();
+        
+        // Initialize Enhanced Mob Spawner UI
+        this.mobSpawnerUI = new MobSpawnerUI(this);
+        this.mobSpawnerUI.setSpawnCallback((type: EnemyType, x: number, y: number) => {
+            this.spawnEnemyAtPosition(type, x, y);
         });
         
-        // Reset and start AI Director
-        this.aiDirector.resetGame();
-        this.aiDirector.setTrainingMode(true); // Enable learning
+        // --- CAMERA SETUP (matches JS version) ---
+        const mapWidth = this.tilemap.widthInPixels;
+        const mapHeight = this.tilemap.heightInPixels;
+
+        // ✅ Match JS exactly
+        const camera = this.cameras.main;
+        camera.startFollow(this.player.sprite, true, 0.1, 0.1);
+        camera.setZoom(3);
+        camera.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
+
+        // Optional smooth camera lag (for cinematic movement)
+        camera.setLerp(0.15, 0.15);
+
+        // ✅ Center camera on spawn when starting (prevents snapping)
+        camera.centerOn(this.player.sprite.x, this.player.sprite.y);
         
-        // Clear any existing enemies and XP orbs
-        this.enemySystem.clearAllEnemies();
-        this.xpOrbSystem.clearAllOrbs();
+        // Start spawning enemies
+        this.enemySystem.startSpawning();
         
-        this.gameStarted = true;
+        // Verify visuals: auto-spawn key mobs near player
+        this.spawnEnemyAtPosition(EnemyType.ARCHER, spawnX + 80, spawnY);
+        this.spawnEnemyAtPosition(EnemyType.GOLEM, spawnX + 140, spawnY);
+        this.spawnEnemyAtPosition(EnemyType.GNOLL, spawnX + 200, spawnY);
         
         // Add restart instruction
         this.restartInstructionText = this.add.text(512, 750, 'Press R to restart and choose a different archetype', {
@@ -530,13 +344,14 @@ export class Game extends Scene {
         }).setOrigin(0.5);
         this.restartInstructionText.setScrollFactor(0); // Make UI fixed to screen
         
-        // Add restart key
+        // Add restart key handler
         this.input.keyboard!.on('keydown-R', () => {
             this.restartGame();
         });
         
-        // Show AI dashboard when game starts
-        this.aiDashboard.show();
+        console.log('Game systems initialized with simplified collision system');
+        console.log('Player spawn position (top right, closer to center):', spawnX, spawnY);
+        console.log('Player scale:', 0.05); // * this.GAME_SCALE);
     }
 
     private restartGame(): void {
@@ -544,8 +359,13 @@ export class Game extends Scene {
         if (this.player) {
             this.player.destroy();
         }
-        this.enemySystem.clearAllEnemies();
-        this.xpOrbSystem.clearAllOrbs();
+        if (this.enemySystem) {
+            this.enemySystem.clearAllEnemies();
+            this.enemySystem.clearAllAttacks(); // Clear all enemy attack objects
+        }
+        if (this.xpOrbSystem) {
+            this.xpOrbSystem.clearAllOrbs();
+        }
         
         // Remove game over text if it exists
         if (this.gameOverText) {
@@ -553,9 +373,10 @@ export class Game extends Scene {
             this.gameOverText = null;
         }
         
-        // Clean up AI controls text
-        if (this.aiControlsText) {
-            this.aiControlsText.destroy();
+        // Clean up game over restart instruction text
+        if ((this as any).gameOverRestartText) {
+            (this as any).gameOverRestartText.destroy();
+            (this as any).gameOverRestartText = null;
         }
         
         // Clean up restart instruction text
@@ -566,10 +387,640 @@ export class Game extends Scene {
         
         // Reset state
         this.gameStarted = false;
+        this.selectedArchetype = null;
         
         // Show class selection again
-        this.classSelectionUI.show();
-        this.gameUI.setVisible(false);
+        this.showClassSelection();
+    }
+
+    private handleGameOver(): void {
+        // Stop enemy spawning and clear all attacks
+        if (this.enemySystem) {
+            this.enemySystem.stopSpawning();
+            this.enemySystem.clearAllAttacks(); // Clear all enemy attack objects
+        }
+        
+        // Display game over message
+        this.gameOverText = this.add.text(512, 300, 'GAME OVER', {
+            fontSize: '48px',
+            color: '#ff0000',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+        this.gameOverText.setScrollFactor(0); // Make UI fixed to screen
+        
+        // Display restart instruction (store reference for cleanup)
+        const restartText = this.add.text(512, 350, 'Press R to try a different archetype', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        restartText.setScrollFactor(0); // Make UI fixed to screen
+        
+        // Store reference for cleanup during restart
+        (this as any).gameOverRestartText = restartText;
+    }
+
+    private debugEnabled = true; // start ON so you can see everything
+    private collisionDebugGfx!: Phaser.GameObjects.Graphics;
+    private playerDebugGfx!: Phaser.GameObjects.Graphics;
+    private objectRects: Phaser.GameObjects.Rectangle[] = [];
+
+    private setupPlayerTilemapCollisions(): void {
+    // --- Tile layer collisions ---
+    this.collisionLayers.forEach(layer => {
+        this.physics.add.collider(this.player.sprite, layer);
+    });
+
+    // --- Object rectangles from "objectcollisions" ---
+    this.objectRects = []; // reset in case of restart
+
+    this.objectCollisionObstacles.forEach(obj => {
+        // Tiled objects are top-left; Arcade bodies are center-based
+        const x = obj.x + obj.width / 2;
+        const y = obj.y + obj.height / 2;
+
+        const rect = this.add
+        .rectangle(x, y, obj.width, obj.height)
+        .setOrigin(0.5)
+        .setVisible(false);         // keep invisible; we’ll draw debug separately
+
+        // Add STATIC physics body
+        this.physics.add.existing(rect, true);
+
+        // Collide player with this static rect
+        this.physics.add.collider(this.player.sprite, rect);
+
+        // Keep a reference for debug drawing
+        this.objectRects.push(rect);
+    });
+
+    // --- Create debug graphics layers (on top) ---
+    this.collisionDebugGfx = this.add.graphics().setDepth(10000).setAlpha(0.85);
+    this.playerDebugGfx = this.add.graphics().setDepth(10001).setAlpha(0.95);
+
+    // --- Hotkey to toggle debug ---
+    this.input.keyboard!.on('keydown-F1', () => {
+        this.debugEnabled = !this.debugEnabled;
+        this.collisionDebugGfx.clear();
+        this.playerDebugGfx.clear();
+    });
+
+    console.log(
+        `✅ Player collision setup: ${this.collisionLayers.length} tile layers + ${this.objectRects.length} object rects`
+    );
+    }
+
+    private renderCollisionDebug(): void {
+    if (!this.debugEnabled) return;
+
+    // Clear previous frame
+    this.collisionDebugGfx.clear();
+    this.playerDebugGfx.clear();
+
+    // 1) Colliding Tiles (orange)
+    this.collisionLayers.forEach(layer => {
+        // Phaser has a debug helper for tile collisions:
+        layer.renderDebug(this.collisionDebugGfx, {
+        tileColor: null, // non-colliding tiles
+        collidingTileColor: new Phaser.Display.Color(243, 134, 48, 180), // orange
+        faceColor: new Phaser.Display.Color(40, 39, 37, 255)            // faces
+        });
+    });
+
+    // 2) Object Rectangles (red outlines)
+    this.collisionDebugGfx.lineStyle(2, 0xff0000, 1);
+    this.objectRects.forEach(rect => {
+        const body = (rect.body as Phaser.Physics.Arcade.StaticBody);
+        // Static body has x/y/width/height in world coords
+        this.collisionDebugGfx.strokeRect(body.x, body.y, body.width, body.height);
+    });
+
+    // 3) Player body (lime outline)
+    const pb = this.player.sprite.body as Phaser.Physics.Arcade.Body;
+    this.playerDebugGfx.lineStyle(2, 0x00ff00, 1);
+    this.playerDebugGfx.strokeRect(pb.x, pb.y, pb.width, pb.height);
+    }
+
+
+    private createAnimations(): void {
+        // console.log(' Starting animation creation...');
+        
+        // Player animations from ALL loaded character atlases
+        const characterAtlasKeys = this.spriteSheetManager
+            ? this.spriteSheetManager.getSpritesheetKeys('characters').filter(k => this.spriteSheetManager!.isSpritesheetLoaded(k))
+            : [];
+        if (this.spriteSheetManager && characterAtlasKeys.length) {
+            // Aggregate frames across all loaded character atlases and keep their atlas key
+            const charFramesWithKey: { key: string; frame: string }[] = [];
+            for (const atlasKey of characterAtlasKeys) {
+                const names = this.spriteSheetManager.getFrameNames(atlasKey);
+                for (const n of names) charFramesWithKey.push({ key: atlasKey, frame: n });
+            }
+            
+            // Debug: Log all available frames to understand naming patterns
+            console.log('🔍 All available character frames:', charFramesWithKey.length);
+            console.log('First 10 frames:', charFramesWithKey.slice(0, 10));
+            console.log('Sample frame names:', charFramesWithKey.filter((_, i) => i % 50 === 0).map(f => f.frame));
+
+            // Helper: sort frames by numeric suffix for correct animation order
+            const sortByNumericIndex = (entries: { key: string; frame: string }[]): { key: string; frame: string }[] => {
+                return entries.slice().sort((a, b) => {
+                    // Try multiple patterns to extract frame numbers
+                    const getFrameNumber = (name: string): number => {
+                        // Pattern 1: ending with _XXX.png
+                        let match = name.match(/_(\d+)\.png$/i);
+                        if (match) return parseInt(match[1], 10);
+                        
+                        // Pattern 2: ending with XXX.png
+                        match = name.match(/(\d+)\.png$/i);
+                        if (match) return parseInt(match[1], 10);
+                        
+                        // Pattern 3: any number in the filename
+                        match = name.match(/(\d+)/);
+                        if (match) return parseInt(match[1], 10);
+                        
+                        return 0;
+                    };
+                    
+                    return getFrameNumber(a.frame) - getFrameNumber(b.frame);
+                });
+            };
+
+            // Enhanced frame grouping with better pattern matching
+            type FrameEntry = { key: string; frame: string };
+            type GroupFrames = { idle: FrameEntry[]; move: FrameEntry[]; characterVariant: string };
+            const groups = new Map<string, GroupFrames>();
+            
+            for (const f of charFramesWithKey) {
+                // Match pattern: characters/[class]/[variant]/
+                const match = f.frame.match(/^characters\/([^\/]+)\/([^\/]+)\//);
+                if (match) {
+                    const [, , characterVariant] = match;
+                    const groupId = characterVariant; // Use variant as the key (e.g., "Magician_1", "Knight_2")
+                    const g = groups.get(groupId) || { idle: [], move: [], characterVariant };
+                    
+                    // Enhanced animation type detection
+                    const isIdleAnimation = (name: string): boolean => {
+                        const lowerName = name.toLowerCase();
+                        return (lowerName.includes('idle') && !lowerName.includes('blinking')) ||
+                               lowerName.includes('/idle/');
+                    };
+                    
+                    const isMoveAnimation = (name: string): boolean => {
+                        const lowerName = name.toLowerCase();
+                        return lowerName.includes('walking') || 
+                               lowerName.includes('running') ||
+                               lowerName.includes('/walking/') ||
+                               lowerName.includes('/running/') ||
+                               lowerName.includes('run throwing') ||
+                               lowerName.includes('run shooting');
+                    };
+                    
+                    // Prioritize proper idle animations
+                    if (isIdleAnimation(f.frame)) {
+                        g.idle.push(f);
+                    }
+                    // Use walking/running for movement
+                    else if (isMoveAnimation(f.frame)) {
+                        g.move.push(f);
+                    }
+                    
+                    groups.set(groupId, g);
+                }
+            }
+
+            console.log('🎭 Found character variants:', Array.from(groups.keys()));
+
+            // Direction helpers
+            const isRightPath = (name: string): boolean => /\/(Right)\//i.test(name) || /_Right[_\.]?/i.test(name);
+            const isLeftPath = (name: string): boolean => /\/(Left)\//i.test(name) || /_Left[_\.]?/i.test(name);
+            const isNeutralPath = (name: string): boolean => !isRightPath(name) && !isLeftPath(name);
+            const filterRightOrNeutral = (frames: FrameEntry[]): FrameEntry[] => {
+                const right = frames.filter(f => isRightPath(f.frame));
+                const neutral = frames.filter(f => isNeutralPath(f.frame));
+                return right.length ? right : neutral;
+            };
+            const filterLeftOnly = (frames: FrameEntry[]): FrameEntry[] => frames.filter(f => isLeftPath(f.frame));
+
+            // Create animations for each character variant
+            for (const [characterVariant, g] of groups) {
+                let chosenIdle: FrameEntry[] = [];
+                let chosenMove: FrameEntry[] = [];
+                
+                // First priority: variants with proper idle and movement animations
+                if (g.idle.length && g.move.length) {
+                    chosenIdle = sortByNumericIndex(filterRightOrNeutral(g.idle));
+                    chosenMove = sortByNumericIndex(filterRightOrNeutral(g.move));
+                    console.log(`✅ Using character variant: ${characterVariant} (idle: ${g.idle.length}, move: ${g.move.length})`);
+                }
+
+                // Fallback: if variant has no proper animations, use slashing animations
+                if (!chosenIdle.length || !chosenMove.length) {
+                    console.log(`⚠️ No proper idle/move found for ${characterVariant}, searching for fallback animations`);
+                    
+                    // Look for slashing animations for this specific variant
+                    const variantFrames = charFramesWithKey.filter(f => {
+                        const match = f.frame.match(/^characters\/([^\/]+)\/([^\/]+)\//);
+                        return match && match[2] === characterVariant;
+                    });
+                    
+                    for (const f of variantFrames) {
+                        const lower = f.frame.toLowerCase();
+                        // Use "Slashing" for idle (stationary attack animation)
+                        if ((lower.includes('slashing') && !lower.includes('run')) || lower.includes('/slashing/')) {
+                            chosenIdle.push(f);
+                        }
+                        // Use "Run Slashing" for movement
+                        if (lower.includes('run slashing') || lower.includes('/run slashing/')) {
+                            chosenMove.push(f);
+                        }
+                    }
+                    
+                    if (chosenIdle.length || chosenMove.length) {
+                        chosenIdle = sortByNumericIndex(filterRightOrNeutral(chosenIdle));
+                        chosenMove = sortByNumericIndex(filterRightOrNeutral(chosenMove));
+                        console.log(`🔄 Using character variant: ${characterVariant} with slashing animations (idle: ${chosenIdle.length}, move: ${chosenMove.length})`);
+                    }
+                }
+
+                console.log(`🎬 Character animation frames found for ${characterVariant}:`);
+                console.log(`  Idle frames: ${chosenIdle.length}`, chosenIdle.slice(0, 3));
+                console.log(`  Move frames: ${chosenMove.length}`, chosenMove.slice(0, 3));
+
+                // Create variant-specific animations with error handling
+                const idleAnimKey = `${characterVariant}_idle`;
+                const walkAnimKey = `${characterVariant}_walk`;
+                // Also create directional animations when left frames exist
+                const leftIdleFrames = sortByNumericIndex(filterLeftOnly(g.idle));
+                const leftMoveFrames = sortByNumericIndex(filterLeftOnly(g.move));
+                const walkRightKey = `${characterVariant}_walk_right`;
+                const walkLeftKey = `${characterVariant}_walk_left`;
+                const idleRightKey = `${characterVariant}_idle_right`;
+                const idleLeftKey = `${characterVariant}_idle_left`;
+
+                if (chosenIdle.length && !this.anims.exists(idleAnimKey)) {
+                    try {
+                        // Use frames across atlases
+                        const idleFrames = chosenIdle.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        console.log(`🎬 Creating ${idleAnimKey} animation with frames:`, idleFrames.slice(0, 3));
+                        this.anims.create({
+                            key: idleAnimKey,
+                            frames: idleFrames,
+                            frameRate: 12, // Increased from 8 for smoother animation
+                            repeat: -1
+                        });
+                        console.log(`✅ Created ${idleAnimKey} animation with ${idleFrames.length} frames`);
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${idleAnimKey} animation:`, error);
+                    }
+                } else if (!chosenIdle.length) {
+                    console.warn(`⚠️ No idle frames found for ${characterVariant} animation`);
+                } else {
+                    console.log(`ℹ️ ${idleAnimKey} animation already exists`);
+                }
+
+                // Directional idle if available
+                if (leftIdleFrames.length && !this.anims.exists(idleLeftKey)) {
+                    try {
+                        const frames = leftIdleFrames.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        this.anims.create({ key: idleLeftKey, frames, frameRate: 12, repeat: -1 });
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${idleLeftKey}:`, error);
+                    }
+                }
+                if (chosenIdle.length && !this.anims.exists(idleRightKey)) {
+                    try {
+                        const frames = chosenIdle.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        this.anims.create({ key: idleRightKey, frames, frameRate: 12, repeat: -1 });
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${idleRightKey}:`, error);
+                    }
+                }
+
+                if (chosenMove.length && !this.anims.exists(walkAnimKey)) {
+                    try {
+                        // Use frames across atlases
+                        const moveFrames = chosenMove.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        console.log(`🎬 Creating ${walkAnimKey} animation with frames:`, moveFrames.slice(0, 3));
+                        this.anims.create({
+                            key: walkAnimKey,
+                            frames: moveFrames,
+                            frameRate: 16, // Increased from 10 for smoother animation
+                            repeat: -1
+                        });
+                        console.log(`✅ Created ${walkAnimKey} animation with ${moveFrames.length} frames`);
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${walkAnimKey} animation:`, error);
+                    }
+                } else if (!chosenMove.length) {
+                    console.warn(`⚠️ No move frames found for ${characterVariant} animation`);
+                } else {
+                    console.log(`ℹ️ ${walkAnimKey} animation already exists`);
+                }
+
+                // Directional move animations if available
+                if (leftMoveFrames.length && !this.anims.exists(walkLeftKey)) {
+                    try {
+                        const frames = leftMoveFrames.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        this.anims.create({ key: walkLeftKey, frames, frameRate: 16, repeat: -1 });
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${walkLeftKey}:`, error);
+                    }
+                }
+                if (chosenMove.length && !this.anims.exists(walkRightKey)) {
+                    try {
+                        const frames = chosenMove.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        this.anims.create({ key: walkRightKey, frames, frameRate: 16, repeat: -1 });
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${walkRightKey}:`, error);
+                    }
+                }
+            } // End of character variant loop
+
+            // Create fallback generic animations if they don't exist
+            if (!this.anims.exists('player_idle') || !this.anims.exists('player_walk')) {
+                console.log('🔄 Creating fallback player animations...');
+                // Use the first available character variant for fallback
+                const firstVariant = groups.keys().next().value;
+                if (firstVariant) {
+                    const fallbackGroup = groups.get(firstVariant);
+                    if (fallbackGroup) {
+                        if (!this.anims.exists('player_idle') && fallbackGroup.idle.length) {
+                            try {
+                                const idleFrames = sortByNumericIndex(fallbackGroup.idle).map(entry => ({ key: entry.key, frame: entry.frame }));
+                                this.anims.create({
+                                    key: 'player_idle',
+                                    frames: idleFrames,
+                                    frameRate: 12,
+                                    repeat: -1
+                                });
+                                console.log('✅ Created fallback player_idle animation');
+                            } catch (error) {
+                                console.error('❌ Failed to create fallback player_idle animation:', error);
+                            }
+                        }
+                        
+                        if (!this.anims.exists('player_walk') && fallbackGroup.move.length) {
+                            try {
+                                const moveFrames = sortByNumericIndex(fallbackGroup.move).map(entry => ({ key: entry.key, frame: entry.frame }));
+                                this.anims.create({
+                                    key: 'player_walk',
+                                    frames: moveFrames,
+                                    frameRate: 16,
+                                    repeat: -1
+                                });
+                                console.log('✅ Created fallback player_walk animation');
+                            } catch (error) {
+                                console.error('❌ Failed to create fallback player_walk animation:', error);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            console.error(`❌ No character spritesheets are loaded!`);
+        }
+
+        // OPTIMIZED: Create mob animations for hardcoded mob variants only
+        // Load essential atlases: 196 (Skeleton), 254 (Archer), 281 (Golem), 316 (Gnoll)
+        const mobTextures = ['mob-texture-196', 'mob-texture-254', 'mob-texture-281', 'mob-texture-316'];
+        const allMobFrames: string[] = [];
+        const frameToTextureMap: { [frameName: string]: string } = {};
+        
+        // Check if at least one mob texture is loaded
+        if (mobTextures.some(key => this.spriteSheetManager && this.spriteSheetManager.isSpritesheetLoaded(key))) {
+            // Collect frames from both textures
+            for (const mobKey of mobTextures) {
+                if (this.spriteSheetManager && this.spriteSheetManager.isSpritesheetLoaded(mobKey)) {
+                    const mobFrames = this.spriteSheetManager.getFrameNames(mobKey);
+                    allMobFrames.push(...mobFrames);
+                    
+                    // Map each frame to its texture
+                    for (const frame of mobFrames) {
+                        frameToTextureMap[frame] = mobKey;
+                    }
+                    
+                    console.log(`🔍 ${mobKey} frames:`, mobFrames.length);
+                }
+            }
+            
+            console.log('🔍 Total available mob frames:', allMobFrames.length);
+            console.log('First 10 mob frames:', allMobFrames.slice(0, 10));
+
+            const sortByNumericIndex = (names: string[]): string[] => {
+                return names.slice().sort((a, b) => {
+                    // Enhanced numeric sorting for mob frames
+                    const getFrameNumber = (name: string): number => {
+                        // Pattern 1: ending with _XXX.png
+                        let match = name.match(/_(\d+)\.png$/i);
+                        if (match) return parseInt(match[1], 10);
+                        
+                        // Pattern 2: ending with XXX.png
+                        match = name.match(/(\d+)\.png$/i);
+                        if (match) return parseInt(match[1], 10);
+                        
+                        // Pattern 3: any number in the filename
+                        match = name.match(/(\d+)/);
+                        if (match) return parseInt(match[1], 10);
+                        
+                        return 0;
+                    };
+                    
+                    return getFrameNumber(a) - getFrameNumber(b);
+                });
+            };
+
+            // OPTIMIZED: Only create animations for the hardcoded mob variants
+            // Updated to use variants that actually exist in texture atlases
+            const hardcodedMobVariants = [
+                'Skeleton_Pirate_Captain_1',  // For SKELETON_VIKING enemy type
+                'Golem_1',                    // For GOLEM enemy type
+                'Archer_1',                   // For ARCHER enemy type (was ArcherMob_1)
+                'Gnoll_3'                     // For GNOLL enemy type (use hardcoded Gnoll_3)
+            ];
+
+            // Group frames by hardcoded mob variants only
+            const mobGroups: { [key: string]: string[] } = {};
+            for (const frameName of allMobFrames) {
+                // Extract mob type from path like "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/..."
+                const pathMatch = frameName.match(/^Mobs\/([^\/]+)\/([^\/]+)\//); 
+                if (pathMatch) {
+                    const mobVariant = pathMatch[2]; // e.g., "Skeleton_Pirate_Captain_1"
+                    
+                    // Only process hardcoded variants
+                    if (hardcodedMobVariants.includes(mobVariant)) {
+                        if (!mobGroups[mobVariant]) {
+                            mobGroups[mobVariant] = [];
+                        }
+                        mobGroups[mobVariant].push(frameName);
+                    }
+                }
+            }
+
+            console.log('🎭 Creating animations for hardcoded mob variants:', Object.keys(mobGroups));
+
+            // Create animations for each hardcoded mob variant
+            for (const [mobVariant, mobFrameList] of Object.entries(mobGroups)) {
+                const sortedFrames = sortByNumericIndex(mobFrameList);
+
+                // Enhanced animation detection for mobs
+                const findIdleFrames = (frames: string[]): string[] => {
+                    // Try idle first
+                    let result = frames.filter(name => name.toLowerCase().includes('idle') || name.toLowerCase().includes('/idle/'));
+                    if (result.length) return result;
+                    
+                    // Fallback to "Slashing" for idle
+                    result = frames.filter(name => (name.includes('Slashing') && !name.includes('Run')) || name.includes('/slashing/'));
+                    if (result.length) return result;
+                    
+                    // Further fallback to "Slashing in The Air"
+                    return frames.filter(name => name.includes('Slashing in The Air') || name.includes('/slashing in the air/'));
+                };
+
+                const findMoveFrames = (frames: string[]): string[] => {
+                    // Try walking/running first
+                    let result = frames.filter(name => {
+                        const lower = name.toLowerCase();
+                        return lower.includes('walking') || lower.includes('running') || 
+                               lower.includes('/walking/') || lower.includes('/running/');
+                    });
+                    if (result.length) return result;
+                    
+                    // Fallback to "Run Slashing"
+                    result = frames.filter(name => name.includes('Run Slashing') || name.includes('/run slashing/'));
+                    if (result.length) return result;
+                    
+                    // Further fallback to "Run Throwing"
+                    return frames.filter(name => name.includes('Run Throwing') || name.includes('/run throwing/'));
+                };
+
+                const chosenIdle = findIdleFrames(sortedFrames);
+                const chosenMove = findMoveFrames(sortedFrames);
+
+                console.log(`🎭 ${mobVariant} - idle frames: ${chosenIdle.length}, move frames: ${chosenMove.length}`);
+
+                // Create idle animation for this specific mob variant
+                const idleAnimKey = `${mobVariant}_idle`;
+                if (chosenIdle.length && !this.anims.exists(idleAnimKey)) {
+                    try {
+                        const idleFrames = chosenIdle.map(frameName => ({ 
+                            key: frameToTextureMap[frameName], 
+                            frame: frameName 
+                        }));
+                        this.anims.create({
+                            key: idleAnimKey,
+                            frames: idleFrames,
+                            frameRate: 8, // Slower for idle
+                            repeat: -1
+                        });
+                        console.log(`✅ Created ${idleAnimKey} animation with ${idleFrames.length} frames`);
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${idleAnimKey} animation:`, error);
+                    }
+                }
+
+                // Create move animation for this specific mob variant
+                const walkAnimKey = `${mobVariant}_walk`;
+                if (chosenMove.length && !this.anims.exists(walkAnimKey)) {
+                    try {
+                        const moveFrames = chosenMove.map(frameName => ({ 
+                            key: frameToTextureMap[frameName], 
+                            frame: frameName 
+                        }));
+                        this.anims.create({
+                            key: walkAnimKey,
+                            frames: moveFrames,
+                            frameRate: 14, // Increased from 10 for smoother animation
+                            repeat: -1
+                        });
+                        console.log(`✅ Created ${walkAnimKey} animation with ${moveFrames.length} frames`);
+                    } catch (error) {
+                        console.error(`❌ Failed to create ${walkAnimKey} animation:`, error);
+                    }
+                }
+            }
+
+            // Create generic fallback animations using the first hardcoded variant
+            if (!this.anims.exists('mob_idle') || !this.anims.exists('mob_walk')) {
+                console.log('🔄 Creating fallback mob animations...');
+                const firstVariant = hardcodedMobVariants[0]; // Use Skeleton_Pirate_Captain_1 as fallback
+                if (firstVariant && mobGroups[firstVariant]) {
+                    const sortedFrames = sortByNumericIndex(mobGroups[firstVariant]);
+                    
+                    if (!this.anims.exists('mob_idle')) {
+                        let fallbackIdle = sortedFrames.filter(name => name.includes('Slashing') && !name.includes('Run'));
+                        if (!fallbackIdle.length) {
+                            fallbackIdle = sortedFrames.filter(name => name.includes('Slashing in The Air'));
+                        }
+                        
+                        if (fallbackIdle.length) {
+                            try {
+                                const idleFrames = fallbackIdle.map(frameName => ({ 
+                                    key: frameToTextureMap[frameName], 
+                                    frame: frameName 
+                                }));
+                                this.anims.create({
+                                    key: 'mob_idle',
+                                    frames: idleFrames,
+                                    frameRate: 8,
+                                    repeat: -1
+                                });
+                                console.log('✅ Created fallback mob_idle animation');
+                            } catch (error) {
+                                console.error('❌ Failed to create fallback mob_idle animation:', error);
+                            }
+                        }
+                    }
+                    
+                    if (!this.anims.exists('mob_walk')) {
+                        let fallbackMove = sortedFrames.filter(name => name.includes('Run Slashing'));
+                        if (!fallbackMove.length) {
+                            fallbackMove = sortedFrames.filter(name => name.includes('Slashing in The Air'));
+                        }
+                        
+                        if (fallbackMove.length) {
+                            try {
+                                const moveFrames = fallbackMove.map(frameName => ({ 
+                                    key: frameToTextureMap[frameName], 
+                                    frame: frameName 
+                                }));
+                                this.anims.create({
+                                    key: 'mob_walk',
+                                    frames: moveFrames,
+                                    frameRate: 14,
+                                    repeat: -1
+                                });
+                                console.log('✅ Created fallback mob_walk animation');
+                            } catch (error) {
+                                console.error('❌ Failed to create fallback mob_walk animation:', error);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            console.error(`❌ Mob spritesheets are not loaded!`);
+        }
+        
+        // console.log('🎬 Animation creation completed!');
+    }
+
+    /**
+     * Spawn an enemy at a specific position using the enemy system
+     * Called by the MobSpawnerUI when spawning mobs
+     */
+    private spawnEnemyAtPosition(type: EnemyType, x: number, y: number): void {
+        if (!this.enemySystem) {
+            console.warn('❌ Cannot spawn enemy: EnemySystem not initialized');
+            return;
+        }
+
+        try {
+            // Use the enemy system's spawn method
+            this.enemySystem.spawnEnemyAt(type, x, y);
+            console.log(`✅ Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)})`);
+        } catch (error) {
+            console.error(`❌ Failed to spawn ${type}:`, error);
+        }
     }
 
     update(_time: number, delta: number): void {
@@ -580,188 +1031,37 @@ export class Game extends Scene {
             this.handleGameOver();
             return;
         }
-        
+        // Collision Detection
+        this.renderCollisionDebug();
+
         // Convert delta from milliseconds to seconds
         const deltaTime = delta / 1000;
         
         // Update game systems
-        this.player.update(this.enemySystem.getEnemies(), deltaTime);
+        this.player.update(this.enemySystem?.getEnemies() || [], deltaTime);
         
         const playerPos = this.player.getPosition();
-        this.enemySystem.update(playerPos.x, playerPos.y, deltaTime);
+        this.enemySystem?.update(playerPos.x, playerPos.y, deltaTime);
         
         // Update XP orb system
-        this.xpOrbSystem.update();
+        this.xpOrbSystem?.update();
         
-        // Check collisions
-        this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies(), this.enemySystem.getShields());
-        this.player.checkCollisionWithProjectiles(this.enemySystem.getProjectiles());
-        this.player.checkCollisionWithMeleeAttacks(this.enemySystem.getMeleeAttacks());
-        this.player.checkCollisionWithConeAttacks(this.enemySystem.getConeAttacks());
-        this.player.checkCollisionWithVortexAttacks(this.enemySystem.getVortexAttacks());
-        this.player.checkCollisionWithExplosionAttacks(this.enemySystem.getExplosionAttacks());
+        // Enhanced collision detection
+        if (this.player && this.enemySystem) {
+            this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies());
+            this.player.checkCollisionWithProjectiles(this.enemySystem.getProjectiles());
+            this.player.checkCollisionWithMeleeAttacks(this.enemySystem.getMeleeAttacks());
+            this.player.checkCollisionWithConeAttacks(this.enemySystem.getConeAttacks());
+            this.player.checkCollisionWithVortexAttacks(this.enemySystem.getVortexAttacks());
+            this.player.checkCollisionWithExplosionAttacks(this.enemySystem.getExplosionAttacks());
+        }
         
         // Collect XP orbs
-        this.player.collectXPOrbs(this.xpOrbSystem);
+        if (this.player && this.xpOrbSystem) {
+            this.player.collectXPOrbs(this.xpOrbSystem);
+        }
         
         // Update AI Director
-        this.aiDirector.update(this.player.getArchetype(), this.enemySystem);
-        
-        // Update UI
-        this.updateGameUI();
-    }
-
-    private updateGameUI(): void {
-        if (!this.player) return;
-        
-        const archetype = this.player.getArchetype();
-        const health = Math.ceil(archetype.currentHealth);
-        const maxHealth = archetype.stats.maxHealth;
-        const xp = Math.ceil(archetype.xpGained);
-        const enemyCount = this.enemySystem.getEnemyCount();
-        const orbCount = this.xpOrbSystem.getOrbCount();
-        const availableXP = this.xpOrbSystem.getTotalAvailableXP();
-        
-        this.statsText.setText(
-            `Health: ${health}/${maxHealth}\n` +
-            `XP: ${xp}\n` +
-            `Enemies: ${enemyCount}\n` +
-            `XP Orbs: ${orbCount} (${availableXP} XP)\n` +
-            `Archetype: ${archetype.type.toUpperCase()}`
-        );
-        
-        // AI Director stats with budget information
-        const trainingStatus = this.aiDirector.getTrainingStatus();
-        const difficultyStats = this.aiDirector.getDifficultyStats();
-        const budgetStatus = this.aiDirector.getBudgetStatus();
-        this.directorStatsText.setText(
-            `AI Director Status:\n` +
-            `${trainingStatus}\n` +
-            `${difficultyStats}\n` +
-            `${budgetStatus}\n` +
-            `Adapting to: ${archetype.type.replace('_', ' ').toUpperCase()}`
-        );
-    }
-
-    private handleGameOver(): void {
-        if (this.gameOverText) return; // Already showing game over
-        
-        this.gameStarted = false;
-        
-        // Hide AI dashboard on game over
-        this.aiDashboard.hide();
-        
-        this.gameOverText = this.add.text(
-            512, 
-            384, 
-            'GAME OVER\n\nThe AI Director learned from your playstyle!\n\nPress R to try a different archetype', 
-            {
-                ...EnhancedStyleHelpers.createTextStyle({
-                    size: 'title',
-                    color: EnhancedDesignSystem.colors.primary,
-                    stroke: true,
-                    background: true
-                }),
-                align: 'center',
-                padding: { x: EnhancedDesignSystem.spacing.xxxl, y: EnhancedDesignSystem.spacing.xxl }
-            }
-        ).setOrigin(0.5).setDepth(EnhancedDesignSystem.zIndex.modal);
-        this.gameOverText.setScrollFactor(0); // Make UI fixed to screen
-    }
-    
-    private setupAIControls(): void {
-        // Add AI controls text with design system styling
-        this.aiControlsText = this.add.text(
-            EnhancedDesignSystem.spacing.xl, 
-            680, 
-            'AI Controls: F1-Dashboard | F2-Save | F3-Load | F4-Export | F5-Training | F6-Difficulty', 
-            EnhancedStyleHelpers.createTextStyle({
-                size: 'md',
-                color: EnhancedDesignSystem.colors.primaryDark,
-                background: true
-            })
-        ).setDepth(EnhancedDesignSystem.zIndex.ui);
-        this.aiControlsText.setScrollFactor(0); // Make UI fixed to screen
-        
-        // Set up keyboard handlers for AI controls
-        this.input.keyboard!.on('keydown-F1', () => {
-            this.aiDashboard.toggle();
-        });
-        
-        this.input.keyboard!.on('keydown-F2', async () => {
-            const success = await this.aiDirector.saveModel();
-            this.showNotification(success ? 'Model saved successfully!' : 'Failed to save model', success ? '#00ff00' : '#ff0000');
-        });
-        
-        this.input.keyboard!.on('keydown-F3', async () => {
-            const models = await this.aiDirector.listSavedModels();
-            if (models.length > 0) {
-                // Load the most recent model
-                const latestModel = models[models.length - 1];
-                const success = await this.aiDirector.loadModel(latestModel);
-                this.showNotification(
-                    success ? `Loaded model: ${latestModel}` : 'Failed to load model', 
-                    success ? '#00ff00' : '#ff0000'
-                );
-            } else {
-                this.showNotification('No saved models found', '#ffff00');
-            }
-        });
-        
-        this.input.keyboard!.on('keydown-F4', () => {
-            const data = this.aiDirector.exportTrainingData();
-            this.downloadJSON(data, `ai-training-data-${Date.now()}.json`);
-            this.showNotification('Training data exported!', '#00ff00');
-        });
-        
-        this.input.keyboard!.on('keydown-F5', () => {
-            const isTraining = this.aiDirector.isTraining();
-            this.aiDirector.setTrainingMode(!isTraining);
-            this.showNotification(
-                `Training ${!isTraining ? 'enabled' : 'disabled'}`, 
-                !isTraining ? '#00ff00' : '#ffff00'
-            );
-        });
-        
-        this.input.keyboard!.on('keydown-F6', () => {
-            this.aiDirector.cycleDifficulty();
-            const currentDifficulty = this.aiDirector.getCurrentDifficulty();
-            const config = this.aiDirector.getDifficultyConfig(currentDifficulty);
-            this.showNotification(`Difficulty: ${config?.name || 'Unknown'}`, '#00ff00');
-        });
-    }
-    
-    private showNotification(message: string, color: string): void {
-        const notification = this.add.text(512, 100, message, {
-            fontSize: '18px',
-            color: color,
-            fontFamily: 'Cinzel, serif',
-            backgroundColor: 'rgba(26, 26, 26, 0.95)',
-            padding: { x: 15, y: 10 },
-            stroke: color,
-            strokeThickness: 1
-        }).setOrigin(0.5).setDepth(2000);
-        
-        // Fade out after 3 seconds
-        this.tweens.add({
-            targets: notification,
-            alpha: 0,
-            duration: 3000,
-            onComplete: () => notification.destroy()
-        });
-    }
-    
-    private downloadJSON(data: any, filename: string): void {
-        const jsonStr = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        this.aiDirector?.update(this.player, this.enemySystem);
     }
 }
