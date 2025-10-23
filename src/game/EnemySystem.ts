@@ -670,507 +670,6 @@ export class MeleeAttack {
     }
 }
 
-export enum EnemyType {
-    SKELETON_VIKING = 'skeleton_viking',
-    GOLEM = 'golem',
-    ARCHER = 'archer',
-    GNOLL = 'gnoll',
-    SKELETON_PIRATE = 'skeleton_pirate',
-    ELEMENTAL_SPIRIT = 'elemental_spirit'
-}
-
-/**
- * Shield class for blocking projectiles
- */
-export class Shield {
-    public sprite: Phaser.GameObjects.Graphics;
-    public scene: Scene;
-    private active: boolean = true;
-    private lifetime: number = 3.0; // Shield lasts 3 seconds
-    private elapsed: number = 0;
-    public x: number;
-    public y: number;
-    public width: number;
-    public height: number;
-    private angle: number;
-    private ownerRadius: number;
-
-    constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, enemyRadius: number, width: number = 60, height: number = 120) {
-        this.scene = scene;
-        this.width = width;
-        this.height = height;
-        this.ownerRadius = enemyRadius;
-        
-        // Calculate angle towards player
-        const dx = playerX - enemyX;
-        const dy = playerY - enemyY;
-        this.angle = Math.atan2(dy, dx);
-        
-        // Position shield closer to the enemy
-        const shieldDistance = enemyRadius + (width / 4);
-        this.x = enemyX + Math.cos(this.angle) * shieldDistance;
-        this.y = enemyY + Math.sin(this.angle) * shieldDistance;
-        
-        // Create a blue shield graphic
-        this.sprite = scene.add.graphics();
-        this.sprite.lineStyle(5, 0x4444ff, 1);
-        this.sprite.fillStyle(0x6666ff, 0.6);
-        this.sprite.fillRoundedRect(-width / 2, -height / 2, width, height, 10);
-        this.sprite.strokeRoundedRect(-width / 2, -height / 2, width, height, 10);
-        this.sprite.setPosition(this.x, this.y);
-        this.sprite.setRotation(this.angle);
-        this.sprite.setDepth(6);
-    }
-
-    public update(deltaTime: number, enemyX: number, enemyY: number): void {
-        if (!this.active) return;
-        
-        this.elapsed += deltaTime;
-        
-        // Update position to follow enemy
-        const shieldDistance = this.ownerRadius + (this.width / 4);
-        this.x = enemyX + Math.cos(this.angle) * shieldDistance;
-        this.y = enemyY + Math.sin(this.angle) * shieldDistance;
-        this.sprite.setPosition(this.x, this.y);
-        
-        // Pulse effect
-        const remainingPercent = 1 - (this.elapsed / this.lifetime);
-        const alpha = 0.3 + (Math.sin(this.elapsed * 5) * 0.2 * (1 - remainingPercent));
-        this.sprite.setAlpha(alpha);
-        
-        // Destroy after lifetime
-        if (this.elapsed >= this.lifetime) {
-            this.destroy();
-        }
-    }
-
-    public destroy(): void {
-        this.active = false;
-        this.sprite.destroy();
-    }
-
-    public isActive(): boolean {
-        return this.active;
-    }
-
-    public blocksProjectile(projectileX: number, projectileY: number): boolean {
-        if (!this.active) return false;
-        
-        const dx = projectileX - this.x;
-        const dy = projectileY - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        const blockingRadius = this.height / 2 + 35;
-        
-        if (distance > blockingRadius) {
-            return false;
-        }
-        
-        const projectileAngle = Math.atan2(dy, dx);
-        let angleDiff = projectileAngle - this.angle;
-        
-        // Normalize to -PI to PI
-        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-        
-        const blockingAngle = Math.PI * 0.55;
-        return Math.abs(angleDiff) <= blockingAngle;
-    }
-}
-
-/**
- * Cone attack for sweeping melee strikes
- */
-export class ConeAttack {
-    public sprite: Phaser.GameObjects.Graphics;
-    public damage: number;
-    public scene: Scene;
-    private active: boolean = true;
-    private lifetime: number = 0.25;
-    private elapsed: number = 0;
-    public x: number;
-    public y: number;
-    public radius: number;
-    public angle: number;
-    public coneAngle: number;
-
-    constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, radius: number = 150, coneAngle: number = Math.PI / 1.8) {
-        this.scene = scene;
-        this.damage = damage;
-        this.radius = radius;
-        this.coneAngle = coneAngle;
-        
-        // Calculate angle towards player
-        const dx = playerX - enemyX;
-        const dy = playerY - enemyY;
-        this.angle = Math.atan2(dy, dx);
-        
-        // Position at enemy location
-        this.x = enemyX;
-        this.y = enemyY;
-        
-        // Create cone graphic
-        this.sprite = scene.add.graphics();
-        this.sprite.setPosition(this.x, this.y);
-        this.sprite.setDepth(5);
-        this.updateConeGraphics();
-    }
-
-    private updateConeGraphics(): void {
-        this.sprite.clear();
-        this.sprite.fillStyle(0xff4444, 0.4);
-        this.sprite.lineStyle(3, 0xff0000, 0.8);
-        
-        // Draw cone
-        this.sprite.beginPath();
-        this.sprite.moveTo(0, 0);
-        this.sprite.arc(0, 0, this.radius, this.angle - this.coneAngle / 2, this.angle + this.coneAngle / 2);
-        this.sprite.closePath();
-        this.sprite.fillPath();
-        this.sprite.strokePath();
-    }
-
-    public update(deltaTime: number): void {
-        if (!this.active) return;
-        
-        this.elapsed += deltaTime;
-        
-        if (this.elapsed >= this.lifetime) {
-            this.destroy();
-        }
-    }
-
-    public destroy(): void {
-        this.active = false;
-        this.sprite.destroy();
-    }
-
-    public isActive(): boolean {
-        return this.active;
-    }
-
-    public isPointInCone(px: number, py: number): boolean {
-        if (!this.active) return false;
-        
-        const dx = px - this.x;
-        const dy = py - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > this.radius) return false;
-        
-        const pointAngle = Math.atan2(dy, dx);
-        let angleDiff = pointAngle - this.angle;
-        
-        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-        
-        return Math.abs(angleDiff) <= this.coneAngle / 2;
-    }
-}
-
-/**
- * Explosion attack for area damage
- */
-export class ExplosionAttack {
-    public sprite: Phaser.GameObjects.Graphics;
-    public damage: number;
-    public scene: Scene;
-    private active: boolean = true;
-    private lifetime: number = 0.4;
-    private elapsed: number = 0;
-    public x: number;
-    public y: number;
-    private maxRadius: number = 120;
-    public currentRadius: number;
-
-    constructor(scene: Scene, x: number, y: number, damage: number) {
-        this.scene = scene;
-        this.damage = damage;
-        this.x = x;
-        this.y = y;
-        this.currentRadius = 0;
-        
-        this.sprite = scene.add.graphics();
-        this.sprite.setPosition(x, y);
-        this.sprite.setDepth(5);
-        this.updateExplosionGraphics();
-    }
-
-    private updateExplosionGraphics(): void {
-        this.sprite.clear();
-        
-        const progress = this.elapsed / this.lifetime;
-        this.currentRadius = this.maxRadius * progress;
-        
-        // Outer ring
-        this.sprite.lineStyle(8, 0xff4400, 1 - progress);
-        this.sprite.strokeCircle(0, 0, this.currentRadius);
-        
-        // Inner fill
-        this.sprite.fillStyle(0xff6600, (1 - progress) * 0.3);
-        this.sprite.fillCircle(0, 0, this.currentRadius);
-    }
-
-    public update(deltaTime: number): void {
-        if (!this.active) return;
-        
-        this.elapsed += deltaTime;
-        this.updateExplosionGraphics();
-        
-        if (this.elapsed >= this.lifetime) {
-            this.destroy();
-        }
-    }
-
-    public destroy(): void {
-        this.active = false;
-        this.sprite.destroy();
-    }
-
-    public isActive(): boolean {
-        return this.active;
-    }
-
-    public isPointInExplosion(px: number, py: number): boolean {
-        if (!this.active) return false;
-        
-        const dx = px - this.x;
-        const dy = py - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        return distance <= this.currentRadius;
-    }
-}
-
-/**
- * Vortex attack that travels and slows the player
- */
-export class VortexAttack {
-    public sprite: Phaser.GameObjects.Graphics;
-    public damage: number;
-    public scene: Scene;
-    private active: boolean = true;
-    private travelTime: number = 1.0;
-    private totalLifetime: number = 4.0;
-    private elapsed: number = 0;
-    public x: number;
-    public y: number;
-    private targetX: number;
-    private targetY: number;
-    private maxDistance: number = 350;
-    private startRadius: number = 25;
-    private maxRadius: number = 100;
-    public currentRadius: number;
-    private velocityX: number;
-    private velocityY: number;
-    private isTraveling: boolean = true;
-    public slowEffect: number = 0.5;
-    public slowDuration: number = 2.0;
-
-    constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, _enemyRadius: number = 40) {
-        this.scene = scene;
-        this.damage = damage;
-        this.x = enemyX;
-        this.y = enemyY;
-        this.currentRadius = this.startRadius;
-        
-        // Calculate target position
-        const dx = playerX - enemyX;
-        const dy = playerY - enemyY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > 0) {
-            const normalizedDx = dx / distance;
-            const normalizedDy = dy / distance;
-            this.targetX = enemyX + normalizedDx * this.maxDistance;
-            this.targetY = enemyY + normalizedDy * this.maxDistance;
-            this.velocityX = normalizedDx * (this.maxDistance / this.travelTime);
-            this.velocityY = normalizedDy * (this.maxDistance / this.travelTime);
-        } else {
-            this.targetX = enemyX;
-            this.targetY = enemyY;
-            this.velocityX = 0;
-            this.velocityY = 0;
-        }
-        
-        this.sprite = scene.add.graphics();
-        this.sprite.setPosition(this.x, this.y);
-        this.sprite.setDepth(5);
-        this.updateVortexGraphics();
-    }
-
-    private updateVortexGraphics(): void {
-        this.sprite.clear();
-        
-        if (this.isTraveling) {
-            // Traveling phase - small purple orb
-            this.sprite.fillStyle(0x8800ff, 0.8);
-            this.sprite.fillCircle(0, 0, this.currentRadius);
-            this.sprite.lineStyle(3, 0xaa44ff, 1);
-            this.sprite.strokeCircle(0, 0, this.currentRadius);
-        } else {
-            // Stationary phase - swirling vortex
-            const time = this.elapsed - this.travelTime;
-            const rotation = time * 4;
-            
-            this.sprite.fillStyle(0x8800ff, 0.4);
-            this.sprite.fillCircle(0, 0, this.currentRadius);
-            
-            // Draw spiral arms
-            for (let i = 0; i < 3; i++) {
-                const armAngle = rotation + (i * Math.PI * 2 / 3);
-                const armLength = this.currentRadius * 0.8;
-                this.sprite.lineStyle(4, 0xaa44ff, 0.8);
-                this.sprite.beginPath();
-                this.sprite.moveTo(0, 0);
-                this.sprite.lineTo(Math.cos(armAngle) * armLength, Math.sin(armAngle) * armLength);
-                this.sprite.strokePath();
-            }
-        }
-    }
-
-    public update(deltaTime: number): void {
-        if (!this.active) return;
-        
-        this.elapsed += deltaTime;
-        
-        if (this.isTraveling && this.elapsed < this.travelTime) {
-            // Move towards target
-            this.x += this.velocityX * deltaTime;
-            this.y += this.velocityY * deltaTime;
-            this.sprite.setPosition(this.x, this.y);
-        } else if (this.isTraveling) {
-            // Stop traveling and expand
-            this.isTraveling = false;
-            this.x = this.targetX;
-            this.y = this.targetY;
-            this.sprite.setPosition(this.x, this.y);
-        }
-        
-        // Update radius
-        if (!this.isTraveling) {
-            const expansionProgress = Math.min((this.elapsed - this.travelTime) / 1.0, 1);
-            this.currentRadius = this.startRadius + (this.maxRadius - this.startRadius) * expansionProgress;
-        }
-        
-        this.updateVortexGraphics();
-        
-        if (this.elapsed >= this.totalLifetime) {
-            this.destroy();
-        }
-    }
-
-    public destroy(): void {
-        this.active = false;
-        this.sprite.destroy();
-    }
-
-    public isActive(): boolean {
-        return this.active;
-    }
-
-    public isPointInVortex(px: number, py: number): boolean {
-        if (!this.active) return false;
-        
-        const dx = px - this.x;
-        const dy = py - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        return distance <= this.currentRadius;
-    }
-}
-
-/**
- * Melee attack for close combat
- */
-export class MeleeAttack {
-    public sprite: Phaser.GameObjects.Graphics;
-    public damage: number;
-    public scene: Scene;
-    private active: boolean = true;
-    private lifetime: number = 0.3;
-    private elapsed: number = 0;
-    public x: number;
-    public y: number;
-    public width: number;
-    public height: number;
-    private angle: number;
-    private corners: { x: number; y: number }[];
-
-    constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, enemyRadius: number = 40, width: number = 100, height: number = 60) {
-        this.scene = scene;
-        this.damage = damage;
-        this.width = width;
-        this.height = height;
-        this.corners = [];
-        
-        // Calculate angle towards player
-        const dx = playerX - enemyX;
-        const dy = playerY - enemyY;
-        this.angle = Math.atan2(dy, dx);
-        
-        // Position attack in front of enemy
-        const attackDistance = enemyRadius + width / 2;
-        this.x = enemyX + Math.cos(this.angle) * attackDistance;
-        this.y = enemyY + Math.sin(this.angle) * attackDistance;
-        
-        this.sprite = scene.add.graphics();
-        this.sprite.setPosition(this.x, this.y);
-        this.sprite.setRotation(this.angle);
-        this.sprite.setDepth(5);
-        
-        this.updateCorners();
-        this.updateMeleeGraphics();
-    }
-
-    private updateCorners(): void {
-        const halfWidth = this.width / 2;
-        const halfHeight = this.height / 2;
-        
-        // Calculate rotated corners
-        const cos = Math.cos(this.angle);
-        const sin = Math.sin(this.angle);
-        
-        this.corners = [
-            { x: this.x + (-halfWidth * cos - -halfHeight * sin), y: this.y + (-halfWidth * sin + -halfHeight * cos) },
-            { x: this.x + (halfWidth * cos - -halfHeight * sin), y: this.y + (halfWidth * sin + -halfHeight * cos) },
-            { x: this.x + (halfWidth * cos - halfHeight * sin), y: this.y + (halfWidth * sin + halfHeight * cos) },
-            { x: this.x + (-halfWidth * cos - halfHeight * sin), y: this.y + (-halfWidth * sin + halfHeight * cos) }
-        ];
-    }
-
-    private updateMeleeGraphics(): void {
-        this.sprite.clear();
-        this.sprite.fillStyle(0xff8800, 0.6);
-        this.sprite.lineStyle(3, 0xff4400, 1);
-        this.sprite.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-        this.sprite.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
-    }
-
-    public update(deltaTime: number): void {
-        if (!this.active) return;
-        
-        this.elapsed += deltaTime;
-        
-        if (this.elapsed >= this.lifetime) {
-            this.destroy();
-        }
-    }
-
-    public destroy(): void {
-        this.active = false;
-        this.sprite.destroy();
-    }
-
-    public isActive(): boolean {
-        return this.active;
-    }
-
-    public getCorners(): { x: number; y: number }[] {
-        return this.corners;
-    }
-}
-
 /**
  * Interface for enemy attack results
  */
@@ -1203,15 +702,6 @@ export interface EnemyStats {
     specialAbilities: string[]; // List of special abilities
 }
 
-export interface EnemyAttackResult {
-    projectile?: Projectile;
-    meleeAttack?: MeleeAttack;
-    shield?: Shield;
-    coneAttack?: ConeAttack;
-    vortexAttack?: VortexAttack;
-    explosionAttack?: ExplosionAttack;
-}
-
 export class Enemy {
     public sprite: Phaser.GameObjects.Sprite;
     public type: EnemyType;
@@ -1219,6 +709,8 @@ export class Enemy {
     public currentHealth: number;
     public scene: Scene;
     private currentAnimation: string = '';
+    private mobVariant: string;
+    private mobAnimations: MobAnimationSet;
     private shootCooldown: number = 0;
     private shootInterval: number = 2.0; // Shoot every 2 seconds for ranged enemies
     private attackRange: number = 300; // Range for ranged attacks
@@ -1237,49 +729,91 @@ export class Enemy {
     private isExploding: boolean = false; // Track if elemental spirit is in death/explosion sequence
     private deathAnimationDuration: number = 0.75; // Duration of death animation (15 frames at ~20fps)
     private deathTimer: number = 0; // Timer for death animation
+    private lastAttackTime: number = 0;
+    private attackCooldown: number = 1000;
+    private facingLeft: boolean = false; // Track current facing direction
 
     constructor(scene: Scene, x: number, y: number, type: EnemyType) {
-        this.scene = scene;
-        this.type = type;
-        this.stats = this.getStatsForType(type);
-        this.currentHealth = this.stats.health;
-        
-        // Use hardcoded mob variant selection - NO RANDOMIZATION
-        this.mobVariant = AnimationMapper.getHardcodedMobForEnemyType(type);
-        
-        // VALIDATION: Ensure no random selection occurred
-        const expectedSkin = getHardcodedMobSkin(type);
-        validateNoRandomSelection(this.mobVariant, expectedSkin, type);
-        
-        this.mobAnimations = this.createMobAnimations(this.mobVariant);
-        
-        // Create physics sprite using the mob texture atlas key
-        const textureKey = this.mobAnimations.texture;
-        this.sprite = scene.physics.add.sprite(x, y, textureKey) as Phaser.GameObjects.Sprite;
-        this.sprite.setScale(this.getScaleForType(type));
-        this.sprite.setData('enemy', this);
-        
-        const enemyId = Math.floor(Math.random() * 10000);
-        this.sprite.setData('enemyId', enemyId);
-        console.log(`Created enemy #${enemyId} - Type: ${type}, Sprite: ${spriteKey}`);
-        
-        // Set attack range based on enemy type
-        // All ranges now use the dynamic sprite radius from getApproximateRadius()
-        if (type === EnemyType.ARCHER) {
-            this.attackRange = 350; // Ranged attack
-        } else if (type === EnemyType.GOLEM) {
-            // Golem melee attack range: stop when the attack hitbox would reach the player
-            // Attack extends from sprite edge (radius) + attack width (100)
-            const spriteRadius = this.getApproximateRadius();
-            this.attackRange = spriteRadius + 100 + 20; // radius + attack width + small buffer
-        } else if (type === EnemyType.SKELETON_VIKING) {
-            this.attackRange = 100; // Close range for cone attack
-        } else {
-            this.attackRange = 50; // Standard melee range (Gnoll)
+        try {
+            console.log(`🎯 Creating enemy of type: ${type} at (${x}, ${y})`);
+            
+            this.scene = scene;
+            this.type = type;
+            this.stats = this.getStatsForType(type);
+            this.currentHealth = this.stats.health;
+            
+            // Use hardcoded mob variant selection - NO RANDOMIZATION
+            this.mobVariant = AnimationMapper.getHardcodedMobForEnemyType(type);
+            console.log(`✅ Got mob variant: ${this.mobVariant}`);
+            
+            // VALIDATION: Ensure no random selection occurred
+            const expectedSkin = getHardcodedMobSkin(type);
+            validateNoRandomSelection(this.mobVariant, expectedSkin, type);
+            
+            this.mobAnimations = this.createMobAnimations(this.mobVariant);
+            console.log(`✅ Got animations:`, this.mobAnimations);
+            
+            // Create physics sprite using the mob texture atlas key
+            const textureKey = this.mobAnimations.texture;
+            console.log(`✅ Creating sprite with texture: ${textureKey}`);
+            
+            // Check if texture exists
+            if (!scene.textures.exists(textureKey)) {
+                throw new Error(`Texture '${textureKey}' does not exist! Available textures: ${scene.textures.getTextureKeys().filter(k => k.startsWith('mob-')).join(', ')}`);
+            }
+            
+            this.sprite = scene.physics.add.sprite(x, y, textureKey) as Phaser.GameObjects.Sprite;
+            this.sprite.setScale(this.getScaleForType(type));
+            this.sprite.setData('enemy', this);
+            this.sprite.setDepth(3); // Make sure sprites are visible
+            this.sprite.setOrigin(0.5, 0.5); // Ensure centered origin
+            this.sprite.setAngle(0); // Ensure no rotation
+            this.sprite.setRotation(0); // Explicitly set rotation to 0
+            
+            // Enable crisp pixel rendering for better sprite quality
+            this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+            
+            // Enable collision with world bounds (same as player)
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            if (body) {
+                body.setCollideWorldBounds(true);
+            }
+            
+            const enemyId = Math.floor(Math.random() * 10000);
+            this.sprite.setData('enemyId', enemyId);
+            console.log(`✅ Created enemy #${enemyId} - Type: ${type}, Sprite: ${textureKey}`);
+            
+            // Set attack range based on enemy type
+            // All ranges now use the dynamic sprite radius from getApproximateRadius()
+            if (type === EnemyType.ARCHER) {
+                this.attackRange = 350; // Ranged attack
+            } else if (type === EnemyType.GOLEM) {
+                // Golem melee attack range: stop when the attack hitbox would reach the player
+                // Attack extends from sprite edge (radius) + attack width (100)
+                const spriteRadius = this.getApproximateRadius();
+                this.attackRange = spriteRadius + 100 + 20; // radius + attack width + small buffer
+            } else if (type === EnemyType.SKELETON_VIKING) {
+                this.attackRange = 100; // Close range for cone attack
+            } else if (type === EnemyType.SKELETON_PIRATE) {
+                this.attackRange = 400; // Vortex range
+            } else if (type === EnemyType.ELEMENTAL_SPIRIT) {
+                this.attackRange = 80; // Explosion trigger range
+            } else {
+                this.attackRange = 50; // Standard melee range (Gnoll)
+            }
+            
+            // Initialize facing direction based on sprite's default state
+            this.facingLeft = this.sprite.flipX;
+            
+            // Start with idle animation using the mob-specific animation key
+            console.log(`✅ Playing idle animation: ${this.mobAnimations.idle}`);
+            this.playAnimation(this.mobAnimations.idle);
+            console.log(`✅ Enemy construction complete!`);
+            
+        } catch (error) {
+            console.error(`❌ ENEMY CONSTRUCTION FAILED for type ${type}:`, error);
+            throw error;
         }
-        
-        // Start with idle animation
-        this.playAnimation('idle');
     }
 
     private getStatsForType(type: EnemyType): EnemyStats {
@@ -1381,21 +915,22 @@ export class Enemy {
     }
 
     private getScaleForType(type: EnemyType): number {
+        // All enemies scaled to match player size (0.05)
         switch (type) {
             case EnemyType.SKELETON_VIKING:
-                return 0.3;
+                return 0.05;
             case EnemyType.GOLEM:
-                return 0.4;
+                return 0.05;
             case EnemyType.ARCHER:
-                return 0.25;
+                return 0.05;
             case EnemyType.GNOLL:
-                return 0.28;
+                return 0.05;
             case EnemyType.SKELETON_PIRATE:
-                return 0.3;
+                return 0.05;
             case EnemyType.ELEMENTAL_SPIRIT:
-                return 0.22; // Smaller, more agile
+                return 0.05;
             default:
-                return 0.1;
+                return 0.05;
         }
     }
 
@@ -1415,11 +950,18 @@ export class Enemy {
 
 
     private playAnimation(animationName: string): void {
-        if (this.currentAnimation !== animationName && this.sprite.anims) {
-            if (this.scene.anims.exists(animationName)) {
-            this.sprite.play(animationName, true);
-            this.currentAnimation = animationName;
-        }
+        if (this.sprite.anims) {
+            // Check if this animation is already playing (using Phaser's animation state)
+            const currentlyPlaying = this.sprite.anims.currentAnim?.key;
+            
+            if (currentlyPlaying !== animationName && this.scene.anims.exists(animationName)) {
+                // Preserve the current flip state before playing animation
+                const currentFlipX = this.sprite.flipX;
+                this.sprite.play(animationName);
+                this.currentAnimation = animationName;
+                // Restore flip state after animation starts (prevents animation from resetting flip)
+                this.sprite.setFlipX(currentFlipX);
+            }
         }
     }
 
@@ -1478,11 +1020,12 @@ export class Enemy {
         }
         
         // Track facing direction and flip sprite (only if not attacking)
+        // Only update flip when direction actually changes to prevent flickering
         if (!this.isAttacking) {
-            if (dx < 0) {
-                this.sprite.setFlipX(true);
-            } else if (dx > 0) {
-                this.sprite.setFlipX(false);
+            const shouldFaceLeft = dx < 0;
+            if (shouldFaceLeft !== this.facingLeft) {
+                this.facingLeft = shouldFaceLeft;
+                this.sprite.setFlipX(this.facingLeft);
             }
         }
         
@@ -1491,78 +1034,99 @@ export class Enemy {
             const closeRange = 100;
             
             if (this.isAttacking) {
-                this.playAnimation('skeleton_viking_idle');
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when attacking
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
             } else if (distance > closeRange) {
-                // Move towards player
-                const moveX = (dx / distance) * this.stats.speed * deltaTime;
-                const moveY = (dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('skeleton_viking_running');
+                // Move towards player using physics velocity
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
                 
                 // Deploy shield at medium range
                 if (distance < 250 && this.shieldCooldown <= 0 && !this.activeShield) {
                     this.shieldCooldown = this.shieldInterval;
                     const enemyRadius = this.getApproximateRadius();
+                    const shield = new Shield(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, enemyRadius);
                     console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_VIKING) creating SHIELD`);
-                    return { shield: new Shield(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, enemyRadius) };
+                    return { type: 'shield', damage: 0, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: shield };
             }
         } else {
                 // Close range - cone attack
-                this.playAnimation('skeleton_viking_idle');
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when in close range
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
                 if (this.coneAttackCooldown <= 0) {
                     this.coneAttackCooldown = this.coneAttackInterval;
                     this.isAttacking = true;
                     this.attackTimer = 0.25;
                     const enemyRadius = this.getApproximateRadius();
+                    const coneAttack = new ConeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
                     console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_VIKING) creating CONE ATTACK`);
-                    return { coneAttack: new ConeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius) };
+                    return { type: 'cone', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: coneAttack };
                 }
             }
         }
         // Archer behavior - stay at range and shoot
         else if (this.type === EnemyType.ARCHER) {
             if (distance > this.attackRange) {
-                const moveX = (dx / distance) * this.stats.speed * deltaTime;
-                const moveY = (dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('archer_mob_running');
+                // Move towards player using physics velocity
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             } else if (distance < this.attackRange - 50) {
-                // Kite away
-                const moveX = -(dx / distance) * this.stats.speed * deltaTime;
-                const moveY = -(dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('archer_mob_running');
+                // Kite away using physics velocity
+                const velocityX = -(dx / distance) * this.stats.speed;
+                const velocityY = -(dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             } else {
-                this.playAnimation('archer_mob_idle');
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when in optimal range
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
                 if (this.shootCooldown <= 0) {
                     this.shootCooldown = this.shootInterval;
+                    const projectile = new Projectile(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage);
                     console.log(`Enemy #${this.sprite.getData('enemyId')} (ARCHER) creating PROJECTILE`);
-                    return { projectile: new Projectile(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage) };
+                    return { type: 'projectile', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: projectile };
                 }
             }
         }
         // Golem behavior - walk up and melee attack
         else if (this.type === EnemyType.GOLEM) {
             if (this.isAttacking) {
-                this.playAnimation('golem_idle');
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when attacking
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
             } else if (distance > this.attackRange) {
-                const moveX = (dx / distance) * this.stats.speed * deltaTime;
-                const moveY = (dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('golem_walking');
+                // Move towards player using physics velocity
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             } else {
-                this.playAnimation('golem_idle');
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when in attack range
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
                 if (this.meleeAttackCooldown <= 0) {
                     this.meleeAttackCooldown = this.meleeAttackInterval;
                     this.isAttacking = true;
                     this.attackTimer = this.attackDuration;
                     const enemyRadius = this.getApproximateRadius();
+                    const meleeAttack = new MeleeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
                     console.log(`Enemy #${this.sprite.getData('enemyId')} (GOLEM) creating MELEE ATTACK`);
-                    return { meleeAttack: new MeleeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius) };
+                    return { type: 'melee', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: meleeAttack };
                 }
             }
         }
@@ -1571,29 +1135,34 @@ export class Enemy {
             const vortexRange = 400; // Cast vortex when player is within this range
             
             if (distance > vortexRange) {
-                // Move towards player
-                const moveX = (dx / distance) * this.stats.speed * deltaTime;
-                const moveY = (dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('skeleton_pirate_running');
+                // Move towards player using physics velocity
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             } else if (distance < 150) {
-                // Too close - back away slightly
-                const moveX = -(dx / distance) * (this.stats.speed * 0.5) * deltaTime;
-                const moveY = -(dy / distance) * (this.stats.speed * 0.5) * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('skeleton_pirate_running');
+                // Too close - back away slightly using physics velocity
+                const velocityX = -(dx / distance) * (this.stats.speed * 0.5);
+                const velocityY = -(dy / distance) * (this.stats.speed * 0.5);
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             } else {
                 // In optimal range - cast vortex
-                this.playAnimation('skeleton_pirate_idle');
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when in optimal range
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
                 if (this.vortexAttackCooldown <= 0) {
                     this.vortexAttackCooldown = this.vortexAttackInterval;
                     this.isAttacking = true;
                     this.attackTimer = 0.5; // Brief casting animation lock
                     const enemyRadius = this.getApproximateRadius();
+                    const vortexAttack = new VortexAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
                     console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_PIRATE) creating VORTEX ATTACK`);
-                    return { vortexAttack: new VortexAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius) };
+                    return { type: 'vortex', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, 
+                        specialEffects: { slowEffect: vortexAttack.slowEffect, slowDuration: vortexAttack.slowDuration }, attackObject: vortexAttack };
                 }
             }
         }
@@ -1604,6 +1173,9 @@ export class Enemy {
             if (this.isExploding) {
                 // Currently in death animation, wait for it to complete
                 this.deathTimer += deltaTime;
+                // Stop movement when exploding
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
                 
                 if (this.deathTimer >= this.deathAnimationDuration) {
                     // Death animation complete, trigger explosion
@@ -1613,34 +1185,41 @@ export class Enemy {
                     // Destroy the sprite immediately after creating explosion
                     this.destroy();
                     
-                    return { explosionAttack: explosion };
+                    return { type: 'explosion', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: explosion };
                 }
             } else if (distance <= explosionTriggerRange) {
                 // Close enough to trigger death animation
                 this.isExploding = true;
                 this.deathTimer = 0;
-                this.playAnimation('elemental_spirit_dying');
+                // Stop movement when triggering explosion
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
+                this.playAnimation(this.mobAnimations.idle); // Use idle as death animation fallback
                 console.log(`Enemy #${this.sprite.getData('enemyId')} (ELEMENTAL_SPIRIT) triggered death sequence`);
             } else {
-                // Rush towards player with high speed
-                const moveX = (dx / distance) * this.stats.speed * deltaTime;
-                const moveY = (dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('elemental_spirit_running');
+                // Rush towards player with high speed using physics velocity
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             }
         }
         // Gnoll behavior - fast melee
         else {
             if (distance > 5) {
-                const moveX = (dx / distance) * this.stats.speed * deltaTime;
-                const moveY = (dy / distance) * this.stats.speed * deltaTime;
-                this.sprite.x += moveX;
-                this.sprite.y += moveY;
-                this.playAnimation('gnoll_running');
+                // Move towards player using physics velocity
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
             } else {
-                this.playAnimation('gnoll_idle');
-        }
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when close enough
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
+            }
         }
         
         return null;
@@ -1900,6 +1479,7 @@ export class EnemySystem {
     private player: any;
     private xpOrbSystem: any;
     private spawnTimer: Phaser.Time.TimerEvent | null = null;
+    private onEnemySpawnedCallback: ((enemy: Enemy) => void) | null = null;
     
     // Attack object management
     private activeProjectiles: Projectile[] = [];
@@ -1913,6 +1493,14 @@ export class EnemySystem {
         this.scene = scene;
         this.player = player;
         this.xpOrbSystem = xpOrbSystem;
+    }
+
+    /**
+     * Sets a callback to be called whenever a new enemy is spawned
+     * @param callback - Function to call with the newly spawned enemy
+     */
+    public setEnemySpawnedCallback(callback: (enemy: Enemy) => void): void {
+        this.onEnemySpawnedCallback = callback;
     }
 
     /**
@@ -1985,32 +1573,44 @@ export class EnemySystem {
      * @param location - Spawn location strategy ('near_player', 'screen_edges', 'random_ambush')
      * @param playerX - Player's X coordinate for positioning
      * @param playerY - Player's Y coordinate for positioning
+     * @returns Array of spawned enemies
      */
-    public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384): void {
+    public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384): Enemy[] {
         if (this.enemies.length >= this.maxEnemies) {
-            return; // Don't spawn if max is reached
+            return []; // Don't spawn if max is reached
         }
 
         const remainingCapacity = this.maxEnemies - this.enemies.length;
         const spawnCount = Math.min(count, remainingCapacity);
+        const spawnedEnemies: Enemy[] = [];
 
         for (let i = 0; i < spawnCount; i++) {
             const spawnPos = this.getSpawnPosition(location, playerX, playerY);
             const enemy = new Enemy(this.scene, spawnPos.x, spawnPos.y, enemyType);
             this.enemies.push(enemy);
+            spawnedEnemies.push(enemy);
+            
+            // Notify callback if registered
+            if (this.onEnemySpawnedCallback) {
+                this.onEnemySpawnedCallback(enemy);
+            }
         }
+        
+        return spawnedEnemies;
     }
 
     /**
      * Spawn a single enemy at a specific position
+     * @returns The spawned enemy, or null if max enemies reached
      */
-    public spawnEnemyAt(enemyType: EnemyType, x: number, y: number): void {
+    public spawnEnemyAt(enemyType: EnemyType, x: number, y: number): Enemy | null {
         if (this.enemies.length >= this.maxEnemies) {
-            return; // Don't spawn if max is reached
+            return null; // Don't spawn if max is reached
         }
 
         const enemy = new Enemy(this.scene, x, y, enemyType);
         this.enemies.push(enemy);
+        return enemy;
     }
 
     private getSpawnPosition(location: string, playerX: number, playerY: number): { x: number; y: number } {
@@ -2100,26 +1700,28 @@ export class EnemySystem {
         // Update enemies and collect new attacks
         this.enemies.forEach(enemy => {
             const attackResult = enemy.update(playerX, playerY, deltaTime);
-            if (attackResult) {
-                if (attackResult.projectile) {
-                    this.projectiles.push(attackResult.projectile);
-                }
-                if (attackResult.meleeAttack) {
-                    this.meleeAttacks.push(attackResult.meleeAttack);
-                }
-                if (attackResult.shield) {
-                    this.shields.push(attackResult.shield);
-                    // Store reference to shield in enemy
-                    (enemy as any).activeShield = attackResult.shield;
-                }
-                if (attackResult.coneAttack) {
-                    this.coneAttacks.push(attackResult.coneAttack);
-                }
-                if (attackResult.vortexAttack) {
-                    this.vortexAttacks.push(attackResult.vortexAttack);
-                }
-                if (attackResult.explosionAttack) {
-                    this.explosionAttacks.push(attackResult.explosionAttack);
+            if (attackResult && attackResult.attackObject) {
+                switch (attackResult.type) {
+                    case 'projectile':
+                        this.projectiles.push(attackResult.attackObject as Projectile);
+                        break;
+                    case 'melee':
+                        this.meleeAttacks.push(attackResult.attackObject as MeleeAttack);
+                        break;
+                    case 'shield':
+                        this.shields.push(attackResult.attackObject as Shield);
+                        // Store reference to shield in enemy
+                        (enemy as any).activeShield = attackResult.attackObject;
+                        break;
+                    case 'cone':
+                        this.coneAttacks.push(attackResult.attackObject as ConeAttack);
+                        break;
+                    case 'vortex':
+                        this.vortexAttacks.push(attackResult.attackObject as VortexAttack);
+                        break;
+                    case 'explosion':
+                        this.explosionAttacks.push(attackResult.attackObject as ExplosionAttack);
+                        break;
                 }
             }
         });
@@ -2218,34 +1820,6 @@ export class EnemySystem {
         return this.enemies.length;
     }
 
-    /**
-     * Adds an attack object to the appropriate array based on its type
-     * @param attackResult - The attack result containing the attack object
-     */
-    private addAttackObject(attackResult: EnemyAttackResult): void {
-        if (!attackResult.attackObject) return;
-
-        switch (attackResult.type) {
-            case 'projectile':
-                this.activeProjectiles.push(attackResult.attackObject as Projectile);
-                break;
-            case 'shield':
-                this.activeShields.push(attackResult.attackObject as Shield);
-                break;
-            case 'cone':
-                this.activeConeAttacks.push(attackResult.attackObject as ConeAttack);
-                break;
-            case 'explosion':
-                this.activeExplosionAttacks.push(attackResult.attackObject as ExplosionAttack);
-                break;
-            case 'vortex':
-                this.activeVortexAttacks.push(attackResult.attackObject as VortexAttack);
-                break;
-            case 'melee':
-                this.activeMeleeAttacks.push(attackResult.attackObject as MeleeAttack);
-                break;
-        }
-    }
 
     /**
      * Updates all active attack objects and removes inactive ones
@@ -2584,47 +2158,6 @@ export class EnemySystem {
         
         return breakdown;
     }
-
-    /**
-     * Gets all active projectiles for collision detection
-     * @returns Array of active projectiles
-     */
-    public getProjectiles(): Projectile[] {
-        return this.activeProjectiles;
-    }
-
-    /**
-     * Gets all active melee attacks for collision detection
-     * @returns Array of active melee attacks
-     */
-    public getMeleeAttacks(): MeleeAttack[] {
-        return this.activeMeleeAttacks;
-    }
-
-    /**
-     * Gets all active cone attacks for collision detection
-     * @returns Array of active cone attacks
-     */
-    public getConeAttacks(): ConeAttack[] {
-        return this.activeConeAttacks;
-    }
-
-    /**
-     * Gets all active vortex attacks for collision detection
-     * @returns Array of active vortex attacks
-     */
-    public getVortexAttacks(): VortexAttack[] {
-        return this.activeVortexAttacks;
-    }
-
-    /**
-     * Gets all active explosion attacks for collision detection
-     * @returns Array of active explosion attacks
-     */
-    public getExplosionAttacks(): ExplosionAttack[] {
-        return this.activeExplosionAttacks;
-    }
-
 }
 
 

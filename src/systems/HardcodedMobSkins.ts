@@ -30,10 +30,12 @@ import { EnemyType } from '../game/types/EnemyTypes';
  * Each mob type now uses a unique texture atlas for distinct visual appearance
  */
 export const HARDCODED_MOB_SKINS = Object.freeze({
-    [EnemyType.SKELETON_VIKING]: 'Skeleton_Pirate_Captain_1', // Elite pirate skeleton - uses mob-texture-196
-    [EnemyType.GOLEM]: 'Golem_1',                             // Stone golem - uses mob-texture-135 (unique texture)
-    [EnemyType.ARCHER]: 'Archer_1',                           // Ranged archer - uses mob-texture-6 (unique texture)
-    [EnemyType.GNOLL]: 'Gnoll_3'                              // Fast gnoll warrior - uses mob-texture-307 (unique texture)
+    [EnemyType.SKELETON_VIKING]: 'Skeleton_Viking_1',         // Elite viking skeleton - uses mob-texture-281
+    [EnemyType.GOLEM]: 'Golem_1',                             // Stone golem - uses mob-texture-281
+    [EnemyType.ARCHER]: 'Archer_1',                           // Ranged archer - uses mob-texture-254
+    [EnemyType.GNOLL]: 'Gnoll_3',                             // Fast gnoll warrior - uses mob-texture-316
+    [EnemyType.SKELETON_PIRATE]: 'Skeleton_Pirate_Captain_1', // Skeleton pirate with vortex attacks - uses mob-texture-196
+    [EnemyType.ELEMENTAL_SPIRIT]: 'Elemental_Spirits_2'       // Elemental spirit suicide bomber - uses mob-texture-205 (idle) + 204 (running)
 } as const);
 
 /**
@@ -83,7 +85,9 @@ export function validateAllMobSpawnerSkins(): boolean {
         EnemyType.SKELETON_VIKING,
         EnemyType.GOLEM,
         EnemyType.ARCHER,
-        EnemyType.GNOLL
+        EnemyType.GNOLL,
+        EnemyType.SKELETON_PIRATE,
+        EnemyType.ELEMENTAL_SPIRIT
     ];
 
     for (const enemyType of requiredEnemyTypes) {
@@ -206,7 +210,9 @@ export function developmentValidation(): void {
             EnemyType.SKELETON_VIKING,
             EnemyType.GOLEM,
             EnemyType.ARCHER,
-            EnemyType.GNOLL
+            EnemyType.GNOLL,
+            EnemyType.SKELETON_PIRATE,
+            EnemyType.ELEMENTAL_SPIRIT
         ];
         
         mobSpawnerTypes.forEach(type => {
@@ -226,11 +232,10 @@ export function developmentValidation(): void {
 export function getTextureKeyForMobVariant(mobVariant: string): string {
     // Updated to use atlases that contain idle/walk frames for our hardcoded variants
     const texture196Variants = ['Skeleton_Pirate_Captain_1'];
-    const texture254Variants = ['Archer_1']; // Archer idle/walk frames present
-    const texture281Variants = ['Golem_1'];  // Golem idle/walk frames present
+    const texture254Variants = ['Archer_1', 'Archer_2', 'Skeleton_Viking_3']; // Archer idle/walk frames present
+    const texture281Variants = ['Golem_1', 'Skeleton_Viking_1'];  // Golem idle/walk frames present
     const texture316Variants = ['Gnoll_3'];  // Gnoll idle/walk frames present
-
-    const texture264Variants = ['Golem_2', 'Skeleton_Warrior_1', 'Skeleton_Warrior_2', 'Skeleton_Warrior_3', 'Goblin_1', 'Goblin_2', 'Goblin_3', 'Orc_1', 'Orc_2', 'Orc_3'];
+    const texture205Variants = ['Elemental_Spirits_2']; // Elemental spirits (idle frames in 205, running in 204)
 
     if (texture196Variants.includes(mobVariant)) {
         return 'mob-texture-196';
@@ -240,12 +245,12 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
         return 'mob-texture-281';
     } else if (texture316Variants.includes(mobVariant)) {
         return 'mob-texture-316';
-    } else if (texture264Variants.includes(mobVariant)) {
-        return 'mob-texture-264';
+    } else if (texture205Variants.includes(mobVariant)) {
+        return 'mob-texture-205';
     } else {
         // Fallback for any unknown variants
-        console.warn(`Unknown mob variant: ${mobVariant}, using fallback texture-264`);
-        return 'mob-texture-264';
+        console.warn(`Unknown mob variant: ${mobVariant}, using fallback texture-196`);
+        return 'mob-texture-196';
     }
 }
 

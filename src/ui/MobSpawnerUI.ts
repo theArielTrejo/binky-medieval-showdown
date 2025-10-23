@@ -28,7 +28,7 @@ export class MobSpawnerUI {
 
     private createUI(): void {
         const panelWidth = 220;
-        const panelHeight = 400;
+        const panelHeight = 520; // Increased to fit 6 buttons
         
         // Create main panel background with enhanced styling
         const panelBg = this.scene.add.rectangle(0, 0, panelWidth, panelHeight, 0x1a1a1a, 0.95);
@@ -51,7 +51,7 @@ export class MobSpawnerUI {
         this.container.add(this.headerText);
 
         // Instructions with better styling
-        const instructions = this.scene.add.text(10, 50, 'Click to spawn at cursor\nHotkeys: 1-4, T to toggle', {
+        const instructions = this.scene.add.text(10, 50, 'Click to spawn at cursor\nHotkeys: 1-6, T to toggle', {
             fontSize: '11px',
             color: '#cccccc',
             fontFamily: 'Arial',
@@ -84,6 +84,18 @@ export class MobSpawnerUI {
                 name: '🐺 Gnoll', 
                 color: 0xff8844,
                 description: 'Fast Melee'
+            },
+            { 
+                type: EnemyType.SKELETON_PIRATE, 
+                name: '🏴‍☠️ Skeleton Pirate', 
+                color: 0x00cccc,
+                description: 'Vortex & Slow'
+            },
+            { 
+                type: EnemyType.ELEMENTAL_SPIRIT, 
+                name: '🔥 Elemental Spirit', 
+                color: 0xff6600,
+                description: 'Explosive Suicide'
             }
         ];
 
@@ -245,6 +257,8 @@ export class MobSpawnerUI {
         this.scene.input.keyboard?.on('keydown-TWO', () => this.spawnMobAtCursor(EnemyType.GOLEM));
         this.scene.input.keyboard?.on('keydown-THREE', () => this.spawnMobAtCursor(EnemyType.ARCHER));
         this.scene.input.keyboard?.on('keydown-FOUR', () => this.spawnMobAtCursor(EnemyType.GNOLL));
+        this.scene.input.keyboard?.on('keydown-FIVE', () => this.spawnMobAtCursor(EnemyType.SKELETON_PIRATE));
+        this.scene.input.keyboard?.on('keydown-SIX', () => this.spawnMobAtCursor(EnemyType.ELEMENTAL_SPIRIT));
     }
 
     private spawnMobAtCursor(type: EnemyType): void {

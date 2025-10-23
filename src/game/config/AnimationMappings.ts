@@ -160,7 +160,7 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
   'Skeleton_Pirate_Captain_3': {
     idle: 'Skeleton_Pirate_Captain_3_idle',
     walk: 'Skeleton_Pirate_Captain_3_walk',
-    texture: 'mob-texture-264'
+    texture: 'mob-texture-316'
   },
 
   // Skeleton Warriors - all use mob-texture-264
@@ -231,6 +231,23 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     texture: 'mob-texture-264'
   },
 
+  // Skeleton Viking variants
+  'Skeleton_Viking_1': {
+    idle: 'Skeleton_Viking_1_idle',
+    walk: 'Skeleton_Viking_1_walk',
+    texture: 'mob-texture-281'
+  },
+  'Skeleton_Viking_2': {
+    idle: 'Skeleton_Viking_2_idle',
+    walk: 'Skeleton_Viking_2_walk',
+    texture: 'mob-texture-254'
+  },
+  'Skeleton_Viking_3': {
+    idle: 'Skeleton_Viking_3_idle',
+    walk: 'Skeleton_Viking_3_walk',
+    texture: 'mob-texture-254'
+  },
+
   // Archer variants
   'Archer_1': {
     idle: 'Archer_1_idle',
@@ -263,6 +280,23 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     idle: 'Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Throwing in The Air/0_Gnoll_Throwing in The Air_011.png',
     walk: 'Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Running/0_Gnoll_Running_010.png',
     texture: 'mob-texture-316'
+  },
+
+  // Elemental Spirits
+  'Elemental_Spirits_1': {
+    idle: 'Elemental_Spirits_1_idle',
+    walk: 'Elemental_Spirits_1_walk',
+    texture: 'mob-texture-280'
+  },
+  'Elemental_Spirits_2': {
+    idle: 'Elemental_Spirits_2_idle',
+    walk: 'Elemental_Spirits_2_walk',
+    texture: 'mob-texture-205'
+  },
+  'Elemental_Spirits_3': {
+    idle: 'Elemental_Spirits_3_idle',
+    walk: 'Elemental_Spirits_3_walk',
+    texture: 'mob-texture-240'
   }
 };
 

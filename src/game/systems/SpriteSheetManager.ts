@@ -82,6 +82,7 @@ export class SpriteSheetManager {
 
     try {
       // Load the texture atlas using Phaser's loader
+      // Phaser automatically handles rotated frames from TexturePacker JSON
       this.scene.load.atlas(key, config.textureUrl, config.atlasUrl);
       this.loadedSpritesheets.set(key, true);
       
@@ -137,20 +138,23 @@ export class SpriteSheetManager {
     }
     
     // Load unique textures for each mob type to ensure distinct skins
-    // mob-texture-196: Skeleton_Pirate_Captain_1 (skeleton viking)
+    // mob-texture-196: Skeleton_Pirate_Captain_1 (skeleton pirate)
     // mob-texture-254: Archer_1 (archer) - has idle/walk
-    // mob-texture-281: Golem_1 (golem) - has idle/walk
+    // mob-texture-281: Golem_1 (golem) & Skeleton_Viking_1 - has idle/walk
     // mob-texture-316: Gnoll_3 (gnoll) - has idle/walk
+    // mob-texture-204 + 205: Elemental_Spirits_2 (elemental spirit) - running in 204, idle in 205
     const essentialMobTextures = [
       'mob-texture-196',
       'mob-texture-254',
       'mob-texture-281',
-      'mob-texture-316'
+      'mob-texture-316',
+      'mob-texture-204',
+      'mob-texture-205'
     ];
     
     console.log(`🚀 OPTIMAL OPTIMIZATION: Loading ${essentialCharacterTextures.length} character textures and ${essentialMobTextures.length} mob textures`);
-    console.log(`📊 Total textures to load: ${essentialCharacterTextures.length + essentialMobTextures.length} (99.4% reduction from 319 possible mob textures)`);
-    console.log(`🎯 Four mob textures provide unique skins for each mob type: Skeleton_Pirate_Captain_1, Archer_1, Golem_1, Gnoll_3`);
+    console.log(`📊 Total textures to load: ${essentialCharacterTextures.length + essentialMobTextures.length} (99.2% reduction from 319 possible mob textures)`);
+    console.log(`🎯 Six mob textures provide unique skins for each mob type: Skeleton_Pirate_Captain_1, Archer_1, Golem_1, Gnoll_3, Elemental_Spirits_2`);
     
     return this.loadSpritesheets([...essentialCharacterTextures, ...essentialMobTextures]);
   }

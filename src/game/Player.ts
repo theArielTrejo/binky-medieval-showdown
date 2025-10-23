@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
-import { Enemy, EnemyType, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack } from './EnemySystem';
+import { Enemy, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack } from './EnemySystem';
+import { EnemyType } from './types/EnemyTypes';
 import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 import { AnimationMapper, CharacterAnimationSet } from './config/AnimationMappings';
 
@@ -30,6 +31,7 @@ export class Player {
     private slowEndTime: number = 0; // Timestamp when slow effect ends
     private lastVortexHitTime: number = 0; // Last time player was hit by vortex
     private vortexHitCooldown: number = 500; // Cooldown between vortex hits (ms)
+    private facingLeft: boolean = false; // Track current facing direction
 
     constructor(scene: Scene, x: number, y: number, archetypeType: PlayerArchetypeType) {
         this.scene = scene;
@@ -54,6 +56,9 @@ export class Player {
         console.log(`🎮 Created player sprite with texture: ${textureKey}`);
         this.sprite.setScale(0.05); // Scale down significantly to match enemy proportions
         this.sprite.setDepth(3); // Correct layer of characters
+        this.sprite.setOrigin(0.5, 0.5); // Ensure centered origin
+        this.sprite.setAngle(0); // Ensure no rotation
+        this.sprite.setRotation(0); // Explicitly set rotation to 0
         
         // Enable crisp pixel rendering for better sprite quality
         this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
@@ -69,6 +74,9 @@ export class Player {
         // Optional: if drag was added earlier, keep it
         body.setDrag(800);
 
+        // Initialize facing direction based on sprite's default state
+        this.facingLeft = this.sprite.flipX;
+        
         // Start with idle animation
         this.playAnimation('idle');
         
@@ -201,13 +209,24 @@ export class Player {
         const isMoving = leftPressed || rightPressed || upPressed || downPressed;
         
 		// Determine target animation based on movement state
-		const targetAnimation = isMoving ? 'walk' : 'idle';
+		const targetAnimationKey = isMoving ? 'walk' : 'idle';
         
-        // Only change animation if it's different from current
-        // The flipping logic is now handled inside playAnimation() to avoid conflicts
-        if (this.currentAnimation !== targetAnimation) {
-            this.playAnimation(targetAnimation);
+        // Apply flip based on input keys (immediate response)
+        // Only update flip when direction actually changes to prevent flickering
+        if (leftPressed && !rightPressed) {
+            if (!this.facingLeft) {
+                this.facingLeft = true;
+                this.sprite.setFlipX(true);
+            }
+        } else if (rightPressed && !leftPressed) {
+            if (this.facingLeft) {
+                this.facingLeft = false;
+                this.sprite.setFlipX(false);
+            }
         }
+        
+        // Play the animation (playAnimation handles checking if it's already playing)
+        this.playAnimation(targetAnimationKey);
         
         // Apply movement using physics velocity
         const body = this.sprite.body as Phaser.Physics.Arcade.Body;
@@ -244,28 +263,6 @@ export class Player {
         }
     }
 
-    private projectileAttackTowardsMouse(targetX: number, targetY: number): void {
-        // Glass Cannon shoots towards target position
-        const bullet = this.scene.add.rectangle(this.sprite.x, this.sprite.y, 8, 8, 0xffff00);
-        bullet.setDepth(5);
-        
-        // Set bullet properties
-        (bullet as any).damage = this.archetype.stats.damage;
-        (bullet as any).range = this.archetype.stats.attackRange;
-        (bullet as any).speed = 400;
-        (bullet as any).distanceTraveled = 0;
-        
-        // Calculate direction towards target
-        const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, targetX, targetY);
-        
-        (bullet as any).velocityX = Math.cos(angle) * (bullet as any).speed;
-        (bullet as any).velocityY = Math.sin(angle) * (bullet as any).speed;
-        
-        this.bullets.push(bullet);
-    }
-
-
-
     private handleAttack(enemies: Enemy[]): void {
         const currentTime = Date.now();
         
@@ -285,28 +282,6 @@ export class Player {
     
     private isKeyPressed(key: any): boolean {
         return key && typeof key === 'object' && key.isDown === true;
-    }
-
-    /**
-     * Perform attack based on archetype (called by right-click)
-     */
-    private performAttack(pointer: Phaser.Input.Pointer): void {
-        // Get world coordinates (account for camera scroll)
-        const worldX = pointer.x + this.scene.cameras.main.scrollX;
-        const worldY = pointer.y + this.scene.cameras.main.scrollY;
-        
-        switch (this.archetype.type) {
-            case PlayerArchetypeType.TANK:
-                this.meleeAttack([]);
-                break;
-            case PlayerArchetypeType.EVASIVE:
-                this.aoeAttack([]);
-                break;
-            case PlayerArchetypeType.GLASS_CANNON:
-            default:
-                this.projectileAttackTowardsMouse(worldX, worldY);
-                break;
-        }
     }
 
     private attack(enemies: Enemy[]): void {
@@ -571,27 +546,6 @@ export class Player {
                 const shouldFlash = Math.floor(timeSinceDamage / flashInterval) % 2 === 0;
                 this.sprite.setAlpha(shouldFlash ? 0.3 : 0.8);
             }
-        }
-    }
-
-    /**
-     * Updates the slow effect status
-     */
-    private updateSlowEffect(): void {
-        const currentTime = Date.now();
-        
-        // Check if slow effect has expired
-        if (currentTime >= this.slowEndTime) {
-            this.slowMultiplier = 1.0; // Return to normal speed
-        }
-        
-        // Visual indicator for slow effect (cyan tint)
-        if (this.slowMultiplier < 1.0 && !this.isInvulnerable) {
-            // Apply a cyan tint to show the player is slowed
-            this.sprite.setTint(0x00cccc);
-        } else if (!this.isInvulnerable) {
-            // Clear tint if not slowed (and not invulnerable)
-            this.sprite.clearTint();
         }
     }
 
@@ -919,61 +873,32 @@ export class Player {
     }
 
     private playAnimation(animationName: string): void {
-        if (this.currentAnimation !== animationName) {
-            this.currentAnimation = animationName;
-            console.log(`🎬 Attempting to play animation: ${animationName}`);
+        try {
+            // Use hardcoded animation mappings
+            const targetAnimation = animationName === 'idle' ? 
+                this.characterAnimations.idle : 
+                this.characterAnimations.walk;
             
-            try {
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                let targetAnimation: string;
+            if (this.scene.anims.exists(targetAnimation)) {
+                // Check if this animation is already playing (using Phaser's animation state)
+                const currentlyPlaying = this.sprite.anims.currentAnim?.key;
                 
-                // Check for directional animations first
-                if (body && Math.abs(body.velocity.x) > 10) {
-                    const direction = body.velocity.x < 0 ? 'left' : 'right';
-                    const directionalKey = animationName === 'idle' ? 
-                        (direction === 'left' ? this.characterAnimations.idle_left : this.characterAnimations.idle_right) :
-                        (direction === 'left' ? this.characterAnimations.walk_left : this.characterAnimations.walk_right);
-                    
-                    if (directionalKey && this.scene.anims.exists(directionalKey)) {
-                        console.log(`✅ Playing directional animation: ${directionalKey}`);
-                        this.sprite.play(directionalKey);
-                        return;
-                    }
-                }
-                
-                // Use hardcoded animation mappings
-                targetAnimation = animationName === 'idle' ? 
-                    this.characterAnimations.idle : 
-                    this.characterAnimations.walk;
-                
-                if (this.scene.anims.exists(targetAnimation)) {
-                    console.log(`✅ Playing hardcoded animation: ${targetAnimation}`);
+                if (currentlyPlaying !== targetAnimation) {
+                    // Preserve the current flip state before playing animation
+                    const currentFlipX = this.sprite.flipX;
                     this.sprite.play(targetAnimation);
-                    
-                    // Apply flipping for non-directional animations
-                    if (body && Math.abs(body.velocity.x) > 10) {
-                        this.sprite.setFlipX(body.velocity.x < 0);
-                    }
-                    return;
+                    this.currentAnimation = targetAnimation;
+                    // Restore flip state after animation starts (prevents animation from resetting flip)
+                    this.sprite.setFlipX(currentFlipX);
                 }
-                
-                // Fallback to generic animations
-                const fallbackAnimation = animationName === 'idle' ? 'player_idle' : 'player_walk';
-                if (this.scene.anims.exists(fallbackAnimation)) {
-                    console.log(`⚠️ Using fallback animation: ${fallbackAnimation}`);
-                    this.sprite.play(fallbackAnimation);
-                    
-                    if (body && Math.abs(body.velocity.x) > 10) {
-                        this.sprite.setFlipX(body.velocity.x < 0);
-                    }
-                    return;
-                }
-                
-                console.warn(`❌ No animation found for ${animationName}, keeping current texture`);
-                
-            } catch (error) {
-                console.warn(`Failed to play animation ${animationName}:`, error);
+                // Note: Flipping is handled in handleMovement() based on input keys
+                return;
             }
+            
+            console.warn(`❌ Animation not found: ${targetAnimation}`);
+            
+        } catch (error) {
+            console.warn(`Failed to play animation ${animationName}:`, error);
         }
     }
 

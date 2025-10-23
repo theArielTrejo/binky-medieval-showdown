@@ -6,8 +6,10 @@
  */
 
 export enum EnemyType {
-    SKELETON_VIKING = 'SKELETON_VIKING',
-    GOLEM = 'GOLEM',
-    ARCHER = 'ARCHER',
-    GNOLL = 'GNOLL'
+    SKELETON_VIKING = 'skeleton_viking',
+    GOLEM = 'golem',
+    ARCHER = 'archer',
+    GNOLL = 'gnoll',
+    SKELETON_PIRATE = 'skeleton_pirate',
+    ELEMENTAL_SPIRIT = 'elemental_spirit'
 }

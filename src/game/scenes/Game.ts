@@ -300,9 +300,13 @@ export class Game extends Scene {
         // Initialize XP Orb System
         this.xpOrbSystem = new XPOrbSystem(this);
         
-        // TO SHOW MOBS UNCOMMENT Enemy System & AI Director
         // Initialize Enemy System 
-        //this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem);
+        this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem);
+        
+        // Register callback for when enemies are spawned (for collision setup)
+        this.enemySystem.setEnemySpawnedCallback((enemy) => {
+            this.setupEnemyTilemapCollisions(enemy.sprite);
+        });
         
         // Initialize AI Director
         //this.aiDirector = new AIDirector();
@@ -467,6 +471,22 @@ export class Game extends Scene {
     console.log(
         `✅ Player collision setup: ${this.collisionLayers.length} tile layers + ${this.objectRects.length} object rects`
     );
+    }
+
+    /**
+     * Sets up collision for a specific enemy with tilemap layers and objects
+     * @param enemySprite - The enemy sprite to add collision for
+     */
+    private setupEnemyTilemapCollisions(enemySprite: Phaser.GameObjects.Sprite): void {
+        // Add collisions with tile layers
+        this.collisionLayers.forEach(layer => {
+            this.physics.add.collider(enemySprite, layer);
+        });
+
+        // Add collisions with object rectangles
+        this.objectRects.forEach(rect => {
+            this.physics.add.collider(enemySprite, rect);
+        });
     }
 
     private renderCollisionDebug(): void {
@@ -781,8 +801,8 @@ export class Game extends Scene {
         }
 
         // OPTIMIZED: Create mob animations for hardcoded mob variants only
-        // Load essential atlases: 196 (Skeleton), 254 (Archer), 281 (Golem), 316 (Gnoll)
-        const mobTextures = ['mob-texture-196', 'mob-texture-254', 'mob-texture-281', 'mob-texture-316'];
+        // Load essential atlases: 196 (Skeleton Pirate), 254 (Archer), 281 (Golem/Viking), 316 (Gnoll), 204+205 (Elemental Spirit)
+        const mobTextures = ['mob-texture-196', 'mob-texture-254', 'mob-texture-281', 'mob-texture-316', 'mob-texture-204', 'mob-texture-205'];
         const allMobFrames: string[] = [];
         const frameToTextureMap: { [frameName: string]: string } = {};
         
@@ -832,10 +852,12 @@ export class Game extends Scene {
             // OPTIMIZED: Only create animations for the hardcoded mob variants
             // Updated to use variants that actually exist in texture atlases
             const hardcodedMobVariants = [
-                'Skeleton_Pirate_Captain_1',  // For SKELETON_VIKING enemy type
+                'Skeleton_Pirate_Captain_1',  // For SKELETON_PIRATE enemy type
+                'Skeleton_Viking_1',          // For SKELETON_VIKING enemy type
                 'Golem_1',                    // For GOLEM enemy type
-                'Archer_1',                   // For ARCHER enemy type (was ArcherMob_1)
-                'Gnoll_3'                     // For GNOLL enemy type (use hardcoded Gnoll_3)
+                'Archer_1',                   // For ARCHER enemy type
+                'Gnoll_3',                    // For GNOLL enemy type
+                'Elemental_Spirits_2'         // For ELEMENTAL_SPIRIT enemy type
             ];
 
             // Group frames by hardcoded mob variants only
@@ -1016,8 +1038,13 @@ export class Game extends Scene {
 
         try {
             // Use the enemy system's spawn method
-            this.enemySystem.spawnEnemyAt(type, x, y);
-            console.log(`✅ Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)})`);
+            const enemy = this.enemySystem.spawnEnemyAt(type, x, y);
+            
+            if (enemy) {
+                // Set up collision for the newly spawned enemy
+                this.setupEnemyTilemapCollisions(enemy.sprite);
+                console.log(`✅ Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)}) with collision`);
+            }
         } catch (error) {
             console.error(`❌ Failed to spawn ${type}:`, error);
         }
