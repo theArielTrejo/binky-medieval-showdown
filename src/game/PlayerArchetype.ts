@@ -58,27 +58,27 @@ export class PlayerArchetype {
         switch (type) {
             case PlayerArchetypeType.TANK:
                 return {
-                    maxHealth: 2000,    // 10x increase - nearly indestructible
-                    speed: 400,         // 4x increase - fast movement
-                    damage: 300,        // 7.5x increase - devastating melee
-                    attackRange: 120,   // 2x increase - extended reach
-                    attackSpeed: 4.0    // 5x increase - rapid attacks
+                    maxHealth: 1000,
+                    speed: 200,
+                    damage: 150,
+                    attackRange: 60,
+                    attackSpeed: 2.0
                 };
             case PlayerArchetypeType.GLASS_CANNON:
                 return {
-                    maxHealth: 800,     // 16x increase - no longer fragile
-                    speed: 500,         // 3.3x increase - extremely fast
-                    damage: 450,        // 7x increase - devastating ranged
-                    attackRange: 600,   // 2.4x increase - extreme range
-                    attackSpeed: 8.0    // 3.6x increase - machine gun rate
+                    maxHealth: 400,
+                    speed: 250,
+                    damage: 225,
+                    attackRange: 300,
+                    attackSpeed: 4.0
                 };
             case PlayerArchetypeType.EVASIVE:
                 return {
-                    maxHealth: 1200,    // 12x increase - very durable
-                    speed: 800,         // 3.2x increase - lightning fast
-                    damage: 200,        // 6.7x increase - powerful AoE
-                    attackRange: 300,   // 2.1x increase - large AoE radius
-                    attackSpeed: 6.0    // 4.6x increase - constant AoE spam
+                    maxHealth: 600,
+                    speed: 400,
+                    damage: 100,
+                    attackRange: 150,
+                    attackSpeed: 3.0
                 };
         }
     }

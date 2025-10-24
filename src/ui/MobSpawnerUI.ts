@@ -14,16 +14,31 @@ export class MobSpawnerUI {
     private headerText: Phaser.GameObjects.Text;
     private toggleButton: Phaser.GameObjects.Container;
     private toggleHint: Phaser.GameObjects.Container;
+    private keyHandlers: { [evt: string]: Function } = {};
+    private keyT?: Phaser.Input.Keyboard.Key;
 
     constructor(scene: Scene) {
         this.scene = scene;
         this.container = scene.add.container(20, 20);
         this.container.setDepth(1000); // Above everything
         this.container.setScrollFactor(0); // Fixed to camera
+        const zoom = this.scene.cameras.main.zoom || 1;
+        if (zoom !== 1) {
+            this.container.setScale(1 / zoom);
+        }
         
         this.createUI();
         this.createToggleHint();
         this.setupKeyboardShortcuts();
+
+        // Default: hidden (toggled off)
+        this.container.setVisible(false);
+        if (this.toggleHint) {
+            this.toggleHint.setVisible(true);
+            if (zoom !== 1) {
+                this.toggleHint.setScale(1 / zoom);
+            }
+        }
     }
 
     private createUI(): void {
@@ -247,18 +262,51 @@ export class MobSpawnerUI {
     }
 
     private setupKeyboardShortcuts(): void {
-        // Toggle visibility
-        this.scene.input.keyboard?.on('keydown-T', () => {
-            this.toggleVisibility();
-        });
+        const kb = this.scene.input.keyboard;
+        if (!kb) return;
 
-        // Mob spawning shortcuts
-        this.scene.input.keyboard?.on('keydown-ONE', () => this.spawnMobAtCursor(EnemyType.SKELETON_VIKING));
-        this.scene.input.keyboard?.on('keydown-TWO', () => this.spawnMobAtCursor(EnemyType.GOLEM));
-        this.scene.input.keyboard?.on('keydown-THREE', () => this.spawnMobAtCursor(EnemyType.ARCHER));
-        this.scene.input.keyboard?.on('keydown-FOUR', () => this.spawnMobAtCursor(EnemyType.GNOLL));
-        this.scene.input.keyboard?.on('keydown-FIVE', () => this.spawnMobAtCursor(EnemyType.SKELETON_PIRATE));
-        this.scene.input.keyboard?.on('keydown-SIX', () => this.spawnMobAtCursor(EnemyType.ELEMENTAL_SPIRIT));
+        const handler = (evt: KeyboardEvent) => {
+            const code = evt.code || '';
+            const key = (evt.key || '').toLowerCase();
+            // Toggle
+            if (code === 'KeyT' || key === 't') {
+                this.toggleVisibility();
+                return;
+            }
+            // Number keys 1-6
+            if (code === 'Digit1' || key === '1') {
+                this.spawnMobAtCursor(EnemyType.SKELETON_VIKING);
+                return;
+            }
+            if (code === 'Digit2' || key === '2') {
+                this.spawnMobAtCursor(EnemyType.GOLEM);
+                return;
+            }
+            if (code === 'Digit3' || key === '3') {
+                this.spawnMobAtCursor(EnemyType.ARCHER);
+                return;
+            }
+            if (code === 'Digit4' || key === '4') {
+                this.spawnMobAtCursor(EnemyType.GNOLL);
+                return;
+            }
+            if (code === 'Digit5' || key === '5') {
+                this.spawnMobAtCursor(EnemyType.SKELETON_PIRATE);
+                return;
+            }
+            if (code === 'Digit6' || key === '6') {
+                this.spawnMobAtCursor(EnemyType.ELEMENTAL_SPIRIT);
+                return;
+            }
+        };
+        this.keyHandlers['keydown'] = handler;
+        kb.on('keydown', handler);
+
+        // Dedicated T key binding to avoid event edge cases
+        this.keyT = kb.addKey(Phaser.Input.Keyboard.KeyCodes.T, true);
+        const tDown = () => this.toggleVisibility();
+        this.keyHandlers['tDown'] = tDown;
+        this.keyT.on('down', tDown);
     }
 
     private spawnMobAtCursor(type: EnemyType): void {
@@ -349,7 +397,7 @@ export class MobSpawnerUI {
 
     private createToggleHint(): void {
         // Create a small hint that shows when the UI is hidden
-        this.toggleHint = this.scene.add.container(20, this.scene.cameras.main.height - 60);
+        this.toggleHint = this.scene.add.container(20, this.scene.scale.height - 60);
         this.toggleHint.setDepth(999);
         this.toggleHint.setScrollFactor(0);
 
@@ -368,16 +416,18 @@ export class MobSpawnerUI {
 
         this.toggleHint.add([hintBg, hintText]);
         this.toggleHint.setVisible(!this.visible); // Show hint when UI is hidden
+
+        // Keep hint anchored on resize
+        this.scene.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
+            this.toggleHint.setY(gameSize.height - 60);
+        });
     }
 
     private toggleVisibility(): void {
-        this.visible = !this.visible;
-        this.container.setVisible(this.visible);
-        this.toggleHint.setVisible(!this.visible); // Show hint when UI is hidden
-        
-        // Update header text based on visibility
         if (this.visible) {
-            this.headerText.setText('⚔️ MOB SPAWNER');
+            this.hide();
+        } else {
+            this.show();
         }
         
         console.log(`🎮 Mob Spawner UI ${this.visible ? 'shown' : 'hidden'}`);
@@ -428,6 +478,19 @@ export class MobSpawnerUI {
      * Destroy the UI and clean up resources
      */
     public destroy(): void {
+        // Unregister keyboard handlers
+        const kb = this.scene.input.keyboard;
+        if (kb) {
+            Object.entries(this.keyHandlers).forEach(([evt, fn]) => kb.off(evt, fn));
+            this.keyHandlers = {};
+            if (this.keyT) {
+                this.keyT.off('down');
+                this.keyT.destroy();
+                this.keyT = undefined;
+            }
+        }
+        // Destroy containers
+        if (this.toggleHint) this.toggleHint.destroy();
         this.container.destroy();
         this.buttons.clear();
     }

@@ -1,14 +1,18 @@
 import { Game as MainGame } from './scenes/Game';
-import { AUTO, Game, Types } from 'phaser';
+import { AUTO, Game, Types, Scale } from 'phaser';
 
 // Full-window configuration
 const config: Types.Core.GameConfig = {
   type: AUTO,
-  width: window.innerWidth,      // full browser width
-  height: window.innerHeight,    // full browser height
+  width: 1024,
+  height: 768,
   pixelArt: true,                // crisp pixel rendering
   roundPixels: true,
   backgroundColor: '#000000',    // black background
+  scale: {
+    mode: Scale.FIT,
+    autoCenter: Scale.CENTER_BOTH,
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -23,11 +27,8 @@ const config: Types.Core.GameConfig = {
 const StartGame = (parent: string) => {
   const game = new Game({ ...config, parent });
 
-  // Keep full window size when browser resizes
-  window.addEventListener('resize', () => {
-    game.scale.resize(window.innerWidth, window.innerHeight);
-  });
-
+  // Scale Manager handles resizing with FIT + CENTER_BOTH
+  
   return game;
 };
 

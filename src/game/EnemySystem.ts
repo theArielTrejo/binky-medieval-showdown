@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
-import { AnimationMapper, MobAnimationSet, MOB_DEFAULT_FACING } from './config/AnimationMappings';
-import { validateNoRandomSelection, getHardcodedMobSkin, getTextureKeyForMobVariant } from '../systems/HardcodedMobSkins';
+import { AnimationMapper, MobAnimationSet } from './config/AnimationMappings';
+import { validateNoRandomSelection, getHardcodedMobSkin } from '../systems/HardcodedMobSkins.js';
 import { EnemyType } from './types/EnemyTypes';
 
 // Re-export EnemyType for backward compatibility
@@ -419,7 +419,7 @@ export class VortexAttack {
     private velocityY: number;
     private isTraveling: boolean = true; // Whether vortex is still moving
     public slowEffect: number = 0.5; // Slow multiplier (0.5 = 50% speed)
-    public slowDuration: number = 2.0; // How long the slow lasts on player (2 seconds)
+    public slowDuration: number = 2000; // How long the slow lasts on player in ms (2 seconds)
     
     constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, _enemyRadius: number = 40) {
         this.scene = scene;
@@ -895,24 +895,7 @@ export class Enemy {
         };
     }
 
-    private getSpriteKeyForType(type: EnemyType): string {
-        switch (type) {
-            case EnemyType.SKELETON_VIKING:
-                return 'skeleton_viking_idle';
-            case EnemyType.GOLEM:
-                return 'golem_idle';
-            case EnemyType.ARCHER:
-                return 'archer_mob_idle';
-            case EnemyType.GNOLL:
-                return 'gnoll_idle';
-            case EnemyType.SKELETON_PIRATE:
-                return 'skeleton_pirate_idle';
-            case EnemyType.ELEMENTAL_SPIRIT:
-                return 'elemental_spirit_idle';
-            default:
-                return 'skeleton_viking_idle';
-        }
-    }
+
 
     private getScaleForType(type: EnemyType): number {
         // All enemies scaled to match player size (0.05)
@@ -950,7 +933,7 @@ export class Enemy {
 
 
     private playAnimation(animationName: string): void {
-        if (this.sprite.anims) {
+        if (this.sprite.anims && this.currentAnimation !== animationName) {
             // Check if this animation is already playing (using Phaser's animation state)
             const currentlyPlaying = this.sprite.anims.currentAnim?.key;
             
@@ -1440,29 +1423,7 @@ export class Enemy {
         };
     }
 
-    /**
-     * Updates attack cooldown and range based on enemy type
-     */
-    private updateAttackProperties(): void {
-        switch (this.type) {
-            case EnemyType.ARCHER:
-                this.attackCooldown = 3000;
-                this.attackRange = 300;
-                break;
-            case EnemyType.GNOLL:
-                this.attackCooldown = 1000;
-                this.attackRange = 80;
-                break;
-            case EnemyType.SKELETON_VIKING:
-                this.attackCooldown = 800;
-                this.attackRange = 120;
-                break;
-            default:
-                this.attackCooldown = 2000;
-                this.attackRange = 100;
-                break;
-        }
-    }
+
 }
 
 export class EnemySystem {
@@ -2159,5 +2120,4 @@ export class EnemySystem {
         return breakdown;
     }
 }
-
 

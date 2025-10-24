@@ -23,6 +23,7 @@ export class ClassSelectionUI {
     private scene: Scene;
     private config: ClassSelectionConfig;
     private container: Phaser.GameObjects.Container;
+    private overlay!: Phaser.GameObjects.Rectangle;
     private selectedClass: PlayerArchetypeType | null = null;
     private classCards: Map<PlayerArchetypeType, Phaser.GameObjects.Container> = new Map();
     private detailsPanel: Phaser.GameObjects.Container;
@@ -31,6 +32,7 @@ export class ClassSelectionUI {
     private hoverTimeout: NodeJS.Timeout | null = null;
     private isShowingDetails: boolean = false;
     private clickZones: Phaser.GameObjects.Zone[] = []; // Store zones for cleanup
+    private resizeHandler?: (gameSize: Phaser.Structs.Size) => void;
     
     private classData: ClassData[] = [
         {
@@ -43,7 +45,7 @@ export class ClassSelectionUI {
             archetype: PlayerArchetypeType.TANK
         },
         {
-            name: 'Mage',
+            name: 'Magician',
             description: 'A master of arcane arts who wields devastating magical forces.',
             strengths: 'Immense magical power.',
             weaknesses: 'Frail constitution.',
@@ -65,7 +67,7 @@ export class ClassSelectionUI {
     constructor(scene: Scene, config: ClassSelectionConfig) {
         this.scene = scene;
         this.config = {
-            position: { x: 512, y: 384 },
+            position: { x: scene.scale.width / 2, y: scene.scale.height / 2 },
             visible: true,
             ...config
         };
@@ -80,8 +82,8 @@ export class ClassSelectionUI {
         this.container.setScrollFactor(0); // Make UI fixed to camera/screen
 
         // Background overlay
-        const overlay = this.scene.add.rectangle(0, 0, 1024, 768, 0x0a0a0a, 0.95);
-        this.container.add(overlay);
+        this.overlay = this.scene.add.rectangle(0, 0, this.scene.scale.width, this.scene.scale.height, 0x0a0a0a, 0.95);
+        this.container.add(this.overlay);
 
         // Title
         const title = this.scene.add.text(0, -300, 'Choose Thy Path', {
@@ -113,6 +115,19 @@ export class ClassSelectionUI {
 
         // Set initial visibility
         this.container.setVisible(this.config.visible!);
+
+        // Respond to game resize: keep centered and full-screen overlay
+        this.resizeHandler = (gameSize: Phaser.Structs.Size) => {
+            const width = gameSize.width;
+            const height = gameSize.height;
+            if (this.container) {
+                this.container.setPosition(width / 2, height / 2);
+            }
+            if (this.overlay && (this.overlay as any).active !== false) {
+                this.overlay.setSize(width, height);
+            }
+        };
+        this.scene.scale.on('resize', this.resizeHandler);
     }
 
     private createClassCards(): void {
@@ -511,6 +526,10 @@ export class ClassSelectionUI {
     }
 
     public destroy(): void {
+        if (this.resizeHandler) {
+            this.scene.scale.off('resize', this.resizeHandler);
+            this.resizeHandler = undefined;
+        }
         // Clean up timeouts and tweens
         if (this.hoverTimeout) {
             clearTimeout(this.hoverTimeout);
@@ -579,10 +598,12 @@ export class ClassSelectionUI {
      
      private createSceneLevelInteractiveZones(): void {
          // Create direct scene-level interactive zones as a fallback
+         const cx = this.scene.scale.width / 2;
+         const cy = this.scene.scale.height / 2 - 50;
          const cardPositions = [
-             { x: 512 - 200, y: 384 - 50, archetype: PlayerArchetypeType.TANK, name: 'Knight' },
-             { x: 512, y: 384 - 50, archetype: PlayerArchetypeType.GLASS_CANNON, name: 'Mage' },
-             { x: 512 + 200, y: 384 - 50, archetype: PlayerArchetypeType.EVASIVE, name: 'Rogue' }
+             { x: cx - 200, y: cy, archetype: PlayerArchetypeType.TANK, name: 'Knight' },
+             { x: cx, y: cy, archetype: PlayerArchetypeType.GLASS_CANNON, name: 'Mage' },
+             { x: cx + 200, y: cy, archetype: PlayerArchetypeType.EVASIVE, name: 'Rogue' }
          ];
          
         cardPositions.forEach(pos => {
@@ -602,6 +623,6 @@ export class ClassSelectionUI {
             
             // Store zone for cleanup
             this.clickZones.push(zone);
-        });
+         });
      }
 }

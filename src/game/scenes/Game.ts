@@ -30,9 +30,20 @@ export class Game extends Scene {
     // Restart functionality properties
     private restartInstructionText: Phaser.GameObjects.Text | null = null;
     private gameOverText: Phaser.GameObjects.Text | null = null;
+    private isRestarting: boolean = false;
 
     constructor() {
         super('Game');
+    }
+
+    init(): void {
+        this.isRestarting = false;
+        this.collisionLayers = [];
+        this.objectCollisionObstacles = [];
+        this.gameStarted = false;
+        this.selectedArchetype = null;
+        this.events.on('shutdown', this.onShutdown, this);
+        this.events.once('destroy', this.onShutdown, this);
     }
 
     preload() {
@@ -81,6 +92,11 @@ export class Game extends Scene {
 
     create() {
         // console.log('Game scene created');
+
+        if (this.input && this.input.keyboard) {
+            this.input.keyboard.removeAllListeners('keydown-R');
+            this.input.keyboard.removeAllListeners('keydown-F1');
+        }
         
         // Enable crisp pixel rendering for better sprite quality
         // Use proper Phaser configuration for pixel-perfect rendering
@@ -101,10 +117,17 @@ export class Game extends Scene {
         
         // Show class selection
         this.showClassSelection();
+
+        // Global restart shortcut: restart the scene for a clean reset
+        this.input.keyboard!.on('keydown-R', () => {
+            this.hardRestartScene();
+        });
     }
 
     private createTilemap(): void {
         console.log('Creating tilemap with TilemapManager...');
+        this.collisionLayers = [];
+        this.objectCollisionObstacles = [];
         
         // Initialize TilemapManager
         this.tilemapManager = new TilemapManager(this);
@@ -282,10 +305,8 @@ export class Game extends Scene {
         
         // Fallback to top right area if no spawn point found
         if (!spawnX || !spawnY) {
-            const mapWidth = this.tilemap.widthInPixels; //* this.GAME_SCALE;
-            const mapHeight = this.tilemap.heightInPixels; //* this.GAME_SCALE;
-            spawnX = mapWidth * 0.70; // 70% to the right (top right area, closer to center)
-            spawnY = mapHeight * 0.30; // 30% from top (top right area, closer to center)
+            spawnX = this.tilemap.widthInPixels * 0.70; // 70% to the right (top right area, closer to center)
+            spawnY = this.tilemap.heightInPixels * 0.30; // 30% from top (top right area, closer to center)
             console.log('Using fallback spawn position:', spawnX, spawnY);
         }
         
@@ -318,9 +339,6 @@ export class Game extends Scene {
         });
         
         // --- CAMERA SETUP (matches JS version) ---
-        const mapWidth = this.tilemap.widthInPixels;
-        const mapHeight = this.tilemap.heightInPixels;
-
         // ✅ Match JS exactly
         const camera = this.cameras.main;
         camera.startFollow(this.player.sprite, true, 0.1, 0.1);
@@ -348,53 +366,109 @@ export class Game extends Scene {
         }).setOrigin(0.5);
         this.restartInstructionText.setScrollFactor(0); // Make UI fixed to screen
         
-        // Add restart key handler
-        this.input.keyboard!.on('keydown-R', () => {
-            this.restartGame();
-        });
+        // Restart key handler registered globally in create()
         
         console.log('Game systems initialized with simplified collision system');
         console.log('Player spawn position (top right, closer to center):', spawnX, spawnY);
         console.log('Player scale:', 0.05); // * this.GAME_SCALE);
     }
 
-    private restartGame(): void {
-        // Clean up current game
-        if (this.player) {
-            this.player.destroy();
-        }
-        if (this.enemySystem) {
-            this.enemySystem.clearAllEnemies();
-            this.enemySystem.clearAllAttacks(); // Clear all enemy attack objects
-        }
-        if (this.xpOrbSystem) {
-            this.xpOrbSystem.clearAllOrbs();
-        }
-        
-        // Remove game over text if it exists
-        if (this.gameOverText) {
-            this.gameOverText.destroy();
-            this.gameOverText = null;
-        }
-        
-        // Clean up game over restart instruction text
-        if ((this as any).gameOverRestartText) {
-            (this as any).gameOverRestartText.destroy();
-            (this as any).gameOverRestartText = null;
-        }
-        
-        // Clean up restart instruction text
-        if (this.restartInstructionText) {
-            this.restartInstructionText.destroy();
-            this.restartInstructionText = null;
-        }
-        
-        // Reset state
-        this.gameStarted = false;
-        this.selectedArchetype = null;
-        
-        // Show class selection again
-        this.showClassSelection();
+    
+
+    private hardRestartScene(): void {
+        if (this.isRestarting) return;
+        this.isRestarting = true;
+        try {
+            if (this.player) {
+                this.player.destroy();
+            }
+            if (this.enemySystem) {
+                this.enemySystem.stopSpawning();
+                this.enemySystem.clearAllAttacks();
+                this.enemySystem.clearAllEnemies();
+            }
+            if (this.mobSpawnerUI) {
+                this.mobSpawnerUI.destroy();
+            }
+            if (this.xpOrbSystem) {
+                this.xpOrbSystem.clearAllOrbs();
+            }
+            if (this.classSelectionUI) {
+                this.classSelectionUI.destroy();
+            }
+            if (this.collisionDebugGfx) {
+                this.collisionDebugGfx.destroy();
+            }
+            if (this.playerDebugGfx) {
+                this.playerDebugGfx.destroy();
+            }
+            if (this.objectRects && this.objectRects.length) {
+                this.objectRects.forEach(r => r.destroy());
+                this.objectRects = [];
+            }
+            if (this.input) {
+                this.input.keyboard?.removeAllListeners();
+            }
+            this.tweens.killAll();
+            this.time.removeAllEvents();
+        } catch {}
+        this.scene.restart();
+    }
+
+    private onShutdown(): void {
+        try {
+            if (this.input) {
+                this.input.keyboard?.removeAllListeners();
+            }
+            if (this.player) {
+                this.player.destroy();
+                this.player = undefined as any;
+            }
+            if (this.enemySystem) {
+                this.enemySystem.stopSpawning();
+                this.enemySystem.clearAllAttacks();
+                this.enemySystem.clearAllEnemies();
+                this.enemySystem = undefined as any;
+            }
+            if (this.xpOrbSystem) {
+                this.xpOrbSystem.clearAllOrbs();
+                this.xpOrbSystem = undefined as any;
+            }
+            if (this.mobSpawnerUI) {
+                this.mobSpawnerUI.destroy();
+                this.mobSpawnerUI = undefined as any;
+            }
+            if (this.classSelectionUI) {
+                this.classSelectionUI.destroy();
+                this.classSelectionUI = undefined as any;
+            }
+            if (this.gameOverText) {
+                this.gameOverText.destroy();
+                this.gameOverText = null;
+            }
+            if (this.restartInstructionText) {
+                this.restartInstructionText.destroy();
+                this.restartInstructionText = null;
+            }
+            if ((this as any).gameOverRestartText) {
+                (this as any).gameOverRestartText.destroy();
+                (this as any).gameOverRestartText = null;
+            }
+            if (this.collisionDebugGfx) {
+                this.collisionDebugGfx.destroy();
+                this.collisionDebugGfx = undefined as any;
+            }
+            if (this.playerDebugGfx) {
+                this.playerDebugGfx.destroy();
+                this.playerDebugGfx = undefined as any;
+            }
+            if (this.objectRects && this.objectRects.length) {
+                this.objectRects.forEach(r => r.destroy());
+                this.objectRects = [];
+            }
+            this.tweens.killAll();
+            this.time.removeAllEvents();
+        } catch {}
     }
 
     private handleGameOver(): void {
@@ -569,32 +643,41 @@ export class Game extends Scene {
             type FrameEntry = { key: string; frame: string };
             type GroupFrames = { idle: FrameEntry[]; move: FrameEntry[]; characterVariant: string };
             const groups = new Map<string, GroupFrames>();
-            
+
             for (const f of charFramesWithKey) {
+                // Skip frames that TexturePacker marked as rotated to avoid visual rotation
+                try {
+                    const tex = this.textures.get(f.key) as any;
+                    const texFrame = tex && tex.get ? tex.get(f.frame) : null;
+                    if (texFrame && texFrame.rotated) {
+                        continue;
+                    }
+                } catch {}
                 // Match pattern: characters/[class]/[variant]/
                 const match = f.frame.match(/^characters\/([^\/]+)\/([^\/]+)\//);
                 if (match) {
                     const [, , characterVariant] = match;
                     const groupId = characterVariant; // Use variant as the key (e.g., "Magician_1", "Knight_2")
                     const g = groups.get(groupId) || { idle: [], move: [], characterVariant };
-                    
+
                     // Enhanced animation type detection
                     const isIdleAnimation = (name: string): boolean => {
                         const lowerName = name.toLowerCase();
-                        return (lowerName.includes('idle') && !lowerName.includes('blinking')) ||
-                               lowerName.includes('/idle/');
+                        return lowerName.includes('idle') || lowerName.includes('/idle/');
                     };
-                    
+
                     const isMoveAnimation = (name: string): boolean => {
                         const lowerName = name.toLowerCase();
-                        return lowerName.includes('walking') || 
+                        // Restrict to true walking/running only; exclude throwing/shooting variants
+                        if (lowerName.includes('run throwing') || lowerName.includes('run shooting')) {
+                            return false;
+                        }
+                        return lowerName.includes('walking') ||
                                lowerName.includes('running') ||
                                lowerName.includes('/walking/') ||
-                               lowerName.includes('/running/') ||
-                               lowerName.includes('run throwing') ||
-                               lowerName.includes('run shooting');
+                               lowerName.includes('/running/');
                     };
-                    
+
                     // Prioritize proper idle animations
                     if (isIdleAnimation(f.frame)) {
                         g.idle.push(f);
@@ -603,23 +686,12 @@ export class Game extends Scene {
                     else if (isMoveAnimation(f.frame)) {
                         g.move.push(f);
                     }
-                    
+
                     groups.set(groupId, g);
                 }
             }
 
             console.log('🎭 Found character variants:', Array.from(groups.keys()));
-
-            // Direction helpers
-            const isRightPath = (name: string): boolean => /\/(Right)\//i.test(name) || /_Right[_\.]?/i.test(name);
-            const isLeftPath = (name: string): boolean => /\/(Left)\//i.test(name) || /_Left[_\.]?/i.test(name);
-            const isNeutralPath = (name: string): boolean => !isRightPath(name) && !isLeftPath(name);
-            const filterRightOrNeutral = (frames: FrameEntry[]): FrameEntry[] => {
-                const right = frames.filter(f => isRightPath(f.frame));
-                const neutral = frames.filter(f => isNeutralPath(f.frame));
-                return right.length ? right : neutral;
-            };
-            const filterLeftOnly = (frames: FrameEntry[]): FrameEntry[] => frames.filter(f => isLeftPath(f.frame));
 
             // Create animations for each character variant
             for (const [characterVariant, g] of groups) {
@@ -628,8 +700,8 @@ export class Game extends Scene {
                 
                 // First priority: variants with proper idle and movement animations
                 if (g.idle.length && g.move.length) {
-                    chosenIdle = sortByNumericIndex(filterRightOrNeutral(g.idle));
-                    chosenMove = sortByNumericIndex(filterRightOrNeutral(g.move));
+                    chosenIdle = sortByNumericIndex(g.idle);
+                    chosenMove = sortByNumericIndex(g.move);
                     console.log(`✅ Using character variant: ${characterVariant} (idle: ${g.idle.length}, move: ${g.move.length})`);
                 }
 
@@ -647,17 +719,29 @@ export class Game extends Scene {
                         const lower = f.frame.toLowerCase();
                         // Use "Slashing" for idle (stationary attack animation)
                         if ((lower.includes('slashing') && !lower.includes('run')) || lower.includes('/slashing/')) {
-                            chosenIdle.push(f);
+                            try {
+                                const tex = this.textures.get(f.key) as any;
+                                const texFrame = tex && tex.get ? tex.get(f.frame) : null;
+                                if (!texFrame || !texFrame.rotated) {
+                                    chosenIdle.push(f);
+                                }
+                            } catch {}
                         }
                         // Use "Run Slashing" for movement
                         if (lower.includes('run slashing') || lower.includes('/run slashing/')) {
-                            chosenMove.push(f);
+                            try {
+                                const tex = this.textures.get(f.key) as any;
+                                const texFrame = tex && tex.get ? tex.get(f.frame) : null;
+                                if (!texFrame || !texFrame.rotated) {
+                                    chosenMove.push(f);
+                                }
+                            } catch {}
                         }
                     }
                     
                     if (chosenIdle.length || chosenMove.length) {
-                        chosenIdle = sortByNumericIndex(filterRightOrNeutral(chosenIdle));
-                        chosenMove = sortByNumericIndex(filterRightOrNeutral(chosenMove));
+                        chosenIdle = sortByNumericIndex(chosenIdle);
+                        chosenMove = sortByNumericIndex(chosenMove);
                         console.log(`🔄 Using character variant: ${characterVariant} with slashing animations (idle: ${chosenIdle.length}, move: ${chosenMove.length})`);
                     }
                 }
@@ -666,16 +750,17 @@ export class Game extends Scene {
                 console.log(`  Idle frames: ${chosenIdle.length}`, chosenIdle.slice(0, 3));
                 console.log(`  Move frames: ${chosenMove.length}`, chosenMove.slice(0, 3));
 
+                // Final fallback: if one set is empty, reuse the other
+                if (!chosenIdle.length && chosenMove.length) {
+                    chosenIdle = chosenMove.slice();
+                }
+                if (!chosenMove.length && chosenIdle.length) {
+                    chosenMove = chosenIdle.slice();
+                }
+
                 // Create variant-specific animations with error handling
                 const idleAnimKey = `${characterVariant}_idle`;
                 const walkAnimKey = `${characterVariant}_walk`;
-                // Also create directional animations when left frames exist
-                const leftIdleFrames = sortByNumericIndex(filterLeftOnly(g.idle));
-                const leftMoveFrames = sortByNumericIndex(filterLeftOnly(g.move));
-                const walkRightKey = `${characterVariant}_walk_right`;
-                const walkLeftKey = `${characterVariant}_walk_left`;
-                const idleRightKey = `${characterVariant}_idle_right`;
-                const idleLeftKey = `${characterVariant}_idle_left`;
 
                 if (chosenIdle.length && !this.anims.exists(idleAnimKey)) {
                     try {
@@ -698,331 +783,43 @@ export class Game extends Scene {
                     console.log(`ℹ️ ${idleAnimKey} animation already exists`);
                 }
 
-                // Directional idle if available
-                if (leftIdleFrames.length && !this.anims.exists(idleLeftKey)) {
-                    try {
-                        const frames = leftIdleFrames.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        this.anims.create({ key: idleLeftKey, frames, frameRate: 12, repeat: -1 });
-                    } catch (error) {
-                        console.error(`❌ Failed to create ${idleLeftKey}:`, error);
-                    }
-                }
-                if (chosenIdle.length && !this.anims.exists(idleRightKey)) {
-                    try {
-                        const frames = chosenIdle.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        this.anims.create({ key: idleRightKey, frames, frameRate: 12, repeat: -1 });
-                    } catch (error) {
-                        console.error(`❌ Failed to create ${idleRightKey}:`, error);
-                    }
-                }
-
                 if (chosenMove.length && !this.anims.exists(walkAnimKey)) {
                     try {
                         // Use frames across atlases
-                        const moveFrames = chosenMove.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        console.log(`🎬 Creating ${walkAnimKey} animation with frames:`, moveFrames.slice(0, 3));
+                        const walkFrames = chosenMove.map(entry => ({ key: entry.key, frame: entry.frame }));
+                        console.log(`🎬 Creating ${walkAnimKey} animation with frames:`, walkFrames.slice(0, 3));
                         this.anims.create({
                             key: walkAnimKey,
-                            frames: moveFrames,
-                            frameRate: 16, // Increased from 10 for smoother animation
+                            frames: walkFrames,
+                            frameRate: 12, // Increased from 8 for smoother animation
                             repeat: -1
                         });
-                        console.log(`✅ Created ${walkAnimKey} animation with ${moveFrames.length} frames`);
+                        console.log(`✅ Created ${walkAnimKey} animation with ${walkFrames.length} frames`);
                     } catch (error) {
                         console.error(`❌ Failed to create ${walkAnimKey} animation:`, error);
                     }
                 } else if (!chosenMove.length) {
-                    console.warn(`⚠️ No move frames found for ${characterVariant} animation`);
+                    console.warn(`⚠️ No walk frames found for ${characterVariant} animation`);
                 } else {
                     console.log(`ℹ️ ${walkAnimKey} animation already exists`);
                 }
-
-                // Directional move animations if available
-                if (leftMoveFrames.length && !this.anims.exists(walkLeftKey)) {
-                    try {
-                        const frames = leftMoveFrames.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        this.anims.create({ key: walkLeftKey, frames, frameRate: 16, repeat: -1 });
-                    } catch (error) {
-                        console.error(`❌ Failed to create ${walkLeftKey}:`, error);
-                    }
-                }
-                if (chosenMove.length && !this.anims.exists(walkRightKey)) {
-                    try {
-                        const frames = chosenMove.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        this.anims.create({ key: walkRightKey, frames, frameRate: 16, repeat: -1 });
-                    } catch (error) {
-                        console.error(`❌ Failed to create ${walkRightKey}:`, error);
-                    }
-                }
-            } // End of character variant loop
-
-            // Create fallback generic animations if they don't exist
-            if (!this.anims.exists('player_idle') || !this.anims.exists('player_walk')) {
-                console.log('🔄 Creating fallback player animations...');
-                // Use the first available character variant for fallback
-                const firstVariant = groups.keys().next().value;
-                if (firstVariant) {
-                    const fallbackGroup = groups.get(firstVariant);
-                    if (fallbackGroup) {
-                        if (!this.anims.exists('player_idle') && fallbackGroup.idle.length) {
-                            try {
-                                const idleFrames = sortByNumericIndex(fallbackGroup.idle).map(entry => ({ key: entry.key, frame: entry.frame }));
-                                this.anims.create({
-                                    key: 'player_idle',
-                                    frames: idleFrames,
-                                    frameRate: 12,
-                                    repeat: -1
-                                });
-                                console.log('✅ Created fallback player_idle animation');
-                            } catch (error) {
-                                console.error('❌ Failed to create fallback player_idle animation:', error);
-                            }
-                        }
-                        
-                        if (!this.anims.exists('player_walk') && fallbackGroup.move.length) {
-                            try {
-                                const moveFrames = sortByNumericIndex(fallbackGroup.move).map(entry => ({ key: entry.key, frame: entry.frame }));
-                                this.anims.create({
-                                    key: 'player_walk',
-                                    frames: moveFrames,
-                                    frameRate: 16,
-                                    repeat: -1
-                                });
-                                console.log('✅ Created fallback player_walk animation');
-                            } catch (error) {
-                                console.error('❌ Failed to create fallback player_walk animation:', error);
-                            }
-                        }
-                    }
-                }
             }
-        } else {
-            console.error(`❌ No character spritesheets are loaded!`);
         }
 
-        // OPTIMIZED: Create mob animations for hardcoded mob variants only
-        // Load essential atlases: 196 (Skeleton Pirate), 254 (Archer), 281 (Golem/Viking), 316 (Gnoll), 204+205 (Elemental Spirit)
-        const mobTextures = ['mob-texture-196', 'mob-texture-254', 'mob-texture-281', 'mob-texture-316', 'mob-texture-204', 'mob-texture-205'];
-        const allMobFrames: string[] = [];
-        const frameToTextureMap: { [frameName: string]: string } = {};
-        
-        // Check if at least one mob texture is loaded
-        if (mobTextures.some(key => this.spriteSheetManager && this.spriteSheetManager.isSpritesheetLoaded(key))) {
-            // Collect frames from both textures
-            for (const mobKey of mobTextures) {
-                if (this.spriteSheetManager && this.spriteSheetManager.isSpritesheetLoaded(mobKey)) {
-                    const mobFrames = this.spriteSheetManager.getFrameNames(mobKey);
-                    allMobFrames.push(...mobFrames);
-                    
-                    // Map each frame to its texture
-                    for (const frame of mobFrames) {
-                        frameToTextureMap[frame] = mobKey;
-                    }
-                    
-                    console.log(`🔍 ${mobKey} frames:`, mobFrames.length);
-                }
-            }
-            
-            console.log('🔍 Total available mob frames:', allMobFrames.length);
-            console.log('First 10 mob frames:', allMobFrames.slice(0, 10));
+        // Fallback mob animations
+        this.anims.create({
+            key: 'mob_idle',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `mob_idle_${String(i).padStart(3, '0')}` })),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mob_walk',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `mob_walk_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
 
-            const sortByNumericIndex = (names: string[]): string[] => {
-                return names.slice().sort((a, b) => {
-                    // Enhanced numeric sorting for mob frames
-                    const getFrameNumber = (name: string): number => {
-                        // Pattern 1: ending with _XXX.png
-                        let match = name.match(/_(\d+)\.png$/i);
-                        if (match) return parseInt(match[1], 10);
-                        
-                        // Pattern 2: ending with XXX.png
-                        match = name.match(/(\d+)\.png$/i);
-                        if (match) return parseInt(match[1], 10);
-                        
-                        // Pattern 3: any number in the filename
-                        match = name.match(/(\d+)/);
-                        if (match) return parseInt(match[1], 10);
-                        
-                        return 0;
-                    };
-                    
-                    return getFrameNumber(a) - getFrameNumber(b);
-                });
-            };
-
-            // OPTIMIZED: Only create animations for the hardcoded mob variants
-            // Updated to use variants that actually exist in texture atlases
-            const hardcodedMobVariants = [
-                'Skeleton_Pirate_Captain_1',  // For SKELETON_PIRATE enemy type
-                'Skeleton_Viking_1',          // For SKELETON_VIKING enemy type
-                'Golem_1',                    // For GOLEM enemy type
-                'Archer_1',                   // For ARCHER enemy type
-                'Gnoll_3',                    // For GNOLL enemy type
-                'Elemental_Spirits_2'         // For ELEMENTAL_SPIRIT enemy type
-            ];
-
-            // Group frames by hardcoded mob variants only
-            const mobGroups: { [key: string]: string[] } = {};
-            for (const frameName of allMobFrames) {
-                // Extract mob type from path like "Mobs/SkeletonPirate/Skeleton_Pirate_Captain_1/..."
-                const pathMatch = frameName.match(/^Mobs\/([^\/]+)\/([^\/]+)\//); 
-                if (pathMatch) {
-                    const mobVariant = pathMatch[2]; // e.g., "Skeleton_Pirate_Captain_1"
-                    
-                    // Only process hardcoded variants
-                    if (hardcodedMobVariants.includes(mobVariant)) {
-                        if (!mobGroups[mobVariant]) {
-                            mobGroups[mobVariant] = [];
-                        }
-                        mobGroups[mobVariant].push(frameName);
-                    }
-                }
-            }
-
-            console.log('🎭 Creating animations for hardcoded mob variants:', Object.keys(mobGroups));
-
-            // Create animations for each hardcoded mob variant
-            for (const [mobVariant, mobFrameList] of Object.entries(mobGroups)) {
-                const sortedFrames = sortByNumericIndex(mobFrameList);
-
-                // Enhanced animation detection for mobs
-                const findIdleFrames = (frames: string[]): string[] => {
-                    // Try idle first
-                    let result = frames.filter(name => name.toLowerCase().includes('idle') || name.toLowerCase().includes('/idle/'));
-                    if (result.length) return result;
-                    
-                    // Fallback to "Slashing" for idle
-                    result = frames.filter(name => (name.includes('Slashing') && !name.includes('Run')) || name.includes('/slashing/'));
-                    if (result.length) return result;
-                    
-                    // Further fallback to "Slashing in The Air"
-                    return frames.filter(name => name.includes('Slashing in The Air') || name.includes('/slashing in the air/'));
-                };
-
-                const findMoveFrames = (frames: string[]): string[] => {
-                    // Try walking/running first
-                    let result = frames.filter(name => {
-                        const lower = name.toLowerCase();
-                        return lower.includes('walking') || lower.includes('running') || 
-                               lower.includes('/walking/') || lower.includes('/running/');
-                    });
-                    if (result.length) return result;
-                    
-                    // Fallback to "Run Slashing"
-                    result = frames.filter(name => name.includes('Run Slashing') || name.includes('/run slashing/'));
-                    if (result.length) return result;
-                    
-                    // Further fallback to "Run Throwing"
-                    return frames.filter(name => name.includes('Run Throwing') || name.includes('/run throwing/'));
-                };
-
-                const chosenIdle = findIdleFrames(sortedFrames);
-                const chosenMove = findMoveFrames(sortedFrames);
-
-                console.log(`🎭 ${mobVariant} - idle frames: ${chosenIdle.length}, move frames: ${chosenMove.length}`);
-
-                // Create idle animation for this specific mob variant
-                const idleAnimKey = `${mobVariant}_idle`;
-                if (chosenIdle.length && !this.anims.exists(idleAnimKey)) {
-                    try {
-                        const idleFrames = chosenIdle.map(frameName => ({ 
-                            key: frameToTextureMap[frameName], 
-                            frame: frameName 
-                        }));
-                        this.anims.create({
-                            key: idleAnimKey,
-                            frames: idleFrames,
-                            frameRate: 8, // Slower for idle
-                            repeat: -1
-                        });
-                        console.log(`✅ Created ${idleAnimKey} animation with ${idleFrames.length} frames`);
-                    } catch (error) {
-                        console.error(`❌ Failed to create ${idleAnimKey} animation:`, error);
-                    }
-                }
-
-                // Create move animation for this specific mob variant
-                const walkAnimKey = `${mobVariant}_walk`;
-                if (chosenMove.length && !this.anims.exists(walkAnimKey)) {
-                    try {
-                        const moveFrames = chosenMove.map(frameName => ({ 
-                            key: frameToTextureMap[frameName], 
-                            frame: frameName 
-                        }));
-                        this.anims.create({
-                            key: walkAnimKey,
-                            frames: moveFrames,
-                            frameRate: 14, // Increased from 10 for smoother animation
-                            repeat: -1
-                        });
-                        console.log(`✅ Created ${walkAnimKey} animation with ${moveFrames.length} frames`);
-                    } catch (error) {
-                        console.error(`❌ Failed to create ${walkAnimKey} animation:`, error);
-                    }
-                }
-            }
-
-            // Create generic fallback animations using the first hardcoded variant
-            if (!this.anims.exists('mob_idle') || !this.anims.exists('mob_walk')) {
-                console.log('🔄 Creating fallback mob animations...');
-                const firstVariant = hardcodedMobVariants[0]; // Use Skeleton_Pirate_Captain_1 as fallback
-                if (firstVariant && mobGroups[firstVariant]) {
-                    const sortedFrames = sortByNumericIndex(mobGroups[firstVariant]);
-                    
-                    if (!this.anims.exists('mob_idle')) {
-                        let fallbackIdle = sortedFrames.filter(name => name.includes('Slashing') && !name.includes('Run'));
-                        if (!fallbackIdle.length) {
-                            fallbackIdle = sortedFrames.filter(name => name.includes('Slashing in The Air'));
-                        }
-                        
-                        if (fallbackIdle.length) {
-                            try {
-                                const idleFrames = fallbackIdle.map(frameName => ({ 
-                                    key: frameToTextureMap[frameName], 
-                                    frame: frameName 
-                                }));
-                                this.anims.create({
-                                    key: 'mob_idle',
-                                    frames: idleFrames,
-                                    frameRate: 8,
-                                    repeat: -1
-                                });
-                                console.log('✅ Created fallback mob_idle animation');
-                            } catch (error) {
-                                console.error('❌ Failed to create fallback mob_idle animation:', error);
-                            }
-                        }
-                    }
-                    
-                    if (!this.anims.exists('mob_walk')) {
-                        let fallbackMove = sortedFrames.filter(name => name.includes('Run Slashing'));
-                        if (!fallbackMove.length) {
-                            fallbackMove = sortedFrames.filter(name => name.includes('Slashing in The Air'));
-                        }
-                        
-                        if (fallbackMove.length) {
-                            try {
-                                const moveFrames = fallbackMove.map(frameName => ({ 
-                                    key: frameToTextureMap[frameName], 
-                                    frame: frameName 
-                                }));
-                                this.anims.create({
-                                    key: 'mob_walk',
-                                    frames: moveFrames,
-                                    frameRate: 14,
-                                    repeat: -1
-                                });
-                                console.log('✅ Created fallback mob_walk animation');
-                            } catch (error) {
-                                console.error('❌ Failed to create fallback mob_walk animation:', error);
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            console.error(`❌ Mob spritesheets are not loaded!`);
-        }
-        
         // console.log('🎬 Animation creation completed!');
     }
 
@@ -1075,7 +872,7 @@ export class Game extends Scene {
         
         // Enhanced collision detection
         if (this.player && this.enemySystem) {
-            this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies());
+            this.player.checkCollisionWithEnemies(this.enemySystem.getEnemies(), this.enemySystem.getShields());
             this.player.checkCollisionWithProjectiles(this.enemySystem.getProjectiles());
             this.player.checkCollisionWithMeleeAttacks(this.enemySystem.getMeleeAttacks());
             this.player.checkCollisionWithConeAttacks(this.enemySystem.getConeAttacks());

@@ -12,10 +12,6 @@ import { getHardcodedMobSkin } from '../../systems/HardcodedMobSkins';
 export interface CharacterAnimationSet {
   idle: string;
   walk: string;
-  idle_right?: string;
-  idle_left?: string;
-  walk_right?: string;
-  walk_left?: string;
   texture: string;
 }
 
@@ -31,57 +27,38 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
   'Knight_1': {
     idle: 'Knight_1_idle',
     walk: 'Knight_1_walk',
-    idle_right: 'Knight_1_idle_right',
-    idle_left: 'Knight_1_idle_left',
-    walk_right: 'Knight_1_walk_right',
-    walk_left: 'Knight_1_walk_left',
-    texture: 'char-texture-0'
+    texture: 'char-texture-96'
   },
   'Knight_2': {
     idle: 'Knight_2_idle',
     walk: 'Knight_2_walk',
-    idle_right: 'Knight_2_idle_right',
-    idle_left: 'Knight_2_idle_left',
-    walk_right: 'Knight_2_walk_right',
-    walk_left: 'Knight_2_walk_left',
     texture: 'char-texture-1'
   },
   'Knight_3': {
     idle: 'Knight_3_idle',
     walk: 'Knight_3_walk',
-    idle_right: 'Knight_3_idle_right',
-    idle_left: 'Knight_3_idle_left',
-    walk_right: 'Knight_3_walk_right',
-    walk_left: 'Knight_3_walk_left',
     texture: 'char-texture-2'
+  },
+  'White Armored Knight': {
+    idle: 'White Armored Knight_idle',
+    walk: 'White Armored Knight_walk',
+    texture: 'char-texture-33'
   },
 
   // Magician variants
   'Magician_1': {
     idle: 'Magician_1_idle',
     walk: 'Magician_1_walk',
-    idle_right: 'Magician_1_idle_right',
-    idle_left: 'Magician_1_idle_left',
-    walk_right: 'Magician_1_walk_right',
-    walk_left: 'Magician_1_walk_left',
-    texture: 'char-texture-3'
+    texture: 'char-texture-96'
   },
   'Magician_2': {
     idle: 'Magician_2_idle',
     walk: 'Magician_2_walk',
-    idle_right: 'Magician_2_idle_right',
-    idle_left: 'Magician_2_idle_left',
-    walk_right: 'Magician_2_walk_right',
-    walk_left: 'Magician_2_walk_left',
     texture: 'char-texture-4'
   },
   'Magician_3': {
     idle: 'Magician_3_idle',
     walk: 'Magician_3_walk',
-    idle_right: 'Magician_3_idle_right',
-    idle_left: 'Magician_3_idle_left',
-    walk_right: 'Magician_3_walk_right',
-    walk_left: 'Magician_3_walk_left',
     texture: 'char-texture-5'
   },
 
@@ -89,28 +66,16 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
   'Archer_1': {
     idle: 'Archer_1_idle',
     walk: 'Archer_1_walk',
-    idle_right: 'Archer_1_idle_right',
-    idle_left: 'Archer_1_idle_left',
-    walk_right: 'Archer_1_walk_right',
-    walk_left: 'Archer_1_walk_left',
     texture: 'char-texture-6'
   },
   'Archer_2': {
     idle: 'Archer_2_idle',
     walk: 'Archer_2_walk',
-    idle_right: 'Archer_2_idle_right',
-    idle_left: 'Archer_2_idle_left',
-    walk_right: 'Archer_2_walk_right',
-    walk_left: 'Archer_2_walk_left',
-    texture: 'char-texture-7'
+    texture: 'char-texture-0'
   },
   'Archer_3': {
     idle: 'Archer_3_idle',
     walk: 'Archer_3_walk',
-    idle_right: 'Archer_3_idle_right',
-    idle_left: 'Archer_3_idle_left',
-    walk_right: 'Archer_3_walk_right',
-    walk_left: 'Archer_3_walk_left',
     texture: 'char-texture-8'
   },
 
@@ -118,28 +83,16 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
   'Black_Ninja': {
     idle: 'Black_Ninja_idle',
     walk: 'Black_Ninja_walk',
-    idle_right: 'Black_Ninja_idle_right',
-    idle_left: 'Black_Ninja_idle_left',
-    walk_right: 'Black_Ninja_walk_right',
-    walk_left: 'Black_Ninja_walk_left',
     texture: 'char-texture-9'
   },
   'White_Ninja': {
     idle: 'White_Ninja_idle',
     walk: 'White_Ninja_walk',
-    idle_right: 'White_Ninja_idle_right',
-    idle_left: 'White_Ninja_idle_left',
-    walk_right: 'White_Ninja_walk_right',
-    walk_left: 'White_Ninja_walk_left',
     texture: 'char-texture-10'
   },
   'Assassin_Guy': {
     idle: 'Assassin_Guy_idle',
     walk: 'Assassin_Guy_walk',
-    idle_right: 'Assassin_Guy_idle_right',
-    idle_left: 'Assassin_Guy_idle_left',
-    walk_right: 'Assassin_Guy_walk_right',
-    walk_left: 'Assassin_Guy_walk_left',
     texture: 'char-texture-11'
   }
 };
@@ -302,7 +255,7 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
 
 // Archetype to Character mapping for player selection using standardized class names
 export const ARCHETYPE_TO_CHARACTER: { [key: string]: string[] } = {
-  'knight': ['Knight_1', 'Knight_2', 'Knight_3'],
+  'knight': ['Knight_1', 'Knight_2', 'Knight_3', 'White_Armored_Knight'],
   'magician': ['Magician_1', 'Magician_2', 'Magician_3'],
   'archer': ['Archer_1', 'Archer_2', 'Archer_3'],
   'rogue': ['Black_Ninja', 'White_Ninja', 'Assassin_Guy']
@@ -407,6 +360,26 @@ export class AnimationMapper {
     return selectedVariant;
   }
 
+  /**
+   * Get hardcoded character variant for a player archetype (deterministic skin per archetype)
+   */
+  static getHardcodedCharacterForArchetype(archetype: string): string {
+    const className = PLAYER_ARCHETYPE_TO_CLASS[archetype] || archetype;
+    const HARD_CODED_BY_CLASS: { [key: string]: string } = {
+      knight: 'White Armored Knight',
+      magician: 'Magician_1',
+      rogue: 'Black_Ninja'
+    };
+
+    const variant = HARD_CODED_BY_CLASS[className] || (ARCHETYPE_TO_CHARACTER[className]?.[0]);
+    if (!variant) {
+      console.warn(`No hardcoded variant for class: ${className}, falling back to Knight_1`);
+      return 'Knight_1';
+    }
+    console.log(`✅ HARDCODED: Using character ${variant} for archetype: ${archetype} (class: ${className})`);
+    return variant;
+  }
+
   // Random mob selection methods removed - all mob assignments now use hardcoded system
 
   /**
@@ -443,11 +416,3 @@ export class AnimationMapper {
     return Object.keys(MOB_ANIMATIONS);
   }
 }
-
-// Default facing direction for mob variants (used to correct flip logic)
-export const MOB_DEFAULT_FACING: { [variant: string]: 'left' | 'right' } = {
-  'Skeleton_Pirate_Captain_1': 'right',
-  'Golem_1': 'right',
-  'Archer_1': 'right',
-  'Gnoll_3': 'right'
-};

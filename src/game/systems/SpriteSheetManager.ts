@@ -136,6 +136,8 @@ export class SpriteSheetManager {
     for (let i = 0; i <= 20; i++) {
       essentialCharacterTextures.push(`char-texture-${i}`);
     }
+    // Include key character atlases containing mage and knight variants
+    ['31','32','33','34','95','96','97','98','99'].forEach(n => essentialCharacterTextures.push(`char-texture-${n}`));
     
     // Load unique textures for each mob type to ensure distinct skins
     // mob-texture-196: Skeleton_Pirate_Captain_1 (skeleton pirate)
