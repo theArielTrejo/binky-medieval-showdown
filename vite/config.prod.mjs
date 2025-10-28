@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import path from 'path';
 
 const phasermsg = () => {
     return {
@@ -10,7 +11,6 @@ const phasermsg = () => {
             const line = "---------------------------------------------------------";
             const msg = `❤️❤️❤️ Tell us about your game! - games@phaser.io ❤️❤️❤️`;
             process.stdout.write(`${line}\n${msg}\n${line}\n`);
-            
             process.stdout.write(`✨ Done ✨\n`);
         }
     }
@@ -18,6 +18,14 @@ const phasermsg = () => {
 
 export default defineConfig({
     base: './',
+    resolve: {
+        alias: {
+            'phaser-animated-tiles': path.resolve(
+                __dirname,
+                '../node_modules/phaser-animated-tiles/dist/AnimatedTiles.js'
+            )
+        }
+    },
     logLevel: 'warning',
     build: {
         rollupOptions: {

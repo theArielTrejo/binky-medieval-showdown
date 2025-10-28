@@ -26,6 +26,7 @@
     "dependencies": {
         "@tensorflow/tfjs": "^4.15.0",
         "phaser": "^3.90.0",
+        "phaser-animated-tiles": "^2.0.2",
         "terser": "^5.39.0"
     }
 }

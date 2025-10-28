@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import AnimatedTiles from 'phaser-animated-tiles'; // to play animations, npm install phaser-animated-tiles
 import { Player } from '../Player';
 import { EnemySystem } from '../EnemySystem';
 import { EnemyType } from '../types/EnemyTypes';
@@ -76,6 +77,7 @@ export class Game extends Scene {
         this.load.image('Portcullis', 'tilemaps/Portcullis.png');
         this.load.image('grassclippings2', 'tilemaps/grassclippings2.png');
         this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
+        this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
 
         // Load available assets only
         
@@ -182,7 +184,8 @@ export class Game extends Scene {
                 { name: 'D_CastleGate', imageKey: 'D_CastleGate', imagePath: 'assets/tilemaps/D_CastleGate.png' },
                 { name: 'Portcullis', imageKey: 'Portcullis', imagePath: 'assets/tilemaps/Portcullis.png' },
                 { name: 'grassclippings2', imageKey: 'grassclippings2', imagePath: 'assets/tilemaps/grassclippings2.png' },
-                { name: 'objectbrickstools', imageKey: 'objectbrickstools', imagePath: 'assets/tilemaps/objectbrickstools.png' }
+                { name: 'objectbrickstools', imageKey: 'objectbrickstools', imagePath: 'assets/tilemaps/objectbrickstools.png' },
+                { name: 'FieldsTileset', imageKey: 'FieldsTileset', imagePath: 'assets/tilemaps/FieldsTileset.png'}
             ],
             layers: [
                 { name: 'background', tilesets: [], depth: 0, visible: true, collides: false },
@@ -207,6 +210,47 @@ export class Game extends Scene {
         
         this.tilemap = map;
         
+        // Set up animated tiles , Defer AnimatedTiles until after the scene fully booted
+        this.time.delayedCall(0, () => {
+        try {
+            const animatedTiles = new AnimatedTiles(this);
+            animatedTiles.init(this.tilemap);
+            console.log('Animated tiles initialized successfully.');
+        } catch (err) {
+            console.error('Failed to init animated tiles:', err);
+        }
+        });
+
+        // --- DOOR CONTROL SETUP ---
+        const objectLayer = this.tilemap.getLayer('objects')?.tilemapLayer;
+        if (!objectLayer) {
+        console.warn('No "objects" layer found!');
+        return;
+        }
+
+        const doorTiles = objectLayer.filterTiles(
+        (tile: Phaser.Tilemaps.Tile) => tile.properties?.type === 'door'
+        );
+        console.log(`Found ${doorTiles.length} door tiles`);
+        console.log('Door tile indices:', doorTiles.map(t => t.index));
+
+        let doorOpened = false;
+        const doorOffset = 148; // 371 - 223 (your open - closed difference)
+
+        this.input.keyboard!.on('keydown-P', () => {
+        if (doorOpened) return;
+        doorOpened = true;
+
+        doorTiles.forEach(tile => {
+            const openTileIndex = tile.index + doorOffset;
+            objectLayer.putTileAt(openTileIndex, tile.x, tile.y);
+        });
+
+        console.log('Door opened!');
+        });
+
+
+
         // Apply scaling for consistent proportions
         //this.tilemapManager.applyScaling('binkyMap', this.GAME_SCALE);
         
@@ -362,7 +406,7 @@ export class Game extends Scene {
         });
         
         // --- CAMERA SETUP (matches JS version) ---
-        // ✅ Match JS exactly
+        // Match JS exactly
         const camera = this.cameras.main;
         camera.startFollow(this.player.sprite, true, 0.1, 0.1);
         camera.setZoom(2); // Zoomed out for better battlefield visibility
@@ -371,7 +415,7 @@ export class Game extends Scene {
         // Optional smooth camera lag (for cinematic movement)
         camera.setLerp(0.15, 0.15);
 
-        // ✅ Center camera on spawn when starting (prevents snapping)
+        // Center camera on spawn when starting (prevents snapping)
         camera.centerOn(this.player.sprite.x, this.player.sprite.y);
         
         // Start spawning enemies
@@ -566,7 +610,7 @@ export class Game extends Scene {
     });
 
     console.log(
-        `✅ Player collision setup: ${this.collisionLayers.length} tile layers + ${this.objectRects.length} object rects`
+        `Player collision setup: ${this.collisionLayers.length} tile layers + ${this.objectRects.length} object rects`
     );
     }
 
@@ -714,7 +758,7 @@ export class Game extends Scene {
                 }
             }
 
-            console.log('🎭 Found character variants:', Array.from(groups.keys()));
+            console.log(' Found character variants:', Array.from(groups.keys()));
 
             // Create animations for each character variant
             for (const [characterVariant, g] of groups) {
@@ -725,12 +769,12 @@ export class Game extends Scene {
                 if (g.idle.length && g.move.length) {
                     chosenIdle = sortByNumericIndex(g.idle);
                     chosenMove = sortByNumericIndex(g.move);
-                    console.log(`✅ Using character variant: ${characterVariant} (idle: ${g.idle.length}, move: ${g.move.length})`);
+                    console.log(` Using character variant: ${characterVariant} (idle: ${g.idle.length}, move: ${g.move.length})`);
                 }
 
                 // Fallback: if variant has no proper animations, use slashing animations
                 if (!chosenIdle.length || !chosenMove.length) {
-                    console.log(`⚠️ No proper idle/move found for ${characterVariant}, searching for fallback animations`);
+                    console.log(` No proper idle/move found for ${characterVariant}, searching for fallback animations`);
                     
                     // Look for slashing animations for this specific variant
                     const variantFrames = charFramesWithKey.filter(f => {
@@ -765,11 +809,11 @@ export class Game extends Scene {
                     if (chosenIdle.length || chosenMove.length) {
                         chosenIdle = sortByNumericIndex(chosenIdle);
                         chosenMove = sortByNumericIndex(chosenMove);
-                        console.log(`🔄 Using character variant: ${characterVariant} with slashing animations (idle: ${chosenIdle.length}, move: ${chosenMove.length})`);
+                        console.log(` Using character variant: ${characterVariant} with slashing animations (idle: ${chosenIdle.length}, move: ${chosenMove.length})`);
                     }
                 }
 
-                console.log(`🎬 Character animation frames found for ${characterVariant}:`);
+                console.log(` Character animation frames found for ${characterVariant}:`);
                 console.log(`  Idle frames: ${chosenIdle.length}`, chosenIdle.slice(0, 3));
                 console.log(`  Move frames: ${chosenMove.length}`, chosenMove.slice(0, 3));
 
@@ -789,21 +833,21 @@ export class Game extends Scene {
                     try {
                         // Use frames across atlases
                         const idleFrames = chosenIdle.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        console.log(`🎬 Creating ${idleAnimKey} animation with frames:`, idleFrames.slice(0, 3));
+                        console.log(` Creating ${idleAnimKey} animation with frames:`, idleFrames.slice(0, 3));
                         this.anims.create({
                             key: idleAnimKey,
                             frames: idleFrames,
                             frameRate: 12, // Increased from 8 for smoother animation
                             repeat: -1
                         });
-                        console.log(`✅ Created ${idleAnimKey} animation with ${idleFrames.length} frames`);
+                        console.log(` Created ${idleAnimKey} animation with ${idleFrames.length} frames`);
                     } catch (error) {
-                        console.error(`❌ Failed to create ${idleAnimKey} animation:`, error);
+                        console.error(` Failed to create ${idleAnimKey} animation:`, error);
                     }
                 } else if (!chosenIdle.length) {
-                    console.warn(`⚠️ No idle frames found for ${characterVariant} animation`);
+                    console.warn(` No idle frames found for ${characterVariant} animation`);
                 } else {
-                    console.log(`ℹ️ ${idleAnimKey} animation already exists`);
+                    console.log(`${idleAnimKey} animation already exists`);
                 }
 
                 if (chosenMove.length && !this.anims.exists(walkAnimKey)) {
@@ -817,14 +861,14 @@ export class Game extends Scene {
                             frameRate: 12, // Increased from 8 for smoother animation
                             repeat: -1
                         });
-                        console.log(`✅ Created ${walkAnimKey} animation with ${walkFrames.length} frames`);
+                        console.log(` Created ${walkAnimKey} animation with ${walkFrames.length} frames`);
                     } catch (error) {
-                        console.error(`❌ Failed to create ${walkAnimKey} animation:`, error);
+                        console.error(` Failed to create ${walkAnimKey} animation:`, error);
                     }
                 } else if (!chosenMove.length) {
-                    console.warn(`⚠️ No walk frames found for ${characterVariant} animation`);
+                    console.warn(` No walk frames found for ${characterVariant} animation`);
                 } else {
-                    console.log(`ℹ️ ${walkAnimKey} animation already exists`);
+                    console.log(` ${walkAnimKey} animation already exists`);
                 }
             }
         }
@@ -853,7 +897,7 @@ export class Game extends Scene {
                     frameRate: 20, // Fast animation for lightning effect
                     repeat: 0 // Play once
                 });
-                console.log(`⚡ Created lightning-strike animation with ${lightningFrameCount} frames`);
+                console.log(` Created lightning-strike animation with ${lightningFrameCount} frames`);
             }
         }
 
@@ -867,7 +911,7 @@ export class Game extends Scene {
                     frameRate: 24, // Fast animation for explosion effect
                     repeat: 0 // Play once
                 });
-                console.log(`💥 Created explosion-effect animation with ${explosionFrameCount} frames`);
+                console.log(` Created explosion-effect animation with ${explosionFrameCount} frames`);
             }
         }
 
@@ -886,11 +930,11 @@ export class Game extends Scene {
                     frameRate: 24, // Fast animation for claw slash
                     repeat: 0 // Play once
                 });
-                console.log(`🐺 Created gnoll-claw-attack animation with ${clawFrames.length} frames`);
+                console.log(` Created gnoll-claw-attack animation with ${clawFrames.length} frames`);
             }
         }
 
-        // console.log('🎬 Animation creation completed!');
+        // console.log(' Animation creation completed!');
     }
 
     /**
@@ -910,10 +954,10 @@ export class Game extends Scene {
             if (enemy) {
                 // Set up collision for the newly spawned enemy
                 this.setupEnemyTilemapCollisions(enemy.sprite);
-                console.log(`✅ Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)}) with collision`);
+                console.log(` Spawned ${type} at (${x.toFixed(0)}, ${y.toFixed(0)}) with collision`);
             }
         } catch (error) {
-            console.error(`❌ Failed to spawn ${type}:`, error);
+            console.error(` Failed to spawn ${type}:`, error);
         }
     }
 
