@@ -11,5 +11,6 @@ export enum EnemyType {
     ARCHER = 'archer',
     GNOLL = 'gnoll',
     SKELETON_PIRATE = 'skeleton_pirate',
-    ELEMENTAL_SPIRIT = 'elemental_spirit'
+    ELEMENTAL_SPIRIT = 'elemental_spirit',
+    LIGHTNING_MAGE = 'lightning_mage'
 }

@@ -305,11 +305,11 @@ export class ConeAttack {
  * Explosion attack for Elemental Spirit - area damage on suicide
  */
 export class ExplosionAttack {
-    public sprite: Phaser.GameObjects.Graphics;
+    public explosionSprite: Phaser.GameObjects.Sprite | null = null;
     public damage: number;
     public scene: Scene;
     private active: boolean = true;
-    private lifetime: number = 0.4; // Explosion lasts 0.4 seconds
+    private lifetime: number = 0.5; // Explosion animation duration
     private elapsed: number = 0;
     public x: number;
     public y: number;
@@ -321,41 +321,41 @@ export class ExplosionAttack {
         this.damage = damage;
         this.x = x;
         this.y = y;
-        this.currentRadius = 10; // Start small
+        this.currentRadius = this.maxRadius; // Set to max immediately
         
-        // Create visual effect - orange/red explosion
-        this.sprite = scene.add.graphics();
-        this.updateExplosionGraphics();
-        this.sprite.setDepth(7); // Above most game objects
-        
-        console.log(`Explosion created at (${x.toFixed(0)}, ${y.toFixed(0)})`);
-    }
-
-    private updateExplosionGraphics(): void {
-        this.sprite.clear();
-        
-        // Calculate expansion progress
-        const expansionProgress = Math.min(1, this.elapsed / (this.lifetime * 0.6));
-        this.currentRadius = 10 + (this.maxRadius - 10) * expansionProgress;
-        
-        // Outer ring (bright orange/yellow)
-        const outerAlpha = (1 - (this.elapsed / this.lifetime)) * 0.8;
-        this.sprite.fillStyle(0xff6600, outerAlpha);
-        this.sprite.fillCircle(0, 0, this.currentRadius);
-        
-        // Middle ring (bright red)
-        this.sprite.fillStyle(0xff3300, outerAlpha * 1.2);
-        this.sprite.fillCircle(0, 0, this.currentRadius * 0.7);
-        
-        // Inner ring (bright yellow/white)
-        this.sprite.fillStyle(0xffff00, outerAlpha * 1.5);
-        this.sprite.fillCircle(0, 0, this.currentRadius * 0.4);
-        
-        // Center flash
-        this.sprite.fillStyle(0xffffff, outerAlpha * 2);
-        this.sprite.fillCircle(0, 0, this.currentRadius * 0.15);
-        
-        this.sprite.setPosition(this.x, this.y);
+        // Check if explosion texture exists
+        if (scene.textures.exists('explosion')) {
+            // Create explosion sprite
+            this.explosionSprite = scene.add.sprite(x, y, 'explosion');
+            // Scale the 72x72 frame for explosion effect (smaller, tighter explosion)
+            this.explosionSprite.setScale(2.5); // Scaled down for better visual balance
+            this.explosionSprite.setDepth(7); // Above most game objects
+            this.explosionSprite.setOrigin(0.5, 0.5); // Center origin
+            
+            // Play explosion animation if it exists
+            if (scene.anims.exists('explosion-effect')) {
+                this.explosionSprite.play('explosion-effect');
+                
+                // Destroy when animation completes
+                this.explosionSprite.once('animationcomplete', () => {
+                    this.destroy();
+                });
+            }
+            
+            console.log(`💥 Explosion sprite created at (${x.toFixed(0)}, ${y.toFixed(0)})`);
+        } else {
+            console.warn('Explosion texture not loaded, using fallback');
+            // Fallback: Create a simple flash effect
+            const fallbackFlash = scene.add.graphics();
+            fallbackFlash.fillStyle(0xff6600, 0.8);
+            fallbackFlash.fillCircle(x, y, this.maxRadius);
+            fallbackFlash.setDepth(7);
+            
+            scene.time.delayedCall(300, () => {
+                fallbackFlash.destroy();
+                this.destroy();
+            });
+        }
     }
 
     public update(deltaTime: number): void {
@@ -363,10 +363,7 @@ export class ExplosionAttack {
         
         this.elapsed += deltaTime;
         
-        // Update visual
-        this.updateExplosionGraphics();
-        
-        // Destroy after lifetime
+        // Destroy after lifetime (safety check in case animation doesn't complete)
         if (this.elapsed >= this.lifetime) {
             this.destroy();
         }
@@ -374,7 +371,9 @@ export class ExplosionAttack {
 
     public destroy(): void {
         this.active = false;
-        this.sprite.destroy();
+        if (this.explosionSprite && this.explosionSprite.scene) {
+            this.explosionSprite.destroy();
+        }
     }
 
     public isActive(): boolean {
@@ -418,6 +417,7 @@ export class VortexAttack {
     private velocityX: number;
     private velocityY: number;
     private isTraveling: boolean = true; // Whether vortex is still moving
+    private frozenExpansionProgress: number | null = null; // Stores size when stopped early
     public slowEffect: number = 0.5; // Slow multiplier (0.5 = 50% speed)
     public slowDuration: number = 2000; // How long the slow lasts on player in ms (2 seconds)
     
@@ -456,11 +456,14 @@ export class VortexAttack {
         
         // Calculate expansion progress
         let expansionProgress: number;
-        if (this.isTraveling) {
+        if (this.frozenExpansionProgress !== null) {
+            // Use frozen size when stopped early
+            expansionProgress = this.frozenExpansionProgress;
+        } else if (this.isTraveling) {
             // Expand while traveling
             expansionProgress = Math.min(1, this.elapsed / this.travelTime);
         } else {
-            // Stay at max size while stationary
+            // Stay at max size while stationary (reached destination normally)
             expansionProgress = 1;
         }
         
@@ -544,6 +547,176 @@ export class VortexAttack {
         const dy = py - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         return distance <= this.currentRadius;
+    }
+    
+    public getPosition(): { x: number; y: number } {
+        return { x: this.x, y: this.y };
+    }
+    
+    public isTravelingToTarget(): boolean {
+        return this.isTraveling;
+    }
+    
+    public stopAtCurrentPosition(): void {
+        // Stop the vortex at its current position when it hits the player
+        if (this.isTraveling) {
+            // Calculate and freeze the current expansion progress
+            this.frozenExpansionProgress = Math.min(1, this.elapsed / this.travelTime);
+            this.isTraveling = false;
+            this.targetX = this.x;
+            this.targetY = this.y;
+            console.log(`Vortex stopped early at (${this.x.toFixed(0)}, ${this.y.toFixed(0)}) with ${(this.frozenExpansionProgress * 100).toFixed(0)}% size`);
+        }
+    }
+}
+
+/**
+ * Lightning Strike attack - AOE delayed attack with warning indicator
+ */
+export class LightningStrikeAttack {
+    public sprite: Phaser.GameObjects.Graphics;
+    public lightningSprite: Phaser.GameObjects.Sprite | null = null;
+    public damage: number;
+    public scene: Scene;
+    private active: boolean = true;
+    private warningTime: number = 1.5; // Warning indicator lasts 1.5 seconds
+    private elapsed: number = 0;
+    public x: number;
+    public y: number;
+    public radius: number = 50; // AOE damage radius (reduced for tighter strikes)
+    private hasStruck: boolean = false; // Track if lightning has struck
+    
+    constructor(scene: Scene, targetX: number, targetY: number, damage: number) {
+        this.scene = scene;
+        this.damage = damage;
+        this.x = targetX;
+        this.y = targetY;
+        
+        // Create flashing circle warning indicator
+        this.sprite = scene.add.graphics();
+        this.updateWarningGraphics();
+        this.sprite.setDepth(4); // Below most game objects but visible
+        
+        console.log(`Lightning Strike warning at (${targetX.toFixed(0)}, ${targetY.toFixed(0)})`);
+    }
+
+    private updateWarningGraphics(): void {
+        this.sprite.clear();
+        
+        // Calculate flash effect based on elapsed time
+        const flashSpeed = 8; // Faster flashing as time runs out
+        const flashIntensity = Math.sin(this.elapsed * flashSpeed) * 0.5 + 0.5;
+        
+        // Warning progress (how close to striking)
+        const progress = this.elapsed / this.warningTime;
+        
+        // Simple translucent fill (gets more intense as time progresses)
+        const fillAlpha = 0.15 + (progress * 0.35 * flashIntensity);
+        this.sprite.fillStyle(0x66ddff, fillAlpha);
+        this.sprite.fillCircle(0, 0, this.radius);
+        
+        this.sprite.setPosition(this.x, this.y);
+    }
+
+    private createLightningStrike(): void {
+        // Remove warning indicator
+        this.sprite.destroy();
+        
+        // Check if lightning bolt texture exists
+        if (this.scene.textures.exists('lightning-bolt')) {
+            // Create lightning bolt sprite - offset Y position downward for better ground impact
+            const strikeY = this.y + 30; // Offset down to strike at ground level
+            this.lightningSprite = this.scene.add.sprite(this.x, strikeY, 'lightning-bolt');
+            // Frame is 72x72, warning circle is radius 50 (100 diameter), so scale: 100/72 = 1.39
+            this.lightningSprite.setScale(1.39); // Scale to match warning circle size
+            this.lightningSprite.setDepth(8); // Above most objects
+            this.lightningSprite.setOrigin(0.5, 1.0); // Bottom center - lightning strikes down to player's feet
+            
+            // Play lightning animation if it exists
+            if (this.scene.anims.exists('lightning-strike')) {
+                this.lightningSprite.play('lightning-strike');
+            }
+            
+            // Add flash effect at impact point
+            const flash = this.scene.add.graphics();
+            flash.fillStyle(0xffffff, 0.8);
+            flash.fillCircle(this.x, this.y, this.radius * 0.7);
+            flash.setDepth(7);
+            
+            // Fade out flash
+            this.scene.tweens.add({
+                targets: flash,
+                alpha: 0,
+                duration: 200,
+                onComplete: () => flash.destroy()
+            });
+            
+            console.log(`Lightning struck at (${this.x.toFixed(0)}, ${this.y.toFixed(0)})`);
+        } else {
+            console.warn('Lightning bolt texture not loaded, using fallback effect');
+            // Fallback: Create a simple lightning effect with graphics
+            const fallbackLightning = this.scene.add.graphics();
+            fallbackLightning.lineStyle(8, 0xffffff, 1);
+            fallbackLightning.lineBetween(this.x, this.y - 200, this.x, this.y);
+            fallbackLightning.lineStyle(4, 0x66ddff, 1);
+            fallbackLightning.lineBetween(this.x, this.y - 200, this.x, this.y);
+            fallbackLightning.setDepth(8);
+            
+            this.scene.time.delayedCall(300, () => {
+                fallbackLightning.destroy();
+            });
+        }
+    }
+
+    public update(deltaTime: number): void {
+        if (!this.active) return;
+        
+        this.elapsed += deltaTime;
+        
+        if (!this.hasStruck) {
+            // Update warning indicator
+            this.updateWarningGraphics();
+            
+            // Check if it's time to strike
+            if (this.elapsed >= this.warningTime) {
+                this.hasStruck = true;
+                this.createLightningStrike();
+            }
+        } else {
+            // Lightning has struck, wait a bit then destroy
+            if (this.elapsed >= this.warningTime + 0.5) {
+                this.destroy();
+            }
+        }
+    }
+
+    public destroy(): void {
+        this.active = false;
+        if (this.sprite && this.sprite.scene) {
+            this.sprite.destroy();
+        }
+        if (this.lightningSprite && this.lightningSprite.scene) {
+            this.lightningSprite.destroy();
+        }
+    }
+
+    public isActive(): boolean {
+        return this.active;
+    }
+
+    public hasStruckLightning(): boolean {
+        return this.hasStruck;
+    }
+
+    public isPointInStrike(px: number, py: number): boolean {
+        // Only deal damage if lightning has struck
+        if (!this.hasStruck) return false;
+        
+        // Check if point is within the strike radius
+        const dx = px - this.x;
+        const dy = py - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance <= this.radius;
     }
     
     public getPosition(): { x: number; y: number } {
@@ -671,10 +844,106 @@ export class MeleeAttack {
 }
 
 /**
+ * Claw attack for Gnoll - animated melee effect that appears on the player
+ */
+export class ClawAttack {
+    public clawSprite: Phaser.GameObjects.Sprite | null = null;
+    public damage: number;
+    public scene: Scene;
+    private active: boolean = true;
+    private lifetime: number = 0.5; // Claw animation duration
+    private elapsed: number = 0;
+    public x: number;
+    public y: number;
+    public width: number = 80; // Hitbox width for collision detection
+    public height: number = 80; // Hitbox height for collision detection
+    
+    constructor(scene: Scene, targetX: number, targetY: number, damage: number) {
+        this.scene = scene;
+        this.damage = damage;
+        this.x = targetX;
+        this.y = targetY;
+        
+        // Check if claw texture exists
+        if (scene.textures.exists('gnoll-claw-1')) {
+            // Create claw sprite at player position
+            this.clawSprite = scene.add.sprite(targetX, targetY, 'gnoll-claw-1');
+            // Scale the claw effect smaller than the player
+            this.clawSprite.setScale(0.05); // Smaller, more precise claw slash
+            this.clawSprite.setDepth(7); // Above most game objects but below UI
+            this.clawSprite.setOrigin(0.5, 0.5); // Center origin on player
+            
+            // Play claw animation if it exists
+            if (scene.anims.exists('gnoll-claw-attack')) {
+                this.clawSprite.play('gnoll-claw-attack');
+                
+                // Destroy when animation completes
+                this.clawSprite.once('animationcomplete', () => {
+                    this.destroy();
+                });
+            }
+            
+            console.log(`🐺 Claw sprite created at (${targetX.toFixed(0)}, ${targetY.toFixed(0)})`);
+        } else {
+            console.warn('Claw texture not loaded, using fallback');
+            // Fallback: Create a simple red slash effect
+            const fallbackSlash = scene.add.graphics();
+            fallbackSlash.lineStyle(4, 0xff0000, 0.8);
+            fallbackSlash.beginPath();
+            fallbackSlash.moveTo(targetX - 30, targetY - 30);
+            fallbackSlash.lineTo(targetX + 30, targetY + 30);
+            fallbackSlash.strokePath();
+            fallbackSlash.setDepth(7);
+            
+            scene.time.delayedCall(300, () => {
+                fallbackSlash.destroy();
+                this.destroy();
+            });
+        }
+    }
+
+    public update(deltaTime: number): void {
+        if (!this.active) return;
+        
+        this.elapsed += deltaTime;
+        
+        // Destroy after lifetime (safety check in case animation doesn't complete)
+        if (this.elapsed >= this.lifetime) {
+            this.destroy();
+        }
+    }
+
+    public destroy(): void {
+        this.active = false;
+        if (this.clawSprite && this.clawSprite.scene) {
+            this.clawSprite.destroy();
+        }
+    }
+
+    public isActive(): boolean {
+        return this.active;
+    }
+
+    public getBounds(): { x: number; y: number; width: number; height: number } {
+        // Return axis-aligned bounding box for collision detection
+        return {
+            x: this.x - this.width / 2,
+            y: this.y - this.height / 2,
+            width: this.width,
+            height: this.height
+        };
+    }
+    
+    public getPosition(): { x: number; y: number } {
+        return { x: this.x, y: this.y };
+    }
+}
+
+/**
  * Interface for enemy attack results
  */
 export interface EnemyAttackResult {
-    type: 'projectile' | 'melee' | 'cone' | 'explosion' | 'vortex' | 'shield';
+    type: 'projectile' | 'melee' | 'cone' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw';
     damage: number;
     position: { x: number; y: number };
     hitPlayer: boolean;
@@ -684,7 +953,7 @@ export interface EnemyAttackResult {
         knockback?: { x: number; y: number };
         blocked?: boolean;
     };
-    attackObject?: Projectile | MeleeAttack | ConeAttack | ExplosionAttack | VortexAttack | Shield;
+    attackObject?: Projectile | MeleeAttack | ConeAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack;
 }
 
 // EnemyType enum moved to ./types/EnemyTypes.ts to avoid circular imports
@@ -715,7 +984,7 @@ export class Enemy {
     private shootInterval: number = 2.0; // Shoot every 2 seconds for ranged enemies
     private attackRange: number = 300; // Range for ranged attacks
     private meleeAttackCooldown: number = 0;
-    private meleeAttackInterval: number = 1.5; // Melee attack every 1.5 seconds
+    private meleeAttackInterval: number = 0.8; // Melee attack every 0.8 seconds (fast for Gnoll)
     private isAttacking: boolean = false; // Track if currently performing attack
     private attackDuration: number = 0.3; // Duration enemy is locked during attack
     private attackTimer: number = 0; // Timer for attack animation lock
@@ -795,11 +1064,13 @@ export class Enemy {
             } else if (type === EnemyType.SKELETON_VIKING) {
                 this.attackRange = 100; // Close range for cone attack
             } else if (type === EnemyType.SKELETON_PIRATE) {
-                this.attackRange = 400; // Vortex range
+                this.attackRange = 320; // Vortex range (reduced to fit in camera view)
             } else if (type === EnemyType.ELEMENTAL_SPIRIT) {
-                this.attackRange = 80; // Explosion trigger range
+                this.attackRange = 30; // Explosion trigger range (adjusted for size 30)
+            } else if (type === EnemyType.LIGHTNING_MAGE) {
+                this.attackRange = 320; // Lightning strike range (reduced to fit in camera view)
             } else {
-                this.attackRange = 50; // Standard melee range (Gnoll)
+                this.attackRange = 30; // Close melee range for Gnoll claw attacks
             }
             
             // Initialize facing direction based on sprite's default state
@@ -881,6 +1152,16 @@ export class Enemy {
                 };
                 specialAbilities = ['explosive_death', 'high_mobility', 'suicide_attack'];
                 break;
+            case EnemyType.LIGHTNING_MAGE:
+                baseStats = {
+                    health: 70, // Medium health - ranged caster
+                    speed: 40, // Slow movement - prefers to keep distance
+                    damage: 35, // High AOE damage
+                    size: 35,
+                    xpValue: 22
+                };
+                specialAbilities = ['lightning_strike', 'aoe_damage', 'ranged_caster', 'immobilize_during_cast'];
+                break;
         }
         
         // Calculate dynamic cost and threat level using static methods
@@ -924,6 +1205,22 @@ export class Enemy {
         // Use the larger dimension (width or height) to get the radius
         const radius = Math.max(bounds.width, bounds.height) / 2;
         return radius * 0.6; // 60% of the full bounds to get closer to actual character
+    }
+
+    private isInCameraView(): boolean {
+        // Check if enemy is within the camera's viewport
+        const camera = this.scene.cameras.main;
+        const worldView = camera.worldView;
+        
+        // Use negative buffer to require enemies to be well within frame before attacking
+        const buffer = -100; // Negative buffer = must be inside by 100 pixels
+        
+        return (
+            this.sprite.x >= worldView.x - buffer &&
+            this.sprite.x <= worldView.x + worldView.width + buffer &&
+            this.sprite.y >= worldView.y - buffer &&
+            this.sprite.y <= worldView.y + worldView.height + buffer
+        );
     }
     private createMobAnimations(mobVariant: string): MobAnimationSet {
         // Use AnimationMapper to get the correct animation configuration
@@ -1115,16 +1412,24 @@ export class Enemy {
         }
         // Skeleton Pirate behavior - vortex attacks at range
         else if (this.type === EnemyType.SKELETON_PIRATE) {
-            const vortexRange = 400; // Cast vortex when player is within this range
+            const optimalRange = 320; // Preferred casting distance (reduced to fit in camera view)
+            const minRange = 150; // Minimum distance to maintain
+            const inCameraView = this.isInCameraView();
             
-            if (distance > vortexRange) {
-                // Move towards player using physics velocity
+            // Movement logic - try to maintain optimal range and stay in camera view
+            if (this.isAttacking) {
+                // Stop movement while casting
+                this.playAnimation(this.mobAnimations.idle);
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
+            } else if (!inCameraView || distance > optimalRange) {
+                // Not in camera view or too far - move towards player using physics velocity
                 const velocityX = (dx / distance) * this.stats.speed;
                 const velocityY = (dy / distance) * this.stats.speed;
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(velocityX, velocityY);
                 this.playAnimation(this.mobAnimations.walk);
-            } else if (distance < 150) {
+            } else if (distance < minRange) {
                 // Too close - back away slightly using physics velocity
                 const velocityX = -(dx / distance) * (this.stats.speed * 0.5);
                 const velocityY = -(dy / distance) * (this.stats.speed * 0.5);
@@ -1132,26 +1437,27 @@ export class Enemy {
                 if (body) body.setVelocity(velocityX, velocityY);
                 this.playAnimation(this.mobAnimations.walk);
             } else {
-                // In optimal range - cast vortex
+                // In optimal range - idle
                 this.playAnimation(this.mobAnimations.idle);
-                // Stop movement when in optimal range
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(0, 0);
-                if (this.vortexAttackCooldown <= 0) {
-                    this.vortexAttackCooldown = this.vortexAttackInterval;
-                    this.isAttacking = true;
-                    this.attackTimer = 0.5; // Brief casting animation lock
-                    const enemyRadius = this.getApproximateRadius();
-                    const vortexAttack = new VortexAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_PIRATE) creating VORTEX ATTACK`);
-                    return { type: 'vortex', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, 
-                        specialEffects: { slowEffect: vortexAttack.slowEffect, slowDuration: vortexAttack.slowDuration }, attackObject: vortexAttack };
-                }
+            }
+            
+            // Attack logic - can attack from any distance when in camera view
+            if (inCameraView && !this.isAttacking && this.vortexAttackCooldown <= 0) {
+                this.vortexAttackCooldown = this.vortexAttackInterval;
+                this.isAttacking = true;
+                this.attackTimer = 0.5; // Brief casting animation lock
+                const enemyRadius = this.getApproximateRadius();
+                const vortexAttack = new VortexAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
+                console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_PIRATE) creating VORTEX ATTACK at distance ${distance.toFixed(0)}`);
+                return { type: 'vortex', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, 
+                    specialEffects: { slowEffect: vortexAttack.slowEffect, slowDuration: vortexAttack.slowDuration }, attackObject: vortexAttack };
             }
         }
         // Elemental Spirit behavior - suicide bomber
         else if (this.type === EnemyType.ELEMENTAL_SPIRIT) {
-            const explosionTriggerRange = 80; // Distance at which to trigger death/explosion
+            const explosionTriggerRange = 30; // Distance at which to trigger death/explosion (adjusted for size 30)
             
             if (this.isExploding) {
                 // Currently in death animation, wait for it to complete
@@ -1188,9 +1494,80 @@ export class Enemy {
                 this.playAnimation(this.mobAnimations.walk);
             }
         }
-        // Gnoll behavior - fast melee
+        // Lightning Mage behavior - ranged AOE caster
+        else if (this.type === EnemyType.LIGHTNING_MAGE) {
+            const optimalRange = 320; // Preferred casting distance (reduced to fit in camera view)
+            const minRange = 180; // Minimum distance to maintain
+            const lightningCooldown = 'lightningCooldown';
+            const lightningInterval = 3.0; // Cast every 3 seconds
+            
+            // Initialize cooldown if not exists
+            if (!this.sprite.getData(lightningCooldown)) {
+                this.sprite.setData(lightningCooldown, 0);
+            }
+            
+            let currentCooldown = this.sprite.getData(lightningCooldown) as number;
+            if (currentCooldown > 0) {
+                this.sprite.setData(lightningCooldown, currentCooldown - deltaTime);
+                currentCooldown = this.sprite.getData(lightningCooldown) as number;
+            }
+            
+            // Check if in camera view
+            const inCameraView = this.isInCameraView();
+            
+            // Movement logic - try to maintain optimal range and stay in camera view
+            if (this.isAttacking) {
+                // Immobilized while casting
+                this.playAnimation(this.mobAnimations.idle);
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
+            } else if (!inCameraView || distance > optimalRange) {
+                // Not in camera view or too far - move closer
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+            } else if (distance < minRange) {
+                // Too close - back away
+                const velocityX = -(dx / distance) * (this.stats.speed * 0.7);
+                const velocityY = -(dy / distance) * (this.stats.speed * 0.7);
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+            } else {
+                // In optimal range - idle
+                this.playAnimation(this.mobAnimations.idle);
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
+            }
+            
+            // Attack logic - can only attack when in camera view
+            if (inCameraView && !this.isAttacking && currentCooldown <= 0) {
+                // Cast lightning strike at player's position
+                this.sprite.setData(lightningCooldown, lightningInterval);
+                this.isAttacking = true;
+                this.attackTimer = 1.5; // Immobilized for warning duration
+                
+                const lightningStrike = new LightningStrikeAttack(this.scene, playerX, playerY, this.stats.damage);
+                console.log(`Enemy #${this.sprite.getData('enemyId')} (LIGHTNING_MAGE) creating LIGHTNING STRIKE at distance ${distance.toFixed(0)}`);
+                return { 
+                    type: 'lightning', 
+                    damage: this.stats.damage, 
+                    position: { x: playerX, y: playerY }, 
+                    hitPlayer: false, 
+                    attackObject: lightningStrike 
+                };
+            }
+        }
+        // Gnoll behavior - fast melee with claw attacks
         else {
-            if (distance > 5) {
+            if (this.isAttacking) {
+                this.playAnimation(this.mobAnimations.idle);
+                // Stop movement when attacking
+                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                if (body) body.setVelocity(0, 0);
+            } else if (distance > this.attackRange) {
                 // Move towards player using physics velocity
                 const velocityX = (dx / distance) * this.stats.speed;
                 const velocityY = (dy / distance) * this.stats.speed;
@@ -1199,9 +1576,18 @@ export class Enemy {
                 this.playAnimation(this.mobAnimations.walk);
             } else {
                 this.playAnimation(this.mobAnimations.idle);
-                // Stop movement when close enough
+                // Stop movement when in attack range
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(0, 0);
+                if (this.meleeAttackCooldown <= 0) {
+                    this.meleeAttackCooldown = this.meleeAttackInterval;
+                    this.isAttacking = true;
+                    this.attackTimer = this.attackDuration;
+                    // Create claw attack at player position
+                    const clawAttack = new ClawAttack(this.scene, playerX, playerY, this.stats.damage);
+                    console.log(`Enemy #${this.sprite.getData('enemyId')} (GNOLL) creating CLAW ATTACK at player position`);
+                    return { type: 'claw', damage: this.stats.damage, position: { x: playerX, y: playerY }, hitPlayer: false, attackObject: clawAttack };
+                }
             }
         }
         
@@ -1435,6 +1821,8 @@ export class EnemySystem {
     private coneAttacks: ConeAttack[] = [];
     private vortexAttacks: VortexAttack[] = [];
     private explosionAttacks: ExplosionAttack[] = [];
+    private lightningStrikes: LightningStrikeAttack[] = [];
+    private clawAttacks: ClawAttack[] = [];
     private spawnRate: number = 1.0;
     private maxEnemies: number = 50;
     private player: any;
@@ -1449,6 +1837,8 @@ export class EnemySystem {
     private activeExplosionAttacks: ExplosionAttack[] = [];
     private activeVortexAttacks: VortexAttack[] = [];
     private activeMeleeAttacks: MeleeAttack[] = [];
+    private activeLightningStrikes: LightningStrikeAttack[] = [];
+    private activeClawAttacks: ClawAttack[] = [];
 
     constructor(scene: Scene, player?: any, xpOrbSystem?: any) {
         this.scene = scene;
@@ -1683,6 +2073,12 @@ export class EnemySystem {
                     case 'explosion':
                         this.explosionAttacks.push(attackResult.attackObject as ExplosionAttack);
                         break;
+                    case 'lightning':
+                        this.lightningStrikes.push(attackResult.attackObject as LightningStrikeAttack);
+                        break;
+                    case 'claw':
+                        this.clawAttacks.push(attackResult.attackObject as ClawAttack);
+                        break;
                 }
             }
         });
@@ -1732,6 +2128,16 @@ export class EnemySystem {
             attack.update(deltaTime);
         });
         
+        // Update all lightning strikes
+        this.lightningStrikes.forEach(attack => {
+            attack.update(deltaTime);
+        });
+        
+        // Update all claw attacks
+        this.clawAttacks.forEach(attack => {
+            attack.update(deltaTime);
+        });
+        
         // Clean up inactive shields from enemy references
         this.shields.forEach(shield => {
             if (!shield.isActive()) {
@@ -1751,6 +2157,8 @@ export class EnemySystem {
         this.coneAttacks = this.coneAttacks.filter(attack => attack.isActive());
         this.vortexAttacks = this.vortexAttacks.filter(attack => attack.isActive());
         this.explosionAttacks = this.explosionAttacks.filter(attack => attack.isActive());
+        this.lightningStrikes = this.lightningStrikes.filter(attack => attack.isActive());
+        this.clawAttacks = this.clawAttacks.filter(attack => attack.isActive());
         // Update all active attack objects
         this.updateAttackObjects(deltaTime, playerX, playerY);
         
@@ -1858,6 +2266,26 @@ export class EnemySystem {
             }
             return true;
         });
+
+        // Update and filter lightning strikes
+        this.activeLightningStrikes = this.activeLightningStrikes.filter(lightning => {
+            lightning.update(deltaTime);
+            if (!lightning.isActive()) {
+                lightning.destroy();
+                return false;
+            }
+            return true;
+        });
+
+        // Update and filter claw attacks
+        this.activeClawAttacks = this.activeClawAttacks.filter(claw => {
+            claw.update(deltaTime);
+            if (!claw.isActive()) {
+                claw.destroy();
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
@@ -1871,6 +2299,8 @@ export class EnemySystem {
         explosionAttacks: ExplosionAttack[];
         vortexAttacks: VortexAttack[];
         meleeAttacks: MeleeAttack[];
+        lightningStrikes: LightningStrikeAttack[];
+        clawAttacks: ClawAttack[];
     } {
         return {
             projectiles: this.activeProjectiles,
@@ -1878,7 +2308,9 @@ export class EnemySystem {
             coneAttacks: this.activeConeAttacks,
             explosionAttacks: this.activeExplosionAttacks,
             vortexAttacks: this.activeVortexAttacks,
-            meleeAttacks: this.activeMeleeAttacks
+            meleeAttacks: this.activeMeleeAttacks,
+            lightningStrikes: this.activeLightningStrikes,
+            clawAttacks: this.activeClawAttacks
         };
     }
 
@@ -1888,7 +2320,8 @@ export class EnemySystem {
     public clearAllAttacks(): void {
         // Destroy all attack objects
         [...this.activeProjectiles, ...this.activeShields, ...this.activeConeAttacks,
-         ...this.activeExplosionAttacks, ...this.activeVortexAttacks, ...this.activeMeleeAttacks]
+         ...this.activeExplosionAttacks, ...this.activeVortexAttacks, ...this.activeMeleeAttacks,
+         ...this.activeLightningStrikes, ...this.activeClawAttacks]
             .forEach(attack => attack.destroy());
 
         // Clear arrays
@@ -1898,6 +2331,8 @@ export class EnemySystem {
         this.activeExplosionAttacks = [];
         this.activeVortexAttacks = [];
         this.activeMeleeAttacks = [];
+        this.activeLightningStrikes = [];
+        this.activeClawAttacks = [];
     }
 
     /**
@@ -1966,6 +2401,22 @@ export class EnemySystem {
     }
 
     /**
+     * Gets all active lightning strikes
+     * @returns Array of all active lightning strikes
+     */
+    public getLightningStrikes(): LightningStrikeAttack[] {
+        return this.lightningStrikes;
+    }
+
+    /**
+     * Gets all active claw attacks
+     * @returns Array of all active claw attacks
+     */
+    public getClawAttacks(): ClawAttack[] {
+        return this.clawAttacks;
+    }
+
+    /**
      * Destroys all enemies and clears the enemy array
      */
     public clearAllEnemies(): void {
@@ -1983,6 +2434,10 @@ export class EnemySystem {
         this.vortexAttacks = [];
         this.explosionAttacks.forEach(attack => attack.destroy());
         this.explosionAttacks = [];
+        this.lightningStrikes.forEach(attack => attack.destroy());
+        this.lightningStrikes = [];
+        this.clawAttacks.forEach(attack => attack.destroy());
+        this.clawAttacks = [];
     }
 
     // Dynamic cost calculation based on combat effectiveness

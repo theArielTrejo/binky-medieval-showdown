@@ -250,6 +250,23 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     idle: 'Elemental_Spirits_3_idle',
     walk: 'Elemental_Spirits_3_walk',
     texture: 'mob-texture-240'
+  },
+
+  // Skeleton Death Knights (Lightning Mage)
+  'Skeleton_Death_Knight_1': {
+    idle: 'Skeleton_Death_Knight_1_idle',
+    walk: 'Skeleton_Death_Knight_1_walk',
+    texture: 'mob-texture-131'
+  },
+  'Skeleton_Death_Knight_2': {
+    idle: 'Skeleton_Death_Knight_2_idle',
+    walk: 'Skeleton_Death_Knight_2_walk',
+    texture: 'mob-texture-131'
+  },
+  'Skeleton_Death_Knight_3': {
+    idle: 'Skeleton_Death_Knight_3_idle',
+    walk: 'Skeleton_Death_Knight_3_walk',
+    texture: 'mob-texture-131'
   }
 };
 

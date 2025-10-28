@@ -83,6 +83,26 @@ export class Game extends Scene {
         // Load XP orb (match key used by XPOrb class)
         this.load.image('green_orb', 'images/green_orb.png');
         
+        // Load lightning bolt effect for lightning mage as a spritesheet
+        // 10 frames arranged horizontally (720x72 total, 72x72 per frame)
+        this.load.spritesheet('lightning-bolt', 'Effects/Lightning-bolt.png', {
+            frameWidth: 72,   // 720 / 10 frames = 72px per frame
+            frameHeight: 72   // Full height
+        });
+        
+        // Load explosion effect for elemental spirit as a spritesheet
+        // 10 frames arranged horizontally (720x72 total, 72x72 per frame)
+        this.load.spritesheet('explosion', 'Effects/Explosion.png', {
+            frameWidth: 72,   // 720 / 10 frames = 72px per frame
+            frameHeight: 72   // Full height
+        });
+        
+        // Load gnoll claw effect frames (12 separate images)
+        for (let i = 1; i <= 12; i++) {
+            const frameNum = i.toString().padStart(5, '0');
+            this.load.image(`gnoll-claw-${i}`, `Effects/Gnoll Claw/slash4_${frameNum}.png`);
+        }
+        
         // Load player sprite (use first available character texture)
 
         // Load essential spritesheets (characters and mobs) for animations
@@ -342,7 +362,7 @@ export class Game extends Scene {
         // ✅ Match JS exactly
         const camera = this.cameras.main;
         camera.startFollow(this.player.sprite, true, 0.1, 0.1);
-        camera.setZoom(3);
+        camera.setZoom(2); // Zoomed out for better battlefield visibility
         camera.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
 
         // Optional smooth camera lag (for cinematic movement)
@@ -820,6 +840,53 @@ export class Game extends Scene {
             repeat: -1
         });
 
+        // Create lightning bolt animation (for lightning mage)
+        if (this.textures.exists('lightning-bolt')) {
+            const lightningFrameCount = this.textures.get('lightning-bolt').frameTotal - 1; // Subtract 1 for __BASE
+            if (lightningFrameCount > 0) {
+                this.anims.create({
+                    key: 'lightning-strike',
+                    frames: this.anims.generateFrameNumbers('lightning-bolt', { start: 0, end: lightningFrameCount - 1 }),
+                    frameRate: 20, // Fast animation for lightning effect
+                    repeat: 0 // Play once
+                });
+                console.log(`⚡ Created lightning-strike animation with ${lightningFrameCount} frames`);
+            }
+        }
+
+        // Create explosion animation (for elemental spirit)
+        if (this.textures.exists('explosion')) {
+            const explosionFrameCount = this.textures.get('explosion').frameTotal - 1; // Subtract 1 for __BASE
+            if (explosionFrameCount > 0) {
+                this.anims.create({
+                    key: 'explosion-effect',
+                    frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: explosionFrameCount - 1 }),
+                    frameRate: 24, // Fast animation for explosion effect
+                    repeat: 0 // Play once
+                });
+                console.log(`💥 Created explosion-effect animation with ${explosionFrameCount} frames`);
+            }
+        }
+
+        // Create gnoll claw animation (for gnoll melee attacks)
+        if (this.textures.exists('gnoll-claw-1')) {
+            const clawFrames = [];
+            for (let i = 1; i <= 12; i++) {
+                if (this.textures.exists(`gnoll-claw-${i}`)) {
+                    clawFrames.push({ key: `gnoll-claw-${i}` });
+                }
+            }
+            if (clawFrames.length > 0) {
+                this.anims.create({
+                    key: 'gnoll-claw-attack',
+                    frames: clawFrames,
+                    frameRate: 24, // Fast animation for claw slash
+                    repeat: 0 // Play once
+                });
+                console.log(`🐺 Created gnoll-claw-attack animation with ${clawFrames.length} frames`);
+            }
+        }
+
         // console.log('🎬 Animation creation completed!');
     }
 
@@ -878,6 +945,8 @@ export class Game extends Scene {
             this.player.checkCollisionWithConeAttacks(this.enemySystem.getConeAttacks());
             this.player.checkCollisionWithVortexAttacks(this.enemySystem.getVortexAttacks());
             this.player.checkCollisionWithExplosionAttacks(this.enemySystem.getExplosionAttacks());
+            this.player.checkCollisionWithLightningStrikes(this.enemySystem.getLightningStrikes());
+            this.player.checkCollisionWithClawAttacks(this.enemySystem.getClawAttacks());
         }
         
         // Collect XP orbs

@@ -35,7 +35,8 @@ export const HARDCODED_MOB_SKINS = Object.freeze({
     [EnemyType.ARCHER]: 'Archer_1',                           // Ranged archer - uses mob-texture-254
     [EnemyType.GNOLL]: 'Gnoll_3',                             // Fast gnoll warrior - uses mob-texture-316
     [EnemyType.SKELETON_PIRATE]: 'Skeleton_Pirate_Captain_1', // Skeleton pirate with vortex attacks - uses mob-texture-196
-    [EnemyType.ELEMENTAL_SPIRIT]: 'Elemental_Spirits_2'       // Elemental spirit suicide bomber - uses mob-texture-205 (idle) + 204 (running)
+    [EnemyType.ELEMENTAL_SPIRIT]: 'Elemental_Spirits_2',      // Elemental spirit suicide bomber - uses mob-texture-205 (idle) + 204 (running)
+    [EnemyType.LIGHTNING_MAGE]: 'Skeleton_Death_Knight_1'     // Lightning mage - AOE lightning strikes from distance - uses mob-texture-131
 } as const);
 
 /**
@@ -87,7 +88,8 @@ export function validateAllMobSpawnerSkins(): boolean {
         EnemyType.ARCHER,
         EnemyType.GNOLL,
         EnemyType.SKELETON_PIRATE,
-        EnemyType.ELEMENTAL_SPIRIT
+        EnemyType.ELEMENTAL_SPIRIT,
+        EnemyType.LIGHTNING_MAGE
     ];
 
     for (const enemyType of requiredEnemyTypes) {
@@ -215,7 +217,12 @@ export function developmentValidation(): void {
             EnemyType.ELEMENTAL_SPIRIT
         ];
         
-        mobSpawnerTypes.forEach(type => {
+        const allTypes = [
+            ...mobSpawnerTypes,
+            EnemyType.LIGHTNING_MAGE
+        ];
+        
+        allTypes.forEach(type => {
             const skin = getHardcodedMobSkin(type);
             console.log(`✓ ${type} → ${skin} (hardcoded)`);
         });
@@ -236,6 +243,7 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
     const texture281Variants = ['Golem_1', 'Skeleton_Viking_1'];  // Golem idle/walk frames present
     const texture316Variants = ['Gnoll_3'];  // Gnoll idle/walk frames present
     const texture205Variants = ['Elemental_Spirits_2']; // Elemental spirits (idle frames in 205, running in 204)
+    const texture131Variants = ['Skeleton_Death_Knight_1', 'Skeleton_Death_Knight_2', 'Skeleton_Death_Knight_3']; // Death Knight idle/walk frames
 
     if (texture196Variants.includes(mobVariant)) {
         return 'mob-texture-196';
@@ -247,6 +255,8 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
         return 'mob-texture-316';
     } else if (texture205Variants.includes(mobVariant)) {
         return 'mob-texture-205';
+    } else if (texture131Variants.includes(mobVariant)) {
+        return 'mob-texture-131';
     } else {
         // Fallback for any unknown variants
         console.warn(`Unknown mob variant: ${mobVariant}, using fallback texture-196`);

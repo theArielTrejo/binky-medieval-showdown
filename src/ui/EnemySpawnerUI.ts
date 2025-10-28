@@ -51,7 +51,8 @@ export class EnemySpawnerUI {
             { type: EnemyType.ARCHER, name: 'Archer', color: 0x44ff44 },
             { type: EnemyType.GNOLL, name: 'Gnoll', color: 0xff8844 },
             { type: EnemyType.SKELETON_PIRATE, name: 'Skeleton Pirate', color: 0x00cccc },
-            { type: EnemyType.ELEMENTAL_SPIRIT, name: 'Elemental Spirit', color: 0xff6600 }
+            { type: EnemyType.ELEMENTAL_SPIRIT, name: 'Elemental Spirit', color: 0xff6600 },
+            { type: EnemyType.LIGHTNING_MAGE, name: 'Lightning Mage', color: 0x66ddff }
         ];
 
         let yOffset = offsetY + 60;
@@ -82,9 +83,10 @@ export class EnemySpawnerUI {
         this.scene.input.keyboard?.on('keydown-FOUR', () => this.spawnEnemyAtCursor(EnemyType.GNOLL));
         this.scene.input.keyboard?.on('keydown-FIVE', () => this.spawnEnemyAtCursor(EnemyType.SKELETON_PIRATE));
         this.scene.input.keyboard?.on('keydown-SIX', () => this.spawnEnemyAtCursor(EnemyType.ELEMENTAL_SPIRIT));
+        this.scene.input.keyboard?.on('keydown-SEVEN', () => this.spawnEnemyAtCursor(EnemyType.LIGHTNING_MAGE));
 
         // Add hotkey hints
-        const hotkeys = this.scene.add.text(offsetX, yOffset + 50, 'Hotkeys: 1-6 to spawn\nT to toggle UI', {
+        const hotkeys = this.scene.add.text(offsetX, yOffset + 50, 'Hotkeys: 1-7 to spawn\nT to toggle UI', {
             fontSize: '11px',
             color: '#888888',
             backgroundColor: '#000000',

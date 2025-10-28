@@ -43,7 +43,7 @@ export class MobSpawnerUI {
 
     private createUI(): void {
         const panelWidth = 220;
-        const panelHeight = 520; // Increased to fit 6 buttons
+        const panelHeight = 565; // Increased to fit 7 buttons
         
         // Create main panel background with enhanced styling
         const panelBg = this.scene.add.rectangle(0, 0, panelWidth, panelHeight, 0x1a1a1a, 0.95);
@@ -66,7 +66,7 @@ export class MobSpawnerUI {
         this.container.add(this.headerText);
 
         // Instructions with better styling
-        const instructions = this.scene.add.text(10, 50, 'Click to spawn at cursor\nHotkeys: 1-6, T to toggle', {
+        const instructions = this.scene.add.text(10, 50, 'Click to spawn at cursor\nHotkeys: 1-7, T to toggle', {
             fontSize: '11px',
             color: '#cccccc',
             fontFamily: 'Arial',
@@ -111,6 +111,12 @@ export class MobSpawnerUI {
                 name: '🔥 Elemental Spirit', 
                 color: 0xff6600,
                 description: 'Explosive Suicide'
+            },
+            { 
+                type: EnemyType.LIGHTNING_MAGE, 
+                name: '⚡ Lightning Mage', 
+                color: 0x66ddff,
+                description: 'AOE Lightning Strike'
             }
         ];
 
@@ -296,6 +302,10 @@ export class MobSpawnerUI {
             }
             if (code === 'Digit6' || key === '6') {
                 this.spawnMobAtCursor(EnemyType.ELEMENTAL_SPIRIT);
+                return;
+            }
+            if (code === 'Digit7' || key === '7') {
+                this.spawnMobAtCursor(EnemyType.LIGHTNING_MAGE);
                 return;
             }
         };

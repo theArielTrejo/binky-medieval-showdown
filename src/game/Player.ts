@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
-import { Enemy, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack } from './EnemySystem';
+import { Enemy, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack, LightningStrikeAttack } from './EnemySystem';
 import { EnemyType } from './types/EnemyTypes';
 import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 import { AnimationMapper, CharacterAnimationSet } from './config/AnimationMappings';
@@ -626,6 +626,11 @@ export class Player {
             
             // Use the vortex's built-in point-in-vortex check
             if (attack.isPointInVortex(this.sprite.x, this.sprite.y)) {
+                // Stop traveling vortexes when they hit the player
+                if (attack.isTravelingToTarget()) {
+                    attack.stopAtCurrentPosition();
+                }
+                
                 const currentTime = Date.now();
                 
                 // Apply damage with cooldown (like other attacks)
@@ -655,7 +660,44 @@ export class Player {
             }
         });
     }
-     private checkCollision(obj1: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle, obj2: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle): boolean {
+
+    public checkCollisionWithLightningStrikes(lightningStrikes: LightningStrikeAttack[]): void {
+        lightningStrikes.forEach(attack => {
+            if (attack.isActive() && attack.hasStruckLightning() && attack.isPointInStrike(this.sprite.x, this.sprite.y)) {
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+            }
+        });
+    }
+
+    public checkCollisionWithClawAttacks(clawAttacks: any[]): void {
+        clawAttacks.forEach(attack => {
+            if (!attack.isActive()) return;
+            
+            // Use bounding box collision for claw attacks
+            const attackBounds = attack.getBounds();
+            const distance = Math.sqrt(
+                Math.pow(this.sprite.x - attack.x, 2) + 
+                Math.pow(this.sprite.y - attack.y, 2)
+            );
+            
+            // Check if player is within the attack's hitbox
+            if (distance < (attackBounds.width / 2 + 20)) { // 20 is approximate player radius
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+            }
+        });
+    }
+
+    private checkCollision(obj1: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle, obj2: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle): boolean {
         const bounds1 = obj1.getBounds();
         const bounds2 = obj2.getBounds();
         return Phaser.Geom.Rectangle.Overlaps(bounds1, bounds2);

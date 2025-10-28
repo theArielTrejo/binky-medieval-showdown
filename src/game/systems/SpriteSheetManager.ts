@@ -145,18 +145,20 @@ export class SpriteSheetManager {
     // mob-texture-281: Golem_1 (golem) & Skeleton_Viking_1 - has idle/walk
     // mob-texture-316: Gnoll_3 (gnoll) - has idle/walk
     // mob-texture-204 + 205: Elemental_Spirits_2 (elemental spirit) - running in 204, idle in 205
+    // mob-texture-131: Skeleton_Death_Knight_1 (lightning mage) - has idle/walk
     const essentialMobTextures = [
       'mob-texture-196',
       'mob-texture-254',
       'mob-texture-281',
       'mob-texture-316',
       'mob-texture-204',
-      'mob-texture-205'
+      'mob-texture-205',
+      'mob-texture-131'
     ];
     
     console.log(`🚀 OPTIMAL OPTIMIZATION: Loading ${essentialCharacterTextures.length} character textures and ${essentialMobTextures.length} mob textures`);
-    console.log(`📊 Total textures to load: ${essentialCharacterTextures.length + essentialMobTextures.length} (99.2% reduction from 319 possible mob textures)`);
-    console.log(`🎯 Six mob textures provide unique skins for each mob type: Skeleton_Pirate_Captain_1, Archer_1, Golem_1, Gnoll_3, Elemental_Spirits_2`);
+    console.log(`📊 Total textures to load: ${essentialCharacterTextures.length + essentialMobTextures.length} (99.1% reduction from 319 possible mob textures)`);
+    console.log(`🎯 Seven mob textures provide unique skins for each mob type: Skeleton_Pirate_Captain_1, Archer_1, Golem_1, Gnoll_3, Elemental_Spirits_2, Skeleton_Death_Knight_1`);
     
     return this.loadSpritesheets([...essentialCharacterTextures, ...essentialMobTextures]);
   }
