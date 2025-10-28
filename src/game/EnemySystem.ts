@@ -67,6 +67,199 @@ export class Projectile {
 }
 
 /**
+ * Arrow projectile class for skeleton archer attacks
+ * High-speed arrow that travels in a straight line
+ */
+export class ArrowProjectile {
+    public sprite: Phaser.GameObjects.Sprite | Phaser.GameObjects.Graphics;
+    public velocityX: number;
+    public velocityY: number;
+    public damage: number;
+    public scene: Scene;
+    private active: boolean = true;
+    private distanceTraveled: number = 0;
+    private maxDistance: number = 1000;
+    private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
+
+    constructor(scene: Scene, x: number, y: number, angle: number, damage: number, collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [], speed: number = 600) {
+        this.scene = scene;
+        this.damage = damage;
+        this.collisionLayers = collisionLayers;
+        
+        // Try to use the arrow texture, fallback to graphics
+        if (scene.textures.exists('arrow')) {
+            this.sprite = scene.add.sprite(x, y, 'arrow');
+            this.sprite.setScale(0.1); // Match player/enemy scale
+            this.sprite.setRotation(angle);
+            this.sprite.setOrigin(0.5, 0.5);
+        } else {
+            // Fallback: Create an arrow-shaped graphic
+            this.sprite = scene.add.graphics();
+            this.sprite.fillStyle(0x8B4513, 1); // Brown arrow
+            this.sprite.fillTriangle(0, -3, 0, 3, 20, 0); // Arrow head
+            this.sprite.fillRect(-10, -1.5, 10, 3); // Arrow shaft
+            this.sprite.setPosition(x, y);
+            this.sprite.setRotation(angle);
+        }
+        
+        this.sprite.setDepth(10); // Above most game objects
+        
+        // Calculate velocity from angle
+        this.velocityX = Math.cos(angle) * speed;
+        this.velocityY = Math.sin(angle) * speed;
+    }
+
+    public update(deltaTime: number): void {
+        if (!this.active) return;
+        
+        // Calculate movement for this frame
+        const moveX = this.velocityX * deltaTime;
+        const moveY = this.velocityY * deltaTime;
+        const moveDist = Math.sqrt(moveX * moveX + moveY * moveY);
+        
+        // Move arrow
+        this.sprite.x += moveX;
+        this.sprite.y += moveY;
+        this.distanceTraveled += moveDist;
+        
+        // Check if traveled max distance
+        if (this.distanceTraveled >= this.maxDistance) {
+            this.destroy();
+            return;
+        }
+        
+        // Check collision with walls/obstacles
+        if (this.checkWallCollision()) {
+            this.destroy();
+            return;
+        }
+        
+        // Check if out of bounds
+        if (this.sprite.x < -50 || this.sprite.x > 4096 || 
+            this.sprite.y < -50 || this.sprite.y > 4096) {
+            this.destroy();
+        }
+    }
+
+    private checkWallCollision(): boolean {
+        // Check collision with tilemap layers
+        for (const layer of this.collisionLayers) {
+            const tile = layer.getTileAtWorldXY(this.sprite.x, this.sprite.y);
+            if (tile && tile.collides) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public destroy(): void {
+        this.active = false;
+        if (this.sprite && this.sprite.scene) {
+            this.sprite.destroy();
+        }
+    }
+
+    public isActive(): boolean {
+        return this.active;
+    }
+
+    public getPosition(): { x: number; y: number } {
+        return { x: this.sprite.x, y: this.sprite.y };
+    }
+}
+
+/**
+ * Arrow indicator - shows the damage zone before the arrow is fired
+ */
+export class ArrowIndicator {
+    public sprite: Phaser.GameObjects.Graphics;
+    public scene: Scene;
+    private active: boolean = true;
+    private flashTimer: number = 0;
+    private flashInterval: number = 0.2; // Flash every 0.2 seconds (slower for visibility)
+    private visible: boolean = true;
+    private startX: number;
+    private startY: number;
+    private endX: number;
+    private endY: number;
+    private width: number = 25; // Width of the indicator rectangle
+
+    constructor(scene: Scene, startX: number, startY: number, endX: number, endY: number) {
+        this.scene = scene;
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+        
+        // Create the indicator graphic
+        this.sprite = scene.add.graphics();
+        this.sprite.setDepth(100); // Very high depth to ensure visibility above everything
+        this.draw();
+    }
+
+    private draw(): void {
+        if (!this.active) return;
+        
+        this.sprite.clear();
+        
+        if (this.visible) {
+            // Calculate the rectangle vertices
+            const dx = this.endX - this.startX;
+            const dy = this.endY - this.startY;
+            const angle = Math.atan2(dy, dx);
+            
+            // Calculate perpendicular offset for width
+            const perpX = -Math.sin(angle) * (this.width / 2);
+            const perpY = Math.cos(angle) * (this.width / 2);
+            
+            // Define the four corners of the rectangle from archer to endpoint
+            const x1 = this.startX + perpX;
+            const y1 = this.startY + perpY;
+            const x2 = this.startX - perpX;
+            const y2 = this.startY - perpY;
+            const x3 = this.endX - perpX;
+            const y3 = this.endY - perpY;
+            const x4 = this.endX + perpX;
+            const y4 = this.endY + perpY;
+            
+            // Draw the rectangle with translucent red
+            this.sprite.fillStyle(0xff0000, 0.2); // Translucent red
+            this.sprite.beginPath();
+            this.sprite.moveTo(x1, y1);
+            this.sprite.lineTo(x2, y2);
+            this.sprite.lineTo(x3, y3);
+            this.sprite.lineTo(x4, y4);
+            this.sprite.closePath();
+            this.sprite.fillPath();
+        }
+    }
+
+    public update(deltaTime: number): void {
+        if (!this.active) return;
+        
+        this.flashTimer += deltaTime;
+        
+        // Flash the indicator
+        if (this.flashTimer >= this.flashInterval) {
+            this.flashTimer = 0;
+            this.visible = !this.visible;
+            this.draw();
+        }
+    }
+
+    public destroy(): void {
+        this.active = false;
+        if (this.sprite && this.sprite.scene) {
+            this.sprite.destroy();
+        }
+    }
+
+    public isActive(): boolean {
+        return this.active;
+    }
+}
+
+/**
  * Shield class for blocking projectiles
  */
 export class Shield {
@@ -943,7 +1136,7 @@ export class ClawAttack {
  * Interface for enemy attack results
  */
 export interface EnemyAttackResult {
-    type: 'projectile' | 'melee' | 'cone' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw';
+    type: 'projectile' | 'melee' | 'cone' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow';
     damage: number;
     position: { x: number; y: number };
     hitPlayer: boolean;
@@ -953,7 +1146,7 @@ export interface EnemyAttackResult {
         knockback?: { x: number; y: number };
         blocked?: boolean;
     };
-    attackObject?: Projectile | MeleeAttack | ConeAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack;
+    attackObject?: Projectile | MeleeAttack | ConeAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile;
 }
 
 // EnemyType enum moved to ./types/EnemyTypes.ts to avoid circular imports
@@ -1001,6 +1194,13 @@ export class Enemy {
     private lastAttackTime: number = 0;
     private attackCooldown: number = 1000;
     private facingLeft: boolean = false; // Track current facing direction
+    
+    // Archer-specific properties
+    private isChargingArrow: boolean = false; // Track if archer is drawing back arrow
+    private arrowChargeTime: number = 0; // How long the arrow has been charging
+    private arrowChargeDuration: number = 1.5; // How long to charge before releasing (seconds)
+    private lockedArrowAngle: number = 0; // Locked direction for the arrow
+    private activeArrowIndicator: ArrowIndicator | null = null; // Visual indicator for arrow path
 
     constructor(scene: Scene, x: number, y: number, type: EnemyType) {
         try {
@@ -1207,6 +1407,55 @@ export class Enemy {
         return radius * 0.6; // 60% of the full bounds to get closer to actual character
     }
 
+    private getCollisionLayersFromScene(): Phaser.Tilemaps.TilemapLayer[] {
+        // Try to get collision layers from the scene's data
+        const collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
+        
+        // Check if scene has collisionLayers stored
+        if ((this.scene as any).collisionLayers) {
+            return (this.scene as any).collisionLayers;
+        }
+        
+        // Fallback: try to find collision layers by name
+        const tilemap = this.scene.children.getAll().find(child => child.type === 'TilemapLayer') as Phaser.Tilemaps.TilemapLayer;
+        if (tilemap) {
+            collisionLayers.push(tilemap);
+        }
+        
+        return collisionLayers;
+    }
+
+    private calculateArrowEndpoint(startX: number, startY: number, angle: number): { endX: number; endY: number } {
+        const maxDistance = 1000;
+        const step = 10; // Check every 10 pixels
+        const collisionLayers = this.getCollisionLayersFromScene();
+        
+        // Raycast along the arrow path to find where it hits a wall
+        for (let dist = step; dist < maxDistance; dist += step) {
+            const checkX = startX + Math.cos(angle) * dist;
+            const checkY = startY + Math.sin(angle) * dist;
+            
+            // Check collision with tilemap layers
+            for (const layer of collisionLayers) {
+                const tile = layer.getTileAtWorldXY(checkX, checkY);
+                if (tile && tile.collides) {
+                    return { endX: checkX, endY: checkY };
+                }
+            }
+            
+            // Check if out of bounds
+            if (checkX < 0 || checkX > 4096 || checkY < 0 || checkY > 4096) {
+                return { endX: checkX, endY: checkY };
+            }
+        }
+        
+        // No wall hit, return max distance endpoint
+        return {
+            endX: startX + Math.cos(angle) * maxDistance,
+            endY: startY + Math.sin(angle) * maxDistance
+        };
+    }
+
     private isInCameraView(): boolean {
         // Check if enemy is within the camera's viewport
         const camera = this.scene.cameras.main;
@@ -1351,32 +1600,101 @@ export class Enemy {
                 }
             }
         }
-        // Archer behavior - stay at range and shoot
+        // Archer behavior - charge arrow attack with locked direction
         else if (this.type === EnemyType.ARCHER) {
-            if (distance > this.attackRange) {
-                // Move towards player using physics velocity
-                const velocityX = (dx / distance) * this.stats.speed;
-                const velocityY = (dy / distance) * this.stats.speed;
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(velocityX, velocityY);
-                this.playAnimation(this.mobAnimations.walk);
-            } else if (distance < this.attackRange - 50) {
-                // Kite away using physics velocity
-                const velocityX = -(dx / distance) * this.stats.speed;
-                const velocityY = -(dy / distance) * this.stats.speed;
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(velocityX, velocityY);
-                this.playAnimation(this.mobAnimations.walk);
-            } else {
-                this.playAnimation(this.mobAnimations.idle);
-                // Stop movement when in optimal range
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            const optimalRange = 300; // Preferred shooting distance
+            const minRange = 150; // Minimum distance to maintain (kite away if closer)
+            const inCameraView = this.isInCameraView();
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            
+            // If charging arrow, stay locked and update charge
+            if (this.isChargingArrow) {
+                // Lock position - no movement
                 if (body) body.setVelocity(0, 0);
-                if (this.shootCooldown <= 0) {
+                this.playAnimation(this.mobAnimations.idle);
+                
+                // Update arrow indicator
+                if (this.activeArrowIndicator) {
+                    this.activeArrowIndicator.update(deltaTime);
+                }
+                
+                // Update charge time
+                this.arrowChargeTime += deltaTime;
+                
+                // Release arrow when charge is complete
+                if (this.arrowChargeTime >= this.arrowChargeDuration) {
+                    // Destroy the indicator
+                    if (this.activeArrowIndicator) {
+                        this.activeArrowIndicator.destroy();
+                        this.activeArrowIndicator = null;
+                    }
+                    
+                    // Get collision layers from scene
+                    const collisionLayers = this.getCollisionLayersFromScene();
+                    
+                    // Create arrow projectile
+                    const arrow = new ArrowProjectile(
+                        this.scene,
+                        this.sprite.x,
+                        this.sprite.y,
+                        this.lockedArrowAngle,
+                        this.stats.damage,
+                        collisionLayers,
+                        600 // High speed
+                    );
+                    
+                    // Reset charging state
+                    this.isChargingArrow = false;
+                    this.arrowChargeTime = 0;
                     this.shootCooldown = this.shootInterval;
-                    const projectile = new Projectile(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage);
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (ARCHER) creating PROJECTILE`);
-                    return { type: 'projectile', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: projectile };
+                    
+                    return { type: 'arrow', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: arrow };
+                }
+            }
+            // Not charging - handle movement and positioning (same pattern as skeleton pirate)
+            else {
+                // Movement logic - try to maintain optimal range and stay in camera view
+                if (!inCameraView || distance > optimalRange) {
+                    // Not in camera view or too far - move towards player
+                    const velocityX = (dx / distance) * this.stats.speed;
+                    const velocityY = (dy / distance) * this.stats.speed;
+                    if (body) body.setVelocity(velocityX, velocityY);
+                    this.playAnimation(this.mobAnimations.walk);
+                } else if (distance < minRange) {
+                    // Too close - kite away
+                    const velocityX = -(dx / distance) * this.stats.speed;
+                    const velocityY = -(dy / distance) * this.stats.speed;
+                    if (body) body.setVelocity(velocityX, velocityY);
+                    this.playAnimation(this.mobAnimations.walk);
+                } else {
+                    // In optimal range (150-300 pixels) - stop and idle
+                    if (body) body.setVelocity(0, 0);
+                    this.playAnimation(this.mobAnimations.idle);
+                }
+                
+                // Attack logic - can start charging arrow when in camera view and cooldown ready
+                if (inCameraView && this.shootCooldown <= 0) {
+                    this.isChargingArrow = true;
+                    this.arrowChargeTime = 0;
+                    
+                    // Lock the arrow direction
+                    this.lockedArrowAngle = Math.atan2(dy, dx);
+                    
+                    // Calculate endpoint for indicator (raycast to find wall or max distance)
+                    const { endX, endY } = this.calculateArrowEndpoint(
+                        this.sprite.x,
+                        this.sprite.y,
+                        this.lockedArrowAngle
+                    );
+                    
+                        // Create visual indicator
+                        this.activeArrowIndicator = new ArrowIndicator(
+                            this.scene,
+                            this.sprite.x,
+                            this.sprite.y,
+                            endX,
+                            endY
+                        );
                 }
             }
         }
@@ -1598,6 +1916,11 @@ export class Enemy {
      * Destroys the enemy and cleans up its sprite
      */
     public destroy(): void {
+        // Clean up arrow indicator if archer is charging
+        if (this.activeArrowIndicator) {
+            this.activeArrowIndicator.destroy();
+            this.activeArrowIndicator = null;
+        }
         this.sprite.destroy();
     }
 
@@ -1823,6 +2146,7 @@ export class EnemySystem {
     private explosionAttacks: ExplosionAttack[] = [];
     private lightningStrikes: LightningStrikeAttack[] = [];
     private clawAttacks: ClawAttack[] = [];
+    private arrowProjectiles: ArrowProjectile[] = [];
     private spawnRate: number = 1.0;
     private maxEnemies: number = 50;
     private player: any;
@@ -1839,6 +2163,7 @@ export class EnemySystem {
     private activeMeleeAttacks: MeleeAttack[] = [];
     private activeLightningStrikes: LightningStrikeAttack[] = [];
     private activeClawAttacks: ClawAttack[] = [];
+    private activeArrowProjectiles: ArrowProjectile[] = [];
 
     constructor(scene: Scene, player?: any, xpOrbSystem?: any) {
         this.scene = scene;
@@ -2079,6 +2404,9 @@ export class EnemySystem {
                     case 'claw':
                         this.clawAttacks.push(attackResult.attackObject as ClawAttack);
                         break;
+                    case 'arrow':
+                        this.arrowProjectiles.push(attackResult.attackObject as ArrowProjectile);
+                        break;
                 }
             }
         });
@@ -2138,6 +2466,11 @@ export class EnemySystem {
             attack.update(deltaTime);
         });
         
+        // Update all arrow projectiles
+        this.arrowProjectiles.forEach(arrow => {
+            arrow.update(deltaTime);
+        });
+        
         // Clean up inactive shields from enemy references
         this.shields.forEach(shield => {
             if (!shield.isActive()) {
@@ -2159,6 +2492,7 @@ export class EnemySystem {
         this.explosionAttacks = this.explosionAttacks.filter(attack => attack.isActive());
         this.lightningStrikes = this.lightningStrikes.filter(attack => attack.isActive());
         this.clawAttacks = this.clawAttacks.filter(attack => attack.isActive());
+        this.arrowProjectiles = this.arrowProjectiles.filter(arrow => arrow.isActive());
         // Update all active attack objects
         this.updateAttackObjects(deltaTime, playerX, playerY);
         
@@ -2301,6 +2635,7 @@ export class EnemySystem {
         meleeAttacks: MeleeAttack[];
         lightningStrikes: LightningStrikeAttack[];
         clawAttacks: ClawAttack[];
+        arrowProjectiles: ArrowProjectile[];
     } {
         return {
             projectiles: this.activeProjectiles,
@@ -2310,7 +2645,8 @@ export class EnemySystem {
             vortexAttacks: this.activeVortexAttacks,
             meleeAttacks: this.activeMeleeAttacks,
             lightningStrikes: this.activeLightningStrikes,
-            clawAttacks: this.activeClawAttacks
+            clawAttacks: this.activeClawAttacks,
+            arrowProjectiles: this.activeArrowProjectiles
         };
     }
 
@@ -2321,7 +2657,7 @@ export class EnemySystem {
         // Destroy all attack objects
         [...this.activeProjectiles, ...this.activeShields, ...this.activeConeAttacks,
          ...this.activeExplosionAttacks, ...this.activeVortexAttacks, ...this.activeMeleeAttacks,
-         ...this.activeLightningStrikes, ...this.activeClawAttacks]
+         ...this.activeLightningStrikes, ...this.activeClawAttacks, ...this.activeArrowProjectiles]
             .forEach(attack => attack.destroy());
 
         // Clear arrays
@@ -2333,6 +2669,7 @@ export class EnemySystem {
         this.activeMeleeAttacks = [];
         this.activeLightningStrikes = [];
         this.activeClawAttacks = [];
+        this.activeArrowProjectiles = [];
     }
 
     /**
@@ -2417,6 +2754,13 @@ export class EnemySystem {
     }
 
     /**
+     * Returns all active arrow projectiles
+     */
+    public getArrowProjectiles(): ArrowProjectile[] {
+        return this.arrowProjectiles;
+    }
+
+    /**
      * Destroys all enemies and clears the enemy array
      */
     public clearAllEnemies(): void {
@@ -2438,6 +2782,8 @@ export class EnemySystem {
         this.lightningStrikes = [];
         this.clawAttacks.forEach(attack => attack.destroy());
         this.clawAttacks = [];
+        this.arrowProjectiles.forEach(arrow => arrow.destroy());
+        this.arrowProjectiles = [];
     }
 
     // Dynamic cost calculation based on combat effectiveness

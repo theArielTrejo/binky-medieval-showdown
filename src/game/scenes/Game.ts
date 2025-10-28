@@ -103,6 +103,9 @@ export class Game extends Scene {
             this.load.image(`gnoll-claw-${i}`, `Effects/Gnoll Claw/slash4_${frameNum}.png`);
         }
         
+        // Load arrow projectile for skeleton archer
+        this.load.image('arrow', 'Effects/Arrow.png');
+        
         // Load player sprite (use first available character texture)
 
         // Load essential spritesheets (characters and mobs) for animations
@@ -947,6 +950,7 @@ export class Game extends Scene {
             this.player.checkCollisionWithExplosionAttacks(this.enemySystem.getExplosionAttacks());
             this.player.checkCollisionWithLightningStrikes(this.enemySystem.getLightningStrikes());
             this.player.checkCollisionWithClawAttacks(this.enemySystem.getClawAttacks());
+            this.player.checkCollisionWithArrowProjectiles(this.enemySystem.getArrowProjectiles());
         }
         
         // Collect XP orbs

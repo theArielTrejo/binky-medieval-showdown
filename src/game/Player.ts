@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { PlayerArchetype, PlayerArchetypeType } from './PlayerArchetype';
-import { Enemy, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack, LightningStrikeAttack } from './EnemySystem';
+import { Enemy, Projectile, MeleeAttack, ConeAttack, Shield, VortexAttack, ExplosionAttack, LightningStrikeAttack, ArrowProjectile } from './EnemySystem';
 import { EnemyType } from './types/EnemyTypes';
 import { EnhancedStyleHelpers } from '../ui/EnhancedDesignSystem';
 import { AnimationMapper, CharacterAnimationSet } from './config/AnimationMappings';
@@ -693,6 +693,29 @@ export class Player {
                     this.lastDamageTime = currentTime;
                     this.isInvulnerable = true;
                 }
+            }
+        });
+    }
+
+    public checkCollisionWithArrowProjectiles(arrows: ArrowProjectile[]): void {
+        arrows.forEach(arrow => {
+            if (!arrow.isActive()) return;
+            
+            const pos = arrow.getPosition();
+            const distance = Math.sqrt(
+                Math.pow(this.sprite.x - pos.x, 2) + 
+                Math.pow(this.sprite.y - pos.y, 2)
+            );
+            
+            // Check if arrow hits player (simple radius check)
+            if (distance < 25) { // Player collision radius
+                const currentTime = Date.now();
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(arrow.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                }
+                arrow.destroy();
             }
         });
     }
