@@ -26,12 +26,19 @@ export class Game extends Scene {
     private gameStarted: boolean = false;
     private selectedArchetype: PlayerArchetypeType | null = null;
     private spriteSheetManager!: SpriteSheetManager;
+    // --- Forest Darkness System ---
+    private darkZones: Phaser.Geom.Rectangle[] = [];
+    private inDarkZone: boolean = false;
+    private darkness!: Phaser.GameObjects.Rectangle;
+    private visionGfx!: Phaser.GameObjects.Graphics;
+    private visionMask!: Phaser.Display.Masks.GeometryMask;
+    // ------------------------------ //
     // private readonly GAME_SCALE = 2; // Scaling factor for consistent proportions
-    
     // Restart functionality properties
     private restartInstructionText: Phaser.GameObjects.Text | null = null;
     private gameOverText: Phaser.GameObjects.Text | null = null;
     private isRestarting: boolean = false;
+    // ------------------------------ //
 
     constructor() {
         super('Game');
@@ -274,6 +281,7 @@ export class Game extends Scene {
             this.objectCollisionObstacles = obstacles;
         }
         
+
         // Set up camera bounds (scaled)
         const scaledWidth = map.widthInPixels; //* this.GAME_SCALE;
         const scaledHeight = map.heightInPixels; //* this.GAME_SCALE;
@@ -417,6 +425,28 @@ export class Game extends Scene {
 
         // Center camera on spawn when starting (prevents snapping)
         camera.centerOn(this.player.sprite.x, this.player.sprite.y);
+
+        // --- Load forest dimming zones from Tiled ---
+        const dimLayer = this.tilemap.getObjectLayer('dimlights');
+        if (dimLayer && dimLayer.objects.length > 0) {
+        this.darkZones = dimLayer.objects.map(obj =>
+            new Phaser.Geom.Rectangle(obj.x, obj.y, obj.width, obj.height)
+        );
+        console.log(`Loaded ${this.darkZones.length} dimlight zones.`);
+        }
+
+        // --- Fullscreen darkness overlay (hidden by default) ---
+        this.darkness = this.add.rectangle(
+        0, 0,
+        this.cameras.main.width, this.cameras.main.height,
+        0x000000, 1
+        ).setOrigin(0).setScrollFactor(0).setDepth(9998).setVisible(false);
+
+        // --- Vision mask (the radius of light around player) ---
+        this.visionGfx = this.add.graphics().setScrollFactor(0).setDepth(9999);
+        this.visionMask = this.visionGfx.createGeometryMask();
+        this.visionMask.setInvertAlpha(true);
+        this.darkness.setMask(this.visionMask);
         
         // Start spawning enemies
         this.enemySystem.startSpawning();
@@ -425,7 +455,8 @@ export class Game extends Scene {
         this.spawnEnemyAtPosition(EnemyType.ARCHER, spawnX + 80, spawnY);
         this.spawnEnemyAtPosition(EnemyType.GOLEM, spawnX + 140, spawnY);
         this.spawnEnemyAtPosition(EnemyType.GNOLL, spawnX + 200, spawnY);
-        
+
+
         // Add restart instruction
         this.restartInstructionText = this.add.text(512, 750, 'Press R to restart and choose a different archetype', {
             fontSize: '14px',
@@ -943,7 +974,7 @@ export class Game extends Scene {
      */
     private spawnEnemyAtPosition(type: EnemyType, x: number, y: number): void {
         if (!this.enemySystem) {
-            console.warn('❌ Cannot spawn enemy: EnemySystem not initialized');
+            console.warn(' Cannot spawn enemy: EnemySystem not initialized');
             return;
         }
 
@@ -980,7 +1011,57 @@ export class Game extends Scene {
         
         const playerPos = this.player.getPosition();
         this.enemySystem?.update(playerPos.x, playerPos.y, deltaTime);
-        
+
+        // --- Check if inside a dark zone (forest) ---
+        let isInDark = false;
+        for (const zone of this.darkZones) {
+        if (zone.contains(playerPos.x, playerPos.y)) {
+            isInDark = true;
+            break;
+        }
+        }
+
+        // --- Toggle overlay ---
+        if (isInDark && !this.inDarkZone) {
+        this.inDarkZone = true;
+        this.darkness.setVisible(true); // Set to false for testing
+        this.tweens.add({
+            targets: this.darkness,
+            alpha: 0.95,
+            duration: 300,
+            ease: 'Quad.easeInOut'
+        });
+        } else if (!isInDark && this.inDarkZone) {
+        this.inDarkZone = false;
+        this.tweens.add({
+            targets: this.darkness,
+            alpha: 0,
+            duration: 300,
+            ease: 'Quad.easeInOut',
+            onComplete: () => this.darkness.setVisible(false)
+        });
+        }
+
+        // --- Update the circular vision mask if active ---
+        if (this.inDarkZone) {
+        const cam = this.cameras.main;
+        const sx = playerPos.x - cam.scrollX;
+        const sy = playerPos.y - cam.scrollY;
+
+        this.visionGfx.clear();
+        const radius = 1; // visible radius
+        const fadeRings = 6; // rings around radius
+        const ringStep = 10; // length of one ring to another
+        for (let i = fadeRings; i >= 0; i--) {
+            const alpha = 0.2 - i * 0.02; // Light
+            this.visionGfx.fillStyle(0xffeedd, Math.max(alpha, 0));
+            this.visionGfx.fillCircle(sx, sy, radius + i * ringStep);
+        }
+        } else {
+        this.visionGfx.clear();
+        }
+
+
         // Update XP orb system
         this.xpOrbSystem?.update();
         
