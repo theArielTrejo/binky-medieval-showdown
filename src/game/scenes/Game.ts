@@ -439,7 +439,7 @@ export class Game extends Scene {
         this.darkness = this.add.rectangle(
         0, 0,
         this.cameras.main.width, this.cameras.main.height,
-        0x000000, 1
+        0x000000, 1 //Change it to 0 for debug
         ).setOrigin(0).setScrollFactor(0).setDepth(9998).setVisible(false);
 
         // --- Vision mask (the radius of light around player) ---
@@ -709,7 +709,7 @@ export class Game extends Scene {
             }
             
             // Debug: Log all available frames to understand naming patterns
-            console.log('🔍 All available character frames:', charFramesWithKey.length);
+            console.log('All available character frames:', charFramesWithKey.length);
             console.log('First 10 frames:', charFramesWithKey.slice(0, 10));
             console.log('Sample frame names:', charFramesWithKey.filter((_, i) => i % 50 === 0).map(f => f.frame));
 
@@ -844,9 +844,9 @@ export class Game extends Scene {
                     }
                 }
 
-                console.log(` Character animation frames found for ${characterVariant}:`);
-                console.log(`  Idle frames: ${chosenIdle.length}`, chosenIdle.slice(0, 3));
-                console.log(`  Move frames: ${chosenMove.length}`, chosenMove.slice(0, 3));
+                console.log(`Character animation frames found for ${characterVariant}:`);
+                console.log(`Idle frames: ${chosenIdle.length}`, chosenIdle.slice(0, 3));
+                console.log(`Move frames: ${chosenMove.length}`, chosenMove.slice(0, 3));
 
                 // Final fallback: if one set is empty, reuse the other
                 if (!chosenIdle.length && chosenMove.length) {
@@ -885,7 +885,7 @@ export class Game extends Scene {
                     try {
                         // Use frames across atlases
                         const walkFrames = chosenMove.map(entry => ({ key: entry.key, frame: entry.frame }));
-                        console.log(`🎬 Creating ${walkAnimKey} animation with frames:`, walkFrames.slice(0, 3));
+                        console.log(`Creating ${walkAnimKey} animation with frames:`, walkFrames.slice(0, 3));
                         this.anims.create({
                             key: walkAnimKey,
                             frames: walkFrames,
