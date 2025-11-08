@@ -1,0 +1,591 @@
+{
+  "frames": {
+    "0_Magician_Walking_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 3600,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_005.png": {
+      "frame": {
+        "x": 900,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_006.png": {
+      "frame": {
+        "x": 1800,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_007.png": {
+      "frame": {
+        "x": 2700,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_008.png": {
+      "frame": {
+        "x": 3600,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_009.png": {
+      "frame": {
+        "x": 900,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_010.png": {
+      "frame": {
+        "x": 900,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_011.png": {
+      "frame": {
+        "x": 900,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_012.png": {
+      "frame": {
+        "x": 900,
+        "y": 3600,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_013.png": {
+      "frame": {
+        "x": 1800,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_014.png": {
+      "frame": {
+        "x": 2700,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_015.png": {
+      "frame": {
+        "x": 3600,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_016.png": {
+      "frame": {
+        "x": 1800,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_017.png": {
+      "frame": {
+        "x": 1800,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_018.png": {
+      "frame": {
+        "x": 1800,
+        "y": 3600,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_019.png": {
+      "frame": {
+        "x": 2700,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_020.png": {
+      "frame": {
+        "x": 3600,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_021.png": {
+      "frame": {
+        "x": 2700,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_022.png": {
+      "frame": {
+        "x": 2700,
+        "y": 3600,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Walking_023.png": {
+      "frame": {
+        "x": 3600,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "magician_walking.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 4500,
+      "h": 4500
+    },
+    "scale": 1
+  }
+}

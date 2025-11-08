@@ -1,0 +1,447 @@
+{
+  "frames": {
+    "0_Magician_Idle_Blinking_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_001.png": {
+      "frame": {
+        "x": 0,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_002.png": {
+      "frame": {
+        "x": 0,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_004.png": {
+      "frame": {
+        "x": 0,
+        "y": 3600,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_005.png": {
+      "frame": {
+        "x": 900,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_006.png": {
+      "frame": {
+        "x": 1800,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_007.png": {
+      "frame": {
+        "x": 2700,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_008.png": {
+      "frame": {
+        "x": 3600,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_009.png": {
+      "frame": {
+        "x": 900,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_010.png": {
+      "frame": {
+        "x": 900,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_011.png": {
+      "frame": {
+        "x": 900,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_012.png": {
+      "frame": {
+        "x": 900,
+        "y": 3600,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_013.png": {
+      "frame": {
+        "x": 1800,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_014.png": {
+      "frame": {
+        "x": 2700,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_015.png": {
+      "frame": {
+        "x": 3600,
+        "y": 900,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_016.png": {
+      "frame": {
+        "x": 1800,
+        "y": 1800,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "0_Magician_Idle_Blinking_017.png": {
+      "frame": {
+        "x": 1800,
+        "y": 2700,
+        "w": 900,
+        "h": 900
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 900,
+        "h": 900
+      },
+      "sourceSize": {
+        "w": 900,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "magician_idle_blinking.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 4500,
+      "h": 4500
+    },
+    "scale": 1
+  }
+}

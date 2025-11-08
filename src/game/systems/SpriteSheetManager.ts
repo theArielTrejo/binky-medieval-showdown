@@ -131,14 +131,6 @@ export class SpriteSheetManager {
    * ULTRA OPTIMIZED: Only loads texture atlases that contain the actual sprite data needed for hardcoded mob skins
    */
   public loadEssentialSpritesheets(): SpriteSheetLoadResult[] {
-    // Load a focused set of character textures for player animations
-    const essentialCharacterTextures: string[] = [];
-    for (let i = 0; i <= 20; i++) {
-      essentialCharacterTextures.push(`char-texture-${i}`);
-    }
-    // Include key character atlases containing mage and knight variants
-    ['31','32','33','34','95','96','97','98','99'].forEach(n => essentialCharacterTextures.push(`char-texture-${n}`));
-    
     // Load unique textures for each mob type to ensure distinct skins
     // mob-texture-196: Skeleton_Pirate_Captain_1 (skeleton pirate)
     // mob-texture-254: Archer_1 (archer) - has idle/walk
@@ -156,11 +148,11 @@ export class SpriteSheetManager {
       'mob-texture-131'
     ];
     
-    console.log(`🚀 OPTIMAL OPTIMIZATION: Loading ${essentialCharacterTextures.length} character textures and ${essentialMobTextures.length} mob textures`);
-    console.log(`📊 Total textures to load: ${essentialCharacterTextures.length + essentialMobTextures.length} (99.1% reduction from 319 possible mob textures)`);
-    console.log(`🎯 Seven mob textures provide unique skins for each mob type: Skeleton_Pirate_Captain_1, Archer_1, Golem_1, Gnoll_3, Elemental_Spirits_2, Skeleton_Death_Knight_1`);
+    console.log(`OPTIMAL OPTIMIZATION: Loading ${essentialMobTextures.length} mob textures`);
+    console.log(`Total textures to load: ${essentialMobTextures.length} (99.1% reduction from 319 possible mob textures)`);
+    console.log(`Seven mob textures provide unique skins for each mob type: Skeleton_Pirate_Captain_1, Archer_1, Golem_1, Gnoll_3, Elemental_Spirits_2, Skeleton_Death_Knight_1`);
     
-    return this.loadSpritesheets([...essentialCharacterTextures, ...essentialMobTextures]);
+    return this.loadSpritesheets([...essentialMobTextures]);
   }
 
   /**

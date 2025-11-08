@@ -1,0 +1,103 @@
+{
+	"textures": [
+		{
+			"image": "magician_idle_blinking-0",
+			"format": "RGBA8888",
+			"size": {
+				"w": 1800,
+				"h": 1800
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "0_Magician_Idle_Blinking_000.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 900,
+						"h": 900
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 900,
+						"h": 900
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 900,
+						"h": 900
+					}
+				},
+				{
+					"filename": "0_Magician_Idle_Blinking_001.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 900,
+						"h": 900
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 900,
+						"h": 900
+					},
+					"frame": {
+						"x": 0,
+						"y": 900,
+						"w": 900,
+						"h": 900
+					}
+				},
+				{
+					"filename": "0_Magician_Idle_Blinking_002.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 900,
+						"h": 900
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 900,
+						"h": 900
+					},
+					"frame": {
+						"x": 900,
+						"y": 0,
+						"w": 900,
+						"h": 900
+					}
+				},
+				{
+					"filename": "0_Magician_Idle_Blinking_003.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 900,
+						"h": 900
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 900,
+						"h": 900
+					},
+					"frame": {
+						"x": 900,
+						"y": 900,
+						"w": 900,
+						"h": 900
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://free-tex-packer.com",
+		"version": "0.6.7"
+	}
+}

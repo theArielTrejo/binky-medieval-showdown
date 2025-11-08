@@ -47,9 +47,9 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
 
   // Magician variants
   'Magician_1': {
-    idle: 'Magician_1_idle',
-    walk: 'Magician_1_walk',
-    texture: 'char-texture-96'
+    idle: 'Magician_1_Idle_Blinking',
+    walk: 'Magician_1_Walking',
+    texture: 'magician_idle_blinking'
   },
   'Magician_2': {
     idle: 'Magician_2_idle',

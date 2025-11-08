@@ -11,10 +11,12 @@ import { XPOrbSystem } from '../XPOrbSystem';
 import { SpriteSheetManager } from '../systems/SpriteSheetManager';
 import { TilemapManager } from '../systems/TilemapManager';
 import { TilemapConfig } from '../types/TilemapTypes';
+import { AtlasManager } from '../systems/AtlasManager';
 
 export class Game extends Scene {
     private player!: Player;
     private enemySystem!: EnemySystem;
+    private atlasManager!: AtlasManager;
     private aiDirector!: AIDirector;
     private classSelectionUI!: ClassSelectionUI;
     private mobSpawnerUI!: MobSpawnerUI;
@@ -86,8 +88,7 @@ export class Game extends Scene {
         this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
         this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
 
-        // Load available assets only
-        
+
         // Load XP orb (use existing green orb)
         // Load XP orb (match key used by XPOrb class)
         this.load.image('green_orb', 'images/green_orb.png');
@@ -143,7 +144,7 @@ export class Game extends Scene {
         
         // Initialize UI systems
         this.initializeUI();
-        
+
         // Create animations after all assets are loaded
         this.createAnimations();
         
@@ -360,8 +361,50 @@ export class Game extends Scene {
             }
         });
         
-        // Initialize game systems
+        // --- Load character atlases dynamically based on selected archetype ---
+        // Map archetype keys (like "glass_cannon") to actual character folder names
+        const archetypeToCharacter: Record<string, string> = {
+        glass_cannon: 'magician',
+        tank: 'knight',
+        assassin: 'rogue'
+        };
+
+        const selected = this.selectedArchetype
+        ? this.selectedArchetype.toString().toLowerCase()
+        : 'magician';
+
+        // Fallback to magician if key not found
+        const characterBase = archetypeToCharacter[selected] || 'magician';
+        const characterFolder = `${characterBase}1`; // magician1, knight1, rogue1
+
+        console.log(`🔹 Loading atlas for ${characterFolder}...`);
+
+        // ✅ Only create the AtlasManager if it doesn’t already exist
+        if (!this.atlasManager) {
+        this.atlasManager = new AtlasManager(this);
+        }
+
+        // ✅ Load atlas files (.png + .json) from the correct public path
+        this.atlasManager.loadAllForCharacter(characterFolder);
+
+        // ✅ Add listener before starting the loader
+        this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+        console.log(`✅ Atlas loaded for ${characterFolder}, creating animations...`);
+
+        // Ensure the atlas is actually in Phaser’s cache
+        if (!this.textures.exists(`${characterBase}_idle_blinking`)) {
+            console.warn(`⚠️ Atlas texture for ${characterFolder} not found in cache yet.`);
+        }
+
+        // Create animations *after* files are done loading
+        this.atlasManager.createAnimations(characterFolder);
+
+        // Initialize all game systems (player, camera, enemies, etc.)
         this.initializeGameSystems();
+        });
+
+        // ✅ Start Phaser’s loader
+        this.load.start();
     }
 
     private initializeGameSystems(): void {

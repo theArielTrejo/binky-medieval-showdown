@@ -44,9 +44,29 @@ export class Player {
         console.log(`🎮 Selected character variant: ${this.characterVariant} for archetype: ${this.archetype.type}`);
         console.log('🎮 Character animations:', this.characterAnimations);
 
-        const textureKey = this.characterAnimations.texture;
-        this.sprite = scene.physics.add.sprite(x, y, textureKey);
-        console.log(`🎮 Created player sprite with texture: ${textureKey}`);
+        // ✅ Use correct character base (matches folder and atlas name)
+        const characterBase = this.getArchetypeDisplayName().toLowerCase(); // e.g. "magician"
+        const formattedName = characterBase.charAt(0).toUpperCase() + characterBase.slice(1);
+
+        // ✅ Create player sprite using correct atlas and frame names
+        this.sprite = scene.physics.add.sprite(
+        x, y,
+        `${characterBase}_idle_blinking`, // matches "magician_idle_blinking"
+        `0_${formattedName}_Idle_Blinking_000.png` // frame inside JSON
+        );
+
+        // ✅ Immediately play idle animation (matches what AtlasManager creates)
+        const idleAnimKey = `${formattedName}_1_Idle_Blinking`;
+
+        if (scene.anims.exists(idleAnimKey)) {
+        this.sprite.play(idleAnimKey);
+        } else {
+        console.warn(`⚠️ Animation not found: ${idleAnimKey}`);
+        }
+
+        console.log(`🎮 Created player sprite for ${characterBase} using atlas ${characterBase}_idle_blinking`);
+        console.log('Magician idle animation data:', this.scene.anims.get('Magician_1_Idle_Blinking'));
+
         this.sprite.setScale(0.05);
         this.sprite.setDepth(3);
         this.sprite.setOrigin(0.5, 0.5);
