@@ -346,64 +346,52 @@ export class Game extends Scene {
 
     private startGame(): void {
         if (this.gameStarted || !this.selectedArchetype) return;
-        
+
         this.gameStarted = true;
-        // console.log('Starting game with archetype:', this.selectedArchetype);
-        
-        // Hide class selection
+
+        // Hide the selection UI cleanly
         this.classSelectionUI.hide();
-        // Destroy the container and all its interactive children after the fade animation
         this.time.delayedCall(350, () => {
-            if (this.classSelectionUI) {
-                this.classSelectionUI.destroy();
-            }
+            this.classSelectionUI?.destroy();
         });
-        
-        // --- Load character atlases dynamically based on selected archetype ---
-        // Map archetype keys (like "glass_cannon") to actual character folder names
+
         const archetypeToCharacter: Record<string, string> = {
-        glass_cannon: 'magician',
-        tank: 'knight',
-        assassin: 'rogue'
+            glass_cannon: '', //magician
+            tank: 'knight',
+            assassin: 'rogue'
         };
 
-        const selected = this.selectedArchetype
-        ? this.selectedArchetype.toString().toLowerCase()
-        : 'magician';
-
-        // Fallback to magician if key not found
+        const selected = this.selectedArchetype?.toString().toLowerCase() || 'magician';
         const characterBase = archetypeToCharacter[selected] || 'magician';
-        const characterFolder = `${characterBase}1`; // magician1, knight1, rogue1
+        const atlasFolder = characterBase; // magician, knight, rogue
 
-        console.log(`🔹 Loading atlas for ${characterFolder}...`);
+        console.log(`🔹 Loading atlas for ${atlasFolder}...`);
 
-        // ✅ Only create the AtlasManager if it doesn’t already exist
-        if (!this.atlasManager) {
         this.atlasManager = new AtlasManager(this);
-        }
+        this.atlasManager.loadAllForCharacter(atlasFolder);
 
-        // ✅ Load atlas files (.png + .json) from the correct public path
-        this.atlasManager.loadAllForCharacter(characterFolder);
-
-        // ✅ Add listener before starting the loader
+        // ✅ Wait until all files are fully processed and parsed
         this.load.once(Phaser.Loader.Events.COMPLETE, () => {
-        console.log(`✅ Atlas loaded for ${characterFolder}, creating animations...`);
+            console.log(`✅ All files loaded for ${atlasFolder}`);
 
-        // Ensure the atlas is actually in Phaser’s cache
-        if (!this.textures.exists(`${characterBase}_idle_blinking`)) {
-            console.warn(`⚠️ Atlas texture for ${characterFolder} not found in cache yet.`);
-        }
+            // Add a small delay to ensure Phaser’s texture parser has finished
+            this.time.delayedCall(100, () => {
+                console.log(`🎨 Creating animations for ${atlasFolder}...`);
+                this.atlasManager.createAnimations(atlasFolder);
 
-        // Create animations *after* files are done loading
-        this.atlasManager.createAnimations(characterFolder);
-
-        // Initialize all game systems (player, camera, enemies, etc.)
-        this.initializeGameSystems();
+                // Check texture availability
+                if (!this.textures.exists(`${atlasFolder}_idle_blinking`) && !this.textures.exists(`${atlasFolder}_idle`)) {
+                    console.warn(`⚠️ Texture not found in cache for ${atlasFolder} — delaying game init slightly.`);
+                    this.time.delayedCall(200, () => this.initializeGameSystems());
+                } else {
+                    this.initializeGameSystems();
+                }
+            });
         });
 
-        // ✅ Start Phaser’s loader
         this.load.start();
     }
+
 
     private initializeGameSystems(): void {
         // Try to use spawn point from tilemap (like the example)

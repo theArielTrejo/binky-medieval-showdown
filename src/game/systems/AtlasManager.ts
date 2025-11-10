@@ -23,8 +23,15 @@ export class AtlasManager {
 
   // default animation sets per character type
   private defaultSets: CharacterAnimationSet[] = [
-    { name: 'idle_blinking', frames: 18, rate: 8, repeat: -1 },
-    { name: 'walking', frames: 24, rate: 10, repeat: -1 }
+    // Magician
+    { name: 'idle_blinking', frames: 18, rate: 12, repeat: -1 },
+    { name: 'walking', frames: 24, rate: 18, repeat: -1 },
+    { name: 'attack', frames: 12, rate: 20, repeat: 0}, // Do not repeat, plays once
+
+    // Knight
+    { name: 'idle', frames: 18, rate: 6, repeat: -1 },
+    { name: 'walking', frames: 24, rate: 12, repeat: -1 },
+    { name: 'attackRun', frames: 12, rate: 14, repeat: 0 }
   ];
 
   constructor(scene: Phaser.Scene) {
@@ -36,37 +43,32 @@ export class AtlasManager {
      * Expected folder structure:
      *  public/assets/atlases/<character>/<character>_<animation>.png|json
      */
-    loadAllForCharacter(character: string) {
-      // Strip any numeric suffix like "magician1" → "magician"
-      const cleanCharacter = character.replace(/[0-9]+$/, '');
+    public loadAllForCharacter(characterFolder: string): void {
+        const cleanCharacter = characterFolder.toLowerCase();
 
-      // 🔧 IMPORTANT: neutralize any global loader base/path set elsewhere
-      this.scene.load.setBaseURL('');
-      this.scene.load.setPath('');
+        const characterSets: Record<string, string[]> = {
+            magician: ['idle_blinking', 'walking', 'attack'],
+            knight: ['idle', 'walking', 'attackrun']
+        };
 
-      // ✅ Build a root-relative path WITHOUT duplicating "/assets/"
-      //    (No leading slash here, because some code sets load.setPath('/assets/'))
-      const basePath = 'assets/atlases/' + cleanCharacter + '/';
+        const setsToLoad = characterSets[cleanCharacter] || [];
 
-      const sets = this.defaultSets;
-
-      sets.forEach(set => {
-        const key  = `${cleanCharacter}_${set.name}`;
-        const file = `${cleanCharacter}_${set.name}`;
-
-        const png  = `${basePath}${file}.png`;
-        const json = `${basePath}${file}.json`;
-
-        console.log(`🔹 Attempting to load atlas: key="${key}" from "${png}" & "${json}"`);
-
-        if (!this.scene.textures.exists(key)) {
-          this.scene.load.atlas(key, png, json);
-        } else {
-          console.log(`⚠️ Atlas already exists: ${key}`);
+        if (setsToLoad.length === 0) {
+            console.warn(`⚠️ No animation sets defined for character: ${cleanCharacter}`);
+            return;
         }
-      });
-    }
 
+        setsToLoad.forEach(setName => {
+            const key = `${cleanCharacter}_${setName}`;
+            const png = `/atlases/${cleanCharacter}/${key}.png`;
+            const json = `/atlases/${cleanCharacter}/${key}.json`;
+
+            console.log(`🔹 Queuing atlas: key="${key}"`, { png, json });
+
+            // ✅ Simple, clean, correct:
+            this.scene.load.atlas(key, png, json);
+        });
+    }
 
 
     /**
@@ -74,36 +76,46 @@ export class AtlasManager {
      */
     createAnimations(character: string) {
         const sets = this.defaultSets;
-
-        // Normalize again (magician1 → magician)
-        const cleanCharacter = character.replace(/[0-9]+$/, '');
+        const cleanCharacter = character.replace(/[0-9]+$/, '').toLowerCase();
 
         sets.forEach(set => {
-            const atlasKey = `${cleanCharacter}_${set.name}`; // use clean name
+            const atlasKey = `${cleanCharacter}_${set.name}`;
             const animKey = `${this.capitalize(cleanCharacter)}_1_${this.toPascal(set.name)}`;
 
+            // Skip if animation already exists
             if (this.scene.anims.exists(animKey)) {
-            console.log(`⚠️ Animation already exists: ${animKey}`);
-            return;
+                console.log(`⚠️ Animation already exists: ${animKey}`);
+                return;
             }
 
+            const texture = this.scene.textures.get(atlasKey);
+            if (!texture) {
+                console.warn(`⚠️ Texture not found for atlasKey=${atlasKey}`);
+                return;
+            }
+
+            // ✅ Dynamically grab all frames from the atlas JSON
+            const frameNames = texture.getFrameNames().sort((a, b) => a.localeCompare(b));
+
+            if (frameNames.length === 0) {
+                console.warn(`⚠️ No frames found for atlasKey=${atlasKey}`);
+                return;
+            }
+
+            // ✅ Create animation dynamically
             this.scene.anims.create({
-            key: animKey,
-            frames: this.scene.anims.generateFrameNames(atlasKey, {
-                prefix: `0_${this.capitalize(cleanCharacter)}_${this.toPascal(set.name)}_`,
-                start: 0,
-                end: set.frames - 1,
-                zeroPad: 3,
-                suffix: '.png'
-            }),
-            frameRate: set.rate,
-            repeat: set.repeat ?? -1
+                key: animKey,
+                frames: frameNames.map(name => ({ key: atlasKey, frame: name })),
+                frameRate: set.rate,
+                repeat: set.repeat ?? -1,
             });
 
-            console.log(`[AtlasManager] ✅ Created animation: ${animKey}`);
+            console.log(`[AtlasManager] ✅ Created animation: ${animKey} (${frameNames.length} frames)`);
         });
-        console.log('All loaded atlases:', this.scene.textures.list);
+
+        console.log('✅ All loaded atlases:', this.scene.textures.list);
     }
+
 
   /** Utility: Capitalize first letter (magician → Magician) */
   private capitalize(str: string): string {

@@ -9,7 +9,7 @@ export class Player {
     public sprite: Phaser.Physics.Arcade.Sprite;
     private archetype: PlayerArchetype;
     private scene: Scene;
-
+    private isAttacking: boolean = false;
 	private characterVariant: string = 'Knight_1'; // Default
 	private characterAnimations: CharacterAnimationSet;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -30,6 +30,10 @@ export class Player {
     private slowEndTime: number = 0;
     private lastVortexHitTime: number = 0;
     private vortexHitCooldown: number = 500;
+    /** Convert "idle_blinking" → "Idle_Blinking" for JSON frame names */
+    private capitalizeWords(name: string): string {
+        return name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('_');
+    }
     // --- REMOVED ---
     // private facingLeft: boolean = false; // Track current facing direction
 
@@ -48,16 +52,21 @@ export class Player {
         const characterBase = this.getArchetypeDisplayName().toLowerCase(); // e.g. "magician"
         const formattedName = characterBase.charAt(0).toUpperCase() + characterBase.slice(1);
 
-        // ✅ Create player sprite using correct atlas and frame names
+        // ✅ Pick correct idle name for each archetype
+        const idleName =
+        this.archetype.type === PlayerArchetypeType.TANK
+            ? 'idle'          // knight
+            : 'idle_blinking'; // magician and others
+
         this.sprite = scene.physics.add.sprite(
         x, y,
-        `${characterBase}_idle_blinking`, // matches "magician_idle_blinking"
-        `0_${formattedName}_Idle_Blinking_000.png` // frame inside JSON
+        `${characterBase}_${idleName}`,
+        `0_${formattedName}_${this.capitalizeWords(idleName)}_000.png`
         );
 
-        // ✅ Immediately play idle animation (matches what AtlasManager creates)
-        const idleAnimKey = `${formattedName}_1_Idle_Blinking`;
 
+        // ✅ Immediately play idle animation (matches what AtlasManager creates)
+        const idleAnimKey = `${formattedName}_1_${this.capitalizeWords(idleName)}`;
         if (scene.anims.exists(idleAnimKey)) {
         this.sprite.play(idleAnimKey);
         } else {
@@ -90,6 +99,19 @@ export class Player {
 
         this.playAnimation('idle'); // Start idle
 
+        // Listen globally for when any animation completes
+        this.sprite.on(
+        Phaser.Animations.Events.ANIMATION_COMPLETE,
+        (animation: Phaser.Animations.Animation) => {
+            const key = (animation?.key || '').toLowerCase();
+            if (key.includes('attack')) {
+            this.isAttacking = false;
+            this.playAnimation('idle');
+            }
+        }
+        );
+
+
         this.cursors = scene.input.keyboard!.createCursorKeys();
         this.wasdKeys = scene.input.keyboard!.addKeys('W,S,A,D,SPACE');
 
@@ -104,12 +126,18 @@ export class Player {
 
 
         this.pointerDownHandler = (pointer: Phaser.Input.Pointer) => {
-            if (pointer.leftButtonDown()) {
+            if (pointer.leftButtonDown() && !this.isAttacking) {
+                this.isAttacking = true;
+
+                // 🔹 Play attack animation
+                this.playAnimation('attack');
+
+                // 🔹 Run attack logic (damage/projectile)
                 this.performAttack(pointer);
+
             }
         };
         scene.input.on('pointerdown', this.pointerDownHandler);
-        this.archetype.updatePosition(x, y);
     }
 
     // --- (getArchetypeDisplayName, setEnemyDeathCallback, handleEnemyDeath remain the same) ---
@@ -174,6 +202,13 @@ export class Player {
         const isMoving = leftPressed || rightPressed || upPressed || downPressed;
 		const targetAnimationKey = isMoving ? 'walk' : 'idle';
 
+        if (this.isAttacking) {
+            // Allow movement while attacking, but don't change animation
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            body.setVelocity(velocityX, velocityY);
+            return;
+        }
+
         // --- REMOVED FLIP LOGIC ---
         // if (leftPressed && !rightPressed) {
         //     if (!this.facingLeft) {
@@ -208,10 +243,14 @@ export class Player {
                 const currentlyPlaying = this.sprite.anims.currentAnim?.key;
 
                 if (currentlyPlaying !== targetAnimation) {
-                    // --- REMOVED FLIP PRESERVATION ---
-                    // const currentFlipX = this.sprite.flipX;
-                    this.sprite.play(targetAnimation);
-                    // this.sprite.setFlipX(currentFlipX); // No longer needed
+                    // Ensure the sprite uses the correct base texture before playing
+                    const anim = this.scene.anims.get(targetAnimation);
+                    const atlasKey = anim.frames[0].textureKey;
+                    if (atlasKey && this.sprite.texture.key !== atlasKey) {
+                        this.sprite.setTexture(atlasKey);
+                    }
+
+                    this.sprite.play(targetAnimation, true);
                 }
                 return;
             }

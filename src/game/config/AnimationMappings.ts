@@ -12,6 +12,7 @@ import { getHardcodedMobSkin } from '../../systems/HardcodedMobSkins';
 export interface CharacterAnimationSet {
   idle: string;
   walk: string;
+  attack: string;
   texture: string;
 }
 
@@ -25,40 +26,47 @@ export interface MobAnimationSet {
 export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
   // Knight variants
   'Knight_1': {
-    idle: 'Knight_1_idle',
-    walk: 'Knight_1_walk',
-    texture: 'char-texture-96'
+    idle: 'Knight_1_Idle',
+    walk: 'Knight_1_Walking',
+    attack: 'Knight_1_AttackRun',
+    texture: 'knight_idle'
   },
   'Knight_2': {
     idle: 'Knight_2_idle',
     walk: 'Knight_2_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-1'
   },
   'Knight_3': {
     idle: 'Knight_3_idle',
     walk: 'Knight_3_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-2'
   },
   'White Armored Knight': {
-    idle: 'White Armored Knight_idle',
-    walk: 'White Armored Knight_walk',
-    texture: 'char-texture-33'
+    idle: 'Knight_1_Idle',
+    walk: 'Knight_1_Walking',
+    attack: 'Knight_1_AttackRun', // Temp Place Holder
+    texture: 'knight_idle'
   },
 
   // Magician variants
   'Magician_1': {
     idle: 'Magician_1_Idle_Blinking',
     walk: 'Magician_1_Walking',
+    attack: 'Magician_1_Attack',
     texture: 'magician_idle_blinking'
   },
   'Magician_2': {
     idle: 'Magician_2_idle',
     walk: 'Magician_2_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-4'
   },
   'Magician_3': {
     idle: 'Magician_3_idle',
     walk: 'Magician_3_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-5'
   },
 
@@ -66,16 +74,19 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
   'Archer_1': {
     idle: 'Archer_1_idle',
     walk: 'Archer_1_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-6'
   },
   'Archer_2': {
     idle: 'Archer_2_idle',
     walk: 'Archer_2_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-0'
   },
   'Archer_3': {
     idle: 'Archer_3_idle',
     walk: 'Archer_3_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-8'
   },
 
@@ -83,16 +94,19 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
   'Black_Ninja': {
     idle: 'Black_Ninja_idle',
     walk: 'Black_Ninja_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-9'
   },
   'White_Ninja': {
     idle: 'White_Ninja_idle',
     walk: 'White_Ninja_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-10'
   },
   'Assassin_Guy': {
     idle: 'Assassin_Guy_idle',
     walk: 'Assassin_Guy_walk',
+    attack: 'Magician_1_Attack', // Temp Place Holder
     texture: 'char-texture-11'
   }
 };
@@ -383,7 +397,7 @@ export class AnimationMapper {
   static getHardcodedCharacterForArchetype(archetype: string): string {
     const className = PLAYER_ARCHETYPE_TO_CLASS[archetype] || archetype;
     const HARD_CODED_BY_CLASS: { [key: string]: string } = {
-      knight: 'White Armored Knight',
+      knight: 'Knight_1',
       magician: 'Magician_1',
       rogue: 'Black_Ninja'
     };
