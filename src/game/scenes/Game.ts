@@ -92,6 +92,7 @@ export class Game extends Scene {
         // Load XP orb (use existing green orb)
         // Load XP orb (match key used by XPOrb class)
         this.load.image('green_orb', 'images/green_orb.png');
+        this.load.image('sparkle', 'images/green_orb.png');
         
         // Load lightning bolt effect for lightning mage as a spritesheet
         // 10 frames arranged horizontally (720x72 total, 72x72 per frame)
@@ -293,9 +294,6 @@ export class Game extends Scene {
     }
 
     private initializeUI(): void {
-        // Initialize Enhanced Design System
-        // EnhancedDesignSystem.initialize(this); // Temporarily disabled due to TypeError
-        
         // Create Class Selection UI
         this.classSelectionUI = new ClassSelectionUI(this, {
             onClassSelected: (archetype) => {
@@ -429,6 +427,7 @@ export class Game extends Scene {
         }
         
         this.player = new Player(this, spawnX, spawnY, this.selectedArchetype!);
+        this.events.emit('playerReady', this.player);
         
         // Scale the player sprite to match the tilemap scaling
         this.player.sprite.setScale(0.05); //* this.GAME_SCALE);
@@ -638,7 +637,7 @@ export class Game extends Scene {
         (this as any).gameOverRestartText = restartText;
     }
 
-    private debugEnabled = true; // start ON so you can see everything
+    private debugEnabled = false; // start ON so you can see everything
     private collisionDebugGfx!: Phaser.GameObjects.Graphics;
     private playerDebugGfx!: Phaser.GameObjects.Graphics;
     private objectRects: Phaser.GameObjects.Rectangle[] = [];

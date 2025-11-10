@@ -1,4 +1,5 @@
 import { Game as MainGame } from './scenes/Game';
+import { UIScene } from '../ui/UIScene';
 import { AUTO, Game, Types, Scale } from 'phaser';
 
 // Full-window configuration
@@ -20,7 +21,7 @@ const config: Types.Core.GameConfig = {
       debug: true,               // shows collision boxes
     },
   },
-  scene: [MainGame],
+  scene: [MainGame, UIScene],
 };
 
 // Export StartGame function (so index.ts can call StartGame('game-container'))

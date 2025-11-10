@@ -78,7 +78,7 @@ export class Player {
         body.setCollideWorldBounds(true);
         body.setSize(410, 545);
         body.setOffset(265, 175);
-        body.setDrag(800);
+        body.setDrag(300);
         body.allowRotation = false;
         if ((this.sprite as any).setAngularVelocity) {
             (this.sprite as any).setAngularVelocity(0);

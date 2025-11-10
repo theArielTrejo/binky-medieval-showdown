@@ -191,3 +191,11 @@ export class PlayerArchetype {
         return this.lastXpTime > tenSecondsAgo ? this.xpGained / 10 : 0;
     }
 }
+
+import { SkillArchetype } from './SkillTreeData';
+
+export const playerArchetypeToSkillArchetype: Record<PlayerArchetypeType, SkillArchetype> = {
+    [PlayerArchetypeType.TANK]: SkillArchetype.MELEE,
+    [PlayerArchetypeType.GLASS_CANNON]: SkillArchetype.PROJECTILE,
+    [PlayerArchetypeType.EVASIVE]: SkillArchetype.AOE,
+};
