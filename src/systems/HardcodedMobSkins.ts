@@ -31,7 +31,7 @@ import { EnemyType } from '../game/types/EnemyTypes';
  */
 export const HARDCODED_MOB_SKINS = Object.freeze({
     [EnemyType.SKELETON_VIKING]: 'Skeleton_Viking_1',         // Elite viking skeleton - uses mob-texture-281
-    [EnemyType.GOLEM]: 'Golem_1',                             // Stone golem - uses mob-texture-281
+    [EnemyType.OGRE]: 'Ogre_1',                               // Ogre - uses custom ogre walking animation
     [EnemyType.ARCHER]: 'Archer_1',                           // Ranged archer - uses mob-texture-254
     [EnemyType.GNOLL]: 'Gnoll_3',                             // Fast gnoll warrior - uses mob-texture-316
     [EnemyType.SKELETON_PIRATE]: 'Skeleton_Pirate_Captain_1', // Skeleton pirate with vortex attacks - uses mob-texture-196
@@ -84,7 +84,7 @@ export function getHardcodedMobSkin(enemyType: EnemyType): HardcodedMobSkin {
 export function validateAllMobSpawnerSkins(): boolean {
     const requiredEnemyTypes = [
         EnemyType.SKELETON_VIKING,
-        EnemyType.GOLEM,
+        EnemyType.OGRE,
         EnemyType.ARCHER,
         EnemyType.GNOLL,
         EnemyType.SKELETON_PIRATE,
@@ -210,7 +210,7 @@ export function developmentValidation(): void {
         // Verify that the hardcoded mapping is complete
         const mobSpawnerTypes = [
             EnemyType.SKELETON_VIKING,
-            EnemyType.GOLEM,
+            EnemyType.OGRE,
             EnemyType.ARCHER,
             EnemyType.GNOLL,
             EnemyType.SKELETON_PIRATE,
@@ -240,10 +240,11 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
     // Updated to use atlases that contain idle/walk frames for our hardcoded variants
     const texture196Variants = ['Skeleton_Pirate_Captain_1'];
     const texture254Variants = ['Archer_1', 'Archer_2', 'Skeleton_Viking_3']; // Archer idle/walk frames present
-    const texture281Variants = ['Golem_1', 'Skeleton_Viking_1'];  // Golem idle/walk frames present
+    const texture281Variants = ['Skeleton_Viking_1'];  // Skeleton Viking idle/walk frames present
     const texture316Variants = ['Gnoll_3'];  // Gnoll idle/walk frames present
     const texture205Variants = ['Elemental_Spirits_2']; // Elemental spirits (idle frames in 205, running in 204)
     const texture131Variants = ['Skeleton_Death_Knight_1', 'Skeleton_Death_Knight_2', 'Skeleton_Death_Knight_3']; // Death Knight idle/walk frames
+    const ogreVariants = ['Ogre_1']; // Ogre uses custom walking animation
 
     if (texture196Variants.includes(mobVariant)) {
         return 'mob-texture-196';
@@ -257,6 +258,8 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
         return 'mob-texture-205';
     } else if (texture131Variants.includes(mobVariant)) {
         return 'mob-texture-131';
+    } else if (ogreVariants.includes(mobVariant)) {
+        return 'ogre-walk-0';
     } else {
         // Fallback for any unknown variants
         console.warn(`Unknown mob variant: ${mobVariant}, using fallback texture-196`);

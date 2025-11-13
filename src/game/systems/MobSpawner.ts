@@ -125,7 +125,7 @@ export class MobSpawner {
           size: 35,
           xpValue: 18
         };
-      case EnemyType.GOLEM:
+      case EnemyType.OGRE:
         return {
           health: 250,
           speed: 20,
@@ -167,7 +167,7 @@ export class MobSpawner {
     switch (type) {
       case EnemyType.SKELETON_VIKING:
         return 0.8;
-      case EnemyType.GOLEM:
+      case EnemyType.OGRE:
         return 1.2;
       case EnemyType.ARCHER:
         return 0.7;

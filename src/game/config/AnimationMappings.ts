@@ -181,21 +181,21 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     texture: 'mob-texture-264'
   },
 
-  // Golems - all use mob-texture-264
-  'Golem_1': {
-    idle: 'Golem_1_idle',
-    walk: 'Golem_1_walk',
-    texture: 'mob-texture-281'
+  // Ogres - uses custom walking animation
+  'Ogre_1': {
+    idle: 'ogre_walking',
+    walk: 'ogre_walking',
+    texture: 'ogre-walk-0'
   },
-  'Golem_2': {
-    idle: 'Golem_2_idle',
-    walk: 'Golem_2_walk',
-    texture: 'mob-texture-264'
+  'Ogre_2': {
+    idle: 'ogre_walking',
+    walk: 'ogre_walking',
+    texture: 'ogre-walk-0'
   },
-  'Golem_3': {
-    idle: 'Mobs/Golem/Golem_3/PNG/PNG Sequences/Idle/0_Golem_Idle_014.png',
-    walk: 'Mobs/Golem/Golem_3/PNG/PNG Sequences/Run Slashing/0_Golem_Run Slashing_000.png',
-    texture: 'mob-texture-264'
+  'Ogre_3': {
+    idle: 'ogre_walking',
+    walk: 'ogre_walking',
+    texture: 'ogre-walk-0'
   },
 
   // Skeleton Viking variants
@@ -302,7 +302,7 @@ export const PLAYER_ARCHETYPE_TO_CLASS: { [key: string]: string } = {
 // Standardized mob class names (matching actual sprite sheet structure)
 // Each mob type gets unique skins - no duplicates across different enemy types
 export const STANDARDIZED_MOB_CLASSES = {
-  'golem': ['Golem_1', 'Golem_2', 'Golem_3'],
+  'ogre': ['Ogre_1', 'Ogre_2', 'Ogre_3'],
   'archer': ['Archer_1', 'Archer_2', 'Archer_3'],
   'gnoll': ['Gnoll_1', 'Gnoll_2', 'Gnoll_3'],
   'deathknight': ['Skeleton_Death_Knight_1', 'Skeleton_Death_Knight_2', 'Skeleton_Death_Knight_3'],
@@ -314,7 +314,7 @@ export const STANDARDIZED_MOB_CLASSES = {
 
 // Mapping from EnemyType to standardized mob class names - each type gets unique skins
 export const ENEMY_TYPE_TO_MOB_CLASS: { [key: string]: string } = {
-  'tank': 'golem',
+  'tank': 'ogre',
   'projectile': 'archer',
   'speedster': 'gnoll',
   'boss': 'deathknight',

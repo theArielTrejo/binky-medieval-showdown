@@ -47,7 +47,7 @@ export class EnemySpawnerUI {
         // Enemy type buttons
         const enemyTypes = [
             { type: EnemyType.SKELETON_VIKING, name: 'Skeleton Viking', color: 0x8844ff },
-            { type: EnemyType.GOLEM, name: 'Golem', color: 0x888888 },
+            { type: EnemyType.OGRE, name: 'Ogre', color: 0x888888 },
             { type: EnemyType.ARCHER, name: 'Archer', color: 0x44ff44 },
             { type: EnemyType.GNOLL, name: 'Gnoll', color: 0xff8844 },
             { type: EnemyType.SKELETON_PIRATE, name: 'Skeleton Pirate', color: 0x00cccc },
@@ -78,7 +78,7 @@ export class EnemySpawnerUI {
 
         // Keyboard shortcuts for quick spawning
         this.scene.input.keyboard?.on('keydown-ONE', () => this.spawnEnemyAtCursor(EnemyType.SKELETON_VIKING));
-        this.scene.input.keyboard?.on('keydown-TWO', () => this.spawnEnemyAtCursor(EnemyType.GOLEM));
+        this.scene.input.keyboard?.on('keydown-TWO', () => this.spawnEnemyAtCursor(EnemyType.OGRE));
         this.scene.input.keyboard?.on('keydown-THREE', () => this.spawnEnemyAtCursor(EnemyType.ARCHER));
         this.scene.input.keyboard?.on('keydown-FOUR', () => this.spawnEnemyAtCursor(EnemyType.GNOLL));
         this.scene.input.keyboard?.on('keydown-FIVE', () => this.spawnEnemyAtCursor(EnemyType.SKELETON_PIRATE));

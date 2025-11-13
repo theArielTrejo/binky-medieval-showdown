@@ -9,7 +9,7 @@ export enum DirectorAction {
     SPAWN_SKELETON_VIKINGS = 0,
     SPAWN_ARCHERS = 1,
     SPAWN_GNOLLS = 2,
-    SPAWN_GOLEMS = 3,
+    SPAWN_OGRES = 3,
     INCREASE_SPAWN_RATE = 4,
     DO_NOTHING = 5
 }
@@ -41,7 +41,7 @@ export interface GameState {
     resourceGeneration: number;
     gameTimer: number;
     enemyCountSkeletonVikings: number;
-    enemyCountGolems: number;
+    enemyCountOgres: number;
     enemyCountArchers: number;
     enemyCountGnolls: number;
     difficultyLevel: number;
@@ -181,7 +181,7 @@ export class AIDirector {
     
     private async clearOldIncompatibleModels(): Promise<void> {
         // Clear any models trained with the old 10-action system
-        // New system has 6 actions (SKELETON_VIKING, ARCHER, GNOLL, GOLEM, INCREASE_SPAWN_RATE, DO_NOTHING)
+        // New system has 6 actions (SKELETON_VIKING, ARCHER, GNOLL, OGRE, INCREASE_SPAWN_RATE, DO_NOTHING)
         const modelVersion = '2.0.0'; // Increment when action space changes
         
         if (typeof window !== 'undefined' && window.localStorage) {
@@ -266,7 +266,7 @@ export class AIDirector {
                  type: 'overwhelm',
                  priority: 0.9,
                  conditions: (state: GameState) => state.playerDPS > 100 && state.playerHealthPercent > 0.5,
-                actions: [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_SKELETON_VIKINGS]
+                actions: [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_SKELETON_VIKINGS]
              },
              {
                  type: 'adapt',
@@ -278,7 +278,7 @@ export class AIDirector {
                  type: 'counter',
                  priority: 1.0,
                  conditions: (state: GameState) => this.detectPlayerPattern(state),
-                actions: [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_GNOLLS]
+                actions: [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_GNOLLS]
              }
          ];
      }
@@ -301,7 +301,7 @@ export class AIDirector {
         const playerThreat = (state.playerDPS / 100) * (state.playerHealthPercent / 100);
          
          // Enemy presence assessment
-         const totalEnemies = state.enemyCountSkeletonVikings + state.enemyCountGolems + 
+         const totalEnemies = state.enemyCountSkeletonVikings + state.enemyCountOgres + 
                              state.enemyCountArchers + state.enemyCountGnolls;
          const enemyThreat = Math.min(totalEnemies / 20, 1.0);
          
@@ -392,7 +392,7 @@ export class AIDirector {
      private selectActionByStrategy(actions: DirectorAction[]): DirectorAction {
          switch (this.adaptiveStrategy) {
              case 'aggressive':
-                const aggressiveActions = [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_SKELETON_VIKINGS];
+                const aggressiveActions = [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_SKELETON_VIKINGS];
                  for (const action of aggressiveActions) {
                      if (actions.includes(action)) return action;
                  }
@@ -581,7 +581,7 @@ export class AIDirector {
             resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1), // Normalize
             gameTimer: Math.min(gameTimer / 300, 1), // Normalize to 5 minutes max
             enemyCountSkeletonVikings: Math.min(enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING) / 10, 1),
-            enemyCountGolems: Math.min(enemySystem.getEnemyCountByType(EnemyType.GOLEM) / 8, 1),
+            enemyCountOgres: Math.min(enemySystem.getEnemyCountByType(EnemyType.OGRE) / 8, 1),
             enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 15, 1),
             enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 20, 1),
             difficultyLevel: difficultyLevel,
@@ -602,7 +602,7 @@ export class AIDirector {
             state.resourceGeneration,
             state.gameTimer,
             state.enemyCountSkeletonVikings,
-            state.enemyCountGolems,
+            state.enemyCountOgres,
             state.enemyCountArchers,
             state.enemyCountGnolls,
             state.difficultyLevel,
@@ -698,7 +698,7 @@ export class AIDirector {
                 // Random action (exploration)
                 let action: DirectorAction;
                 if (this.currentDifficulty === DifficultyLevel.HARD && Math.random() < config.aggressiveness) {
-                    const aggressiveActions = [DirectorAction.SPAWN_GOLEMS, DirectorAction.SPAWN_GNOLLS, DirectorAction.INCREASE_SPAWN_RATE];
+                    const aggressiveActions = [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_GNOLLS, DirectorAction.INCREASE_SPAWN_RATE];
                     action = aggressiveActions[Math.floor(Math.random() * aggressiveActions.length)];
                 } else if (this.currentDifficulty === DifficultyLevel.EASY && Math.random() < (1 - config.aggressiveness)) {
                     const passiveActions = [DirectorAction.DO_NOTHING, DirectorAction.SPAWN_ARCHERS];
@@ -780,10 +780,10 @@ export class AIDirector {
                         this.spendBudget(spawnPlans.gnollCost);
                     }
                     break;
-                case DirectorAction.SPAWN_GOLEMS:
-                    if (spawnPlans.golems > 0) {
-                        enemySystem.spawnWave(EnemyType.GOLEM, spawnPlans.golems, 'near_player');
-                        this.spendBudget(spawnPlans.golemCost);
+                case DirectorAction.SPAWN_OGRES:
+                    if (spawnPlans.ogres > 0) {
+                        enemySystem.spawnWave(EnemyType.OGRE, spawnPlans.ogres, 'near_player');
+                        this.spendBudget(spawnPlans.ogreCost);
                     }
                     break;
                 case DirectorAction.INCREASE_SPAWN_RATE:
@@ -1465,35 +1465,35 @@ export class AIDirector {
         skeletonVikings: number;
         archers: number;
         gnolls: number;
-        golems: number;
+        ogres: number;
         skeletonVikingCost: number;
         archerCost: number;
         gnollCost: number;
-        golemCost: number;
+        ogreCost: number;
          totalCost: number;
      } {
          const enemyCosts = {
             skeletonViking: 50,
             archer: 30,
             gnoll: 20,
-            golem: 100
+            ogre: 100
         };
        
          const currentEnemies = {
             skeletonVikings: enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING),
             archers: enemySystem.getEnemyCountByType(EnemyType.ARCHER),
             gnolls: enemySystem.getEnemyCountByType(EnemyType.GNOLL),
-            golems: enemySystem.getEnemyCountByType(EnemyType.GOLEM)
+            ogres: enemySystem.getEnemyCountByType(EnemyType.OGRE)
         };
         
          const maxSpawns = {
             skeletonVikings: Math.min(Math.floor(this.currentBudget / enemyCosts.skeletonViking), Math.max(0, 8 - currentEnemies.skeletonVikings)),
             archers: Math.min(Math.floor(this.currentBudget / enemyCosts.archer), Math.max(0, 12 - currentEnemies.archers)),
             gnolls: Math.min(Math.floor(this.currentBudget / enemyCosts.gnoll), Math.max(0, 15 - currentEnemies.gnolls)),
-            golems: Math.min(Math.floor(this.currentBudget / enemyCosts.golem), Math.max(0, 4 - currentEnemies.golems))
+            ogres: Math.min(Math.floor(this.currentBudget / enemyCosts.ogre), Math.max(0, 4 - currentEnemies.ogres))
          };
         
-        let spawns = { skeletonVikings: 0, archers: 0, gnolls: 0, golems: 0 };
+        let spawns = { skeletonVikings: 0, archers: 0, gnolls: 0, ogres: 0 };
          
          switch (action) {
             case DirectorAction.SPAWN_SKELETON_VIKINGS:
@@ -1505,8 +1505,8 @@ export class AIDirector {
             case DirectorAction.SPAWN_GNOLLS:
                 spawns.gnolls = Math.min(8, maxSpawns.gnolls);
                  break;
-            case DirectorAction.SPAWN_GOLEMS:
-                spawns.golems = Math.min(2, maxSpawns.golems);
+            case DirectorAction.SPAWN_OGRES:
+                spawns.ogres = Math.min(2, maxSpawns.ogres);
                  break;
          }
         
@@ -1514,13 +1514,13 @@ export class AIDirector {
             skeletonVikingCost: spawns.skeletonVikings * enemyCosts.skeletonViking,
             archerCost: spawns.archers * enemyCosts.archer,
             gnollCost: spawns.gnolls * enemyCosts.gnoll,
-            golemCost: spawns.golems * enemyCosts.golem
+            ogreCost: spawns.ogres * enemyCosts.ogre
          };
          
          return {
              ...spawns,
              ...costs,
-            totalCost: costs.skeletonVikingCost + costs.archerCost + costs.gnollCost + costs.golemCost
+            totalCost: costs.skeletonVikingCost + costs.archerCost + costs.gnollCost + costs.ogreCost
          };
     }
     

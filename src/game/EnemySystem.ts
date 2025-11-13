@@ -590,12 +590,12 @@ export class ExplosionAttack {
  * Vortex attack for Skeleton Pirate - a traveling, expanding trap
  */
 export class VortexAttack {
-    public sprite: Phaser.GameObjects.Graphics;
+    public sprite: Phaser.GameObjects.Sprite;
     public damage: number;
     public scene: Scene;
     private active: boolean = true;
-    private travelTime: number = 1.0; // Time to reach max distance (1 second)
-    private totalLifetime: number = 4.0; // Total: 1s travel + 3s stationary
+    private travelTime: number = 1.0; // Time to reach player (1.5 seconds)
+    private totalLifetime: number = 4.0; // Total: 1.0s travel + 3s stationary
     private elapsed: number = 0;
     public x: number;
     public y: number;
@@ -603,9 +603,10 @@ export class VortexAttack {
     private startY: number;
     private targetX: number;
     private targetY: number;
-    private maxDistance: number = 350; // How far the vortex travels
-    private startRadius: number = 25; // Starting radius
-    private maxRadius: number = 100; // Maximum radius when fully expanded
+    private maxDistance: number = 600; // Maximum distance the vortex can travel
+    private totalDistance: number = 0; // Total distance to travel (calculated in constructor)
+    private startScale: number = 0.01; // Starting scale (very small)
+    private maxScale: number = 0.10; // Maximum scale when fully expanded (much smaller)
     public currentRadius: number;
     private velocityX: number;
     private velocityY: number;
@@ -613,6 +614,7 @@ export class VortexAttack {
     private frozenExpansionProgress: number | null = null; // Stores size when stopped early
     public slowEffect: number = 0.5; // Slow multiplier (0.5 = 50% speed)
     public slowDuration: number = 2000; // How long the slow lasts on player in ms (2 seconds)
+    private rotationSpeed: number = 3; // Radians per second for rotation
     
     constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, _enemyRadius: number = 40) {
         this.scene = scene;
@@ -621,76 +623,42 @@ export class VortexAttack {
         this.startY = enemyY;
         this.x = enemyX;
         this.y = enemyY;
-        this.currentRadius = this.startRadius;
         
         // Calculate direction towards player
         const dx = playerX - enemyX;
         const dy = playerY - enemyY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
         
-        // Calculate target position
-        this.targetX = enemyX + (dx / distance) * this.maxDistance;
-        this.targetY = enemyY + (dy / distance) * this.maxDistance;
+        // Limit the travel distance and target the player's position directly
+        this.totalDistance = Math.min(distanceToPlayer, this.maxDistance);
+        
+        // If player is within max distance, target them exactly to trap them in the center
+        // Otherwise, travel max distance in their direction
+        if (distanceToPlayer <= this.maxDistance) {
+            this.targetX = playerX;
+            this.targetY = playerY;
+        } else {
+            const directionX = dx / distanceToPlayer;
+            const directionY = dy / distanceToPlayer;
+            this.targetX = enemyX + directionX * this.maxDistance;
+            this.targetY = enemyY + directionY * this.maxDistance;
+        }
         
         // Calculate velocity for smooth travel
         this.velocityX = (this.targetX - this.startX) / this.travelTime;
         this.velocityY = (this.targetY - this.startY) / this.travelTime;
         
-        // Create visual effect - cyan/blue vortex with swirl pattern
-        this.sprite = scene.add.graphics();
-        this.updateVortexGraphics();
+        // Create whirlpool sprite
+        this.sprite = scene.add.sprite(enemyX, enemyY, 'whirlpool');
+        this.sprite.setScale(this.startScale);
         this.sprite.setDepth(4); // Below shields but above ground
+        this.sprite.setAlpha(0.8); // Slightly transparent
         
-        console.log(`Vortex created at (${enemyX.toFixed(0)}, ${enemyY.toFixed(0)}), targeting (${this.targetX.toFixed(0)}, ${this.targetY.toFixed(0)})`);
-    }
-
-    private updateVortexGraphics(): void {
-        this.sprite.clear();
+        // Calculate initial radius based on sprite size and scale
+        // Whirlpool.png is assumed to be roughly circular
+        this.currentRadius = (this.sprite.width / 2) * this.startScale;
         
-        // Calculate expansion progress
-        let expansionProgress: number;
-        if (this.frozenExpansionProgress !== null) {
-            // Use frozen size when stopped early
-            expansionProgress = this.frozenExpansionProgress;
-        } else if (this.isTraveling) {
-            // Expand while traveling
-            expansionProgress = Math.min(1, this.elapsed / this.travelTime);
-        } else {
-            // Stay at max size while stationary (reached destination normally)
-            expansionProgress = 1;
-        }
-        
-        this.currentRadius = this.startRadius + (this.maxRadius - this.startRadius) * expansionProgress;
-        
-        // Calculate pulsing alpha for visual effect
-        const pulseSpeed = 3;
-        const pulseAlpha = 0.3 + Math.sin(this.elapsed * pulseSpeed) * 0.15;
-        
-        // Draw outer vortex circle (cyan/turquoise)
-        this.sprite.fillStyle(0x00cccc, pulseAlpha);
-        this.sprite.fillCircle(0, 0, this.currentRadius);
-        
-        // Draw inner darker circle for depth
-        this.sprite.fillStyle(0x0088aa, pulseAlpha * 1.3);
-        this.sprite.fillCircle(0, 0, this.currentRadius * 0.7);
-        
-        // Draw swirl lines for vortex effect
-        this.sprite.lineStyle(2, 0x00ffff, pulseAlpha * 1.5);
-        const spiralCount = 3;
-        for (let i = 0; i < spiralCount; i++) {
-            const spiralAngle = (this.elapsed * 2 + (i * Math.PI * 2 / spiralCount)) % (Math.PI * 2);
-            const spiralRadius = this.currentRadius * 0.8;
-            
-            this.sprite.beginPath();
-            this.sprite.arc(0, 0, spiralRadius * 0.5, spiralAngle, spiralAngle + Math.PI * 0.5, false);
-            this.sprite.strokePath();
-        }
-        
-        // Draw center dot
-        this.sprite.fillStyle(0xffffff, pulseAlpha * 2);
-        this.sprite.fillCircle(0, 0, 3);
-        
-        this.sprite.setPosition(this.x, this.y);
+        console.log(`Vortex created at (${enemyX.toFixed(0)}, ${enemyY.toFixed(0)}), targeting player at (${this.targetX.toFixed(0)}, ${this.targetY.toFixed(0)})`);
     }
 
     public update(deltaTime: number): void {
@@ -698,25 +666,51 @@ export class VortexAttack {
         
         this.elapsed += deltaTime;
         
+        // Calculate expansion progress based on distance traveled
+        let expansionProgress: number;
+        if (this.frozenExpansionProgress !== null) {
+            // Use frozen size when stopped early
+            expansionProgress = this.frozenExpansionProgress;
+        } else if (this.isTraveling) {
+            // Calculate distance traveled from start position
+            const dx = this.x - this.startX;
+            const dy = this.y - this.startY;
+            const distanceTraveled = Math.sqrt(dx * dx + dy * dy);
+            // Expand based on distance traveled vs total distance
+            expansionProgress = Math.min(1, distanceTraveled / this.totalDistance);
+        } else {
+            // Stay at max size while stationary (reached destination normally)
+            expansionProgress = 1;
+        }
+        
+        // Update scale based on expansion progress
+        const currentScale = this.startScale + (this.maxScale - this.startScale) * expansionProgress;
+        this.sprite.setScale(currentScale);
+        
+        // Update radius for collision detection
+        this.currentRadius = (this.sprite.width / 2) * currentScale;
+        
+        // Rotate the whirlpool
+        this.sprite.rotation += this.rotationSpeed * deltaTime;
+        
         // Travel phase
         if (this.isTraveling && this.elapsed < this.travelTime) {
             // Move vortex
             this.x += this.velocityX * deltaTime;
             this.y += this.velocityY * deltaTime;
+            this.sprite.setPosition(this.x, this.y);
         } else if (this.isTraveling) {
             // Transition to stationary phase
             this.isTraveling = false;
             this.x = this.targetX;
             this.y = this.targetY;
+            this.sprite.setPosition(this.x, this.y);
         }
-        
-        // Update visual
-        this.updateVortexGraphics();
         
         // Fade out in the last 0.5 seconds
         if (this.elapsed > this.totalLifetime - 0.5) {
             const fadeProgress = (this.totalLifetime - this.elapsed) / 0.5;
-            this.sprite.setAlpha(fadeProgress);
+            this.sprite.setAlpha(0.8 * fadeProgress);
         }
         
         // Destroy after total lifetime
@@ -727,7 +721,9 @@ export class VortexAttack {
 
     public destroy(): void {
         this.active = false;
-        this.sprite.destroy();
+        if (this.sprite && this.sprite.scene) {
+            this.sprite.destroy();
+        }
     }
 
     public isActive(): boolean {
@@ -753,8 +749,11 @@ export class VortexAttack {
     public stopAtCurrentPosition(): void {
         // Stop the vortex at its current position when it hits the player
         if (this.isTraveling) {
-            // Calculate and freeze the current expansion progress
-            this.frozenExpansionProgress = Math.min(1, this.elapsed / this.travelTime);
+            // Calculate and freeze the current expansion progress based on distance
+            const dx = this.x - this.startX;
+            const dy = this.y - this.startY;
+            const distanceTraveled = Math.sqrt(dx * dx + dy * dy);
+            this.frozenExpansionProgress = Math.min(1, distanceTraveled / this.totalDistance);
             this.isTraveling = false;
             this.targetX = this.x;
             this.targetY = this.y;
@@ -921,11 +920,11 @@ export class LightningStrikeAttack {
  * Melee attack hitbox class for close-range enemies
  */
 export class MeleeAttack {
-    public sprite: Phaser.GameObjects.Graphics;
+    public sprite: Phaser.GameObjects.Graphics | Phaser.GameObjects.Sprite | Phaser.GameObjects.Container;
     public damage: number;
     public scene: Scene;
     private active: boolean = true;
-    private lifetime: number = 0.3; // Attack lasts 0.3 seconds
+    private lifetime: number = 0.3; // Attack lasts 0.3 seconds (extended for ogre)
     private elapsed: number = 0;
     public x: number;
     public y: number;
@@ -933,12 +932,17 @@ export class MeleeAttack {
     public height: number;
     private angle: number; // Store rotation angle in radians
     private corners: { x: number; y: number }[]; // Rotated corner positions
+    private isOgreAttack: boolean = false;
+    private boneSlamSprites: Phaser.GameObjects.Sprite[] = []; // Multiple sprites for layering
+    private delayBeforeShow: number = 0; // Delay before showing the effect
+    private hasShownEffect: boolean = false; // Track if effect has been shown
 
-    constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, enemyRadius: number = 40, width: number = 100, height: number = 60) {
+    constructor(scene: Scene, enemyX: number, enemyY: number, playerX: number, playerY: number, damage: number, enemyRadius: number = 40, width: number = 100, height: number = 60, enemyType?: EnemyType) {
         this.scene = scene;
         this.damage = damage;
         this.width = width;
         this.height = height;
+        this.isOgreAttack = enemyType === EnemyType.OGRE;
         
         // Calculate angle towards player
         const dx = playerX - enemyX;
@@ -956,17 +960,56 @@ export class MeleeAttack {
         // Calculate rotated corners for collision detection
         this.updateCorners();
         
-        // Create a orange/yellow rectangle for the melee attack
-        this.sprite = scene.add.graphics();
-        this.sprite.fillStyle(0xff0000, 1); // Red color
-        this.sprite.fillRect(-width / 2, -height / 2, width, height);
-        this.sprite.setPosition(this.x, this.y);
-        this.sprite.setRotation(this.angle); // Rotate to face player
-        this.sprite.setDepth(5); // Below projectiles but above ground
-        
-        // Add a small circle at the attack origin for debugging
-        this.sprite.fillStyle(0xffff00, 1); // Yellow
-        this.sprite.fillCircle(0, 0, 5); // Small yellow dot at attack center
+        // Create visual effect based on enemy type
+        if (this.isOgreAttack && scene.textures.exists('bone-slam-0')) {
+            // For ogre attacks, delay showing the bone slam until after attack animation completes
+            // Ogre attack animation is 12 frames at 15fps = 0.8 seconds
+            this.delayBeforeShow = 0.8;
+            // Extend lifetime to show bone slam after delay (0.8 delay + 0.3 animation = 1.1 total)
+            this.lifetime = 1.1;
+            
+            // Create an invisible container initially
+            const container = scene.add.container(this.x, this.y);
+            container.setDepth(5);
+            container.setAlpha(0); // Start invisible
+            
+            // Flip the sprite based on direction to ensure it looks correct from all angles
+            // Normalize angle to 0-2π range
+            const normalizedAngle = ((this.angle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+            const shouldFlip = normalizedAngle > Math.PI / 2 && normalizedAngle < (3 * Math.PI) / 2;
+            
+            // Create 3 layered sprites to build up opacity
+            for (let i = 0; i < 3; i++) {
+                const boneSlamSprite = scene.add.sprite(0, 0, 'bone-slam-0');
+                boneSlamSprite.setScale(0.2);
+                boneSlamSprite.setRotation(this.angle);
+                boneSlamSprite.setOrigin(0.5, 0.5);
+                boneSlamSprite.setAlpha(0.6); // Each layer at 60% opacity
+                boneSlamSprite.setTint(0xffffff);
+                boneSlamSprite.setBlendMode(Phaser.BlendModes.NORMAL);
+                
+                if (shouldFlip) {
+                    boneSlamSprite.setFlipY(true);
+                }
+                
+                container.add(boneSlamSprite);
+                this.boneSlamSprites.push(boneSlamSprite);
+            }
+            
+            this.sprite = container;
+        } else {
+            // Create a orange/yellow rectangle for the melee attack (fallback)
+            this.sprite = scene.add.graphics();
+            (this.sprite as Phaser.GameObjects.Graphics).fillStyle(0xff0000, 1); // Red color
+            (this.sprite as Phaser.GameObjects.Graphics).fillRect(-width / 2, -height / 2, width, height);
+            this.sprite.setPosition(this.x, this.y);
+            this.sprite.setRotation(this.angle); // Rotate to face player
+            this.sprite.setDepth(5); // Below projectiles but above ground
+            
+            // Add a small circle at the attack origin for debugging
+            (this.sprite as Phaser.GameObjects.Graphics).fillStyle(0xffff00, 1); // Yellow
+            (this.sprite as Phaser.GameObjects.Graphics).fillCircle(0, 0, 5); // Small yellow dot at attack center
+        }
     }
 
     private updateCorners(): void {
@@ -1001,9 +1044,24 @@ export class MeleeAttack {
         
         this.elapsed += deltaTime;
         
-        // Fade out over lifetime
-        const alpha = 1 - (this.elapsed / this.lifetime);
-        this.sprite.setAlpha(alpha * 0.6); // Max alpha is 0.6
+        // Handle delayed bone slam effect
+        if (this.isOgreAttack && !this.hasShownEffect && this.elapsed >= this.delayBeforeShow) {
+            this.hasShownEffect = true;
+            this.sprite.setAlpha(1); // Make visible
+            
+            // Play the bone slam animation on all sprites
+            this.boneSlamSprites.forEach(sprite => {
+                if (sprite.anims) {
+                    sprite.play('bone_slam');
+                }
+            });
+        }
+        
+        // Fade out over lifetime (skip for bone slam to maintain visibility)
+        if (!this.isOgreAttack) {
+            const alpha = 1 - (this.elapsed / this.lifetime);
+            this.sprite.setAlpha(alpha * 0.6); // Max alpha is 0.6
+        }
         
         // Destroy after lifetime
         if (this.elapsed >= this.lifetime) {
@@ -1013,7 +1071,16 @@ export class MeleeAttack {
 
     public destroy(): void {
         this.active = false;
-        this.sprite.destroy();
+        if (this.sprite) {
+            this.sprite.destroy();
+        }
+        // Clean up any bone slam sprites
+        this.boneSlamSprites.forEach(sprite => {
+            if (sprite && sprite.scene) {
+                sprite.destroy();
+            }
+        });
+        this.boneSlamSprites = [];
     }
 
     public isActive(): boolean {
@@ -1252,19 +1319,35 @@ export class Enemy {
             this.sprite.setData('enemyId', enemyId);
             console.log(`✅ Created enemy #${enemyId} - Type: ${type}, Sprite: ${textureKey}`);
             
+            // Add animation complete listener for ogre attack animation
+            if (type === EnemyType.OGRE) {
+                this.sprite.on('animationcomplete', (anim: Phaser.Animations.Animation) => {
+                    if (anim.key === 'ogre_attacking') {
+                        // Return to walking animation after attack completes
+                        if (this.sprite.anims) {
+                            this.sprite.play('ogre_walking');
+                        }
+                    }
+                });
+                // Set slower attack interval for ogre (heavy, powerful attacks)
+                this.meleeAttackInterval = 2.5; // Attack every 2.5 seconds (much slower than default 0.8)
+                // Set longer attack duration to keep ogre locked during entire attack + bone slam
+                this.attackDuration = 1.1; // 0.8s attack animation + 0.3s bone slam effect
+            }
+            
             // Set attack range based on enemy type
             // All ranges now use the dynamic sprite radius from getApproximateRadius()
             if (type === EnemyType.ARCHER) {
                 this.attackRange = 350; // Ranged attack
-            } else if (type === EnemyType.GOLEM) {
-                // Golem melee attack range: stop when the attack hitbox would reach the player
+            } else if (type === EnemyType.OGRE) {
+                // Ogre melee attack range: stop when the attack hitbox would reach the player
                 // Attack extends from sprite edge (radius) + attack width (100)
                 const spriteRadius = this.getApproximateRadius();
                 this.attackRange = spriteRadius + 100 + 20; // radius + attack width + small buffer
             } else if (type === EnemyType.SKELETON_VIKING) {
                 this.attackRange = 100; // Close range for cone attack
             } else if (type === EnemyType.SKELETON_PIRATE) {
-                this.attackRange = 320; // Vortex range (reduced to fit in camera view)
+                this.attackRange = 600; // Vortex range (long range to make dodging easier)
             } else if (type === EnemyType.ELEMENTAL_SPIRIT) {
                 this.attackRange = 30; // Explosion trigger range (adjusted for size 30)
             } else if (type === EnemyType.LIGHTNING_MAGE) {
@@ -1302,7 +1385,7 @@ export class Enemy {
                 };
                 specialAbilities = ['shield', 'cone_attack'];
                 break;
-            case EnemyType.GOLEM:
+            case EnemyType.OGRE:
                 baseStats = {
                     health: 150,
                     speed: 30,
@@ -1383,8 +1466,8 @@ export class Enemy {
         switch (type) {
             case EnemyType.SKELETON_VIKING:
                 return 0.05;
-            case EnemyType.GOLEM:
-                return 0.05;
+            case EnemyType.OGRE:
+                return 0.12; // Larger than other enemies
             case EnemyType.ARCHER:
                 return 0.05;
             case EnemyType.GNOLL:
@@ -1698,10 +1781,10 @@ export class Enemy {
                 }
             }
         }
-        // Golem behavior - walk up and melee attack
-        else if (this.type === EnemyType.GOLEM) {
+        // Ogre behavior - walk up and melee attack
+        else if (this.type === EnemyType.OGRE) {
             if (this.isAttacking) {
-                this.playAnimation(this.mobAnimations.idle);
+                // Keep attack animation playing (no need to retrigger, already playing)
                 // Stop movement when attacking
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(0, 0);
@@ -1722,16 +1805,20 @@ export class Enemy {
                     this.isAttacking = true;
                     this.attackTimer = this.attackDuration;
                     const enemyRadius = this.getApproximateRadius();
-                    const meleeAttack = new MeleeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (GOLEM) creating MELEE ATTACK`);
+                    const meleeAttack = new MeleeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius, 100, 60, EnemyType.OGRE);
+                    // Trigger attack animation
+                    if (this.sprite.anims) {
+                        this.sprite.play('ogre_attacking');
+                    }
+                    console.log(`Enemy #${this.sprite.getData('enemyId')} (OGRE) creating MELEE ATTACK with Bone Slam effect`);
                     return { type: 'melee', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: meleeAttack };
                 }
             }
         }
         // Skeleton Pirate behavior - vortex attacks at range
         else if (this.type === EnemyType.SKELETON_PIRATE) {
-            const optimalRange = 320; // Preferred casting distance (reduced to fit in camera view)
-            const minRange = 150; // Minimum distance to maintain
+            const optimalRange = 600; // Preferred casting distance (far away for easier dodging)
+            const minRange = 300; // Minimum distance to maintain (stay far from player)
             const inCameraView = this.isInCameraView();
             
             // Movement logic - try to maintain optimal range and stay in camera view
@@ -2353,7 +2440,7 @@ export class EnemySystem {
     public startSpecialEvent(eventType: string): void {
         switch (eventType) {
             case 'boss_encounter':
-                this.spawnWave(EnemyType.GOLEM, 1, 'screen_edges');
+                this.spawnWave(EnemyType.OGRE, 1, 'screen_edges');
                 break;
         }
     }

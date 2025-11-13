@@ -117,6 +117,27 @@ export class Game extends Scene {
         // Load arrow projectile for skeleton archer
         this.load.image('arrow', 'Effects/Arrow.png');
         
+        // Load whirlpool effect for skeleton pirate
+        this.load.image('whirlpool', 'Effects/Whirlpool.png');
+        
+        // Load ogre walking animation frames
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`ogre-walk-${i}`, `mobs/ogre/Walking_${frameNum}.png`);
+        }
+        
+        // Load ogre attacking animation frames
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`ogre-attack-${i}`, `mobs/ogre/Attacking_${frameNum}.png`);
+        }
+        
+        // Load bone slam effect for ogre melee attacks
+        for (let i = 0; i <= 2; i++) {
+            const frameNum = i.toString().padStart(2, '0');
+            this.load.image(`bone-slam-${i}`, `Effects/Bone_Slam/Frame_${frameNum}.png`);
+        }
+        
         // Load player sprite (use first available character texture)
 
         // Load essential spritesheets (characters and mobs) for animations
@@ -338,7 +359,31 @@ export class Game extends Scene {
             frameRate: 20, // Faster framerate for death animation
             repeat: 0 // Play once, don't loop
         });
-    }
+        
+        // Ogre walking animation
+        this.anims.create({
+            key: 'ogre_walking',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `ogre-walk-${i}` })),
+            frameRate: 10,
+            repeat: -1
+        });
+        
+        // Ogre attacking animation
+        this.anims.create({
+            key: 'ogre_attacking',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `ogre-attack-${i}` })),
+            frameRate: 15,
+            repeat: 0 // Play once
+        });
+        
+        // Bone slam effect animation
+        this.anims.create({
+            key: 'bone_slam',
+            frames: Array.from({ length: 3 }, (_, i) => ({ key: `bone-slam-${i}` })),
+            frameRate: 10,
+            repeat: 0 // Play once
+        });
+            }
 
     private showClassSelection(): void {
         this.classSelectionUI.show();
@@ -483,7 +528,7 @@ export class Game extends Scene {
         
         // Verify visuals: auto-spawn key mobs near player
         this.spawnEnemyAtPosition(EnemyType.ARCHER, spawnX + 80, spawnY);
-        this.spawnEnemyAtPosition(EnemyType.GOLEM, spawnX + 140, spawnY);
+        this.spawnEnemyAtPosition(EnemyType.OGRE, spawnX + 140, spawnY);
         this.spawnEnemyAtPosition(EnemyType.GNOLL, spawnX + 200, spawnY);
 
 

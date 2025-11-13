@@ -83,8 +83,8 @@ export class MobSpawnerUI {
                 description: 'Shield & Cone Attack'
             },
             { 
-                type: EnemyType.GOLEM, 
-                name: '🗿 Golem', 
+                type: EnemyType.OGRE, 
+                name: '🗿 Ogre', 
                 color: 0x888888,
                 description: 'Heavy Melee'
             },
@@ -285,7 +285,7 @@ export class MobSpawnerUI {
                 return;
             }
             if (code === 'Digit2' || key === '2') {
-                this.spawnMobAtCursor(EnemyType.GOLEM);
+                this.spawnMobAtCursor(EnemyType.OGRE);
                 return;
             }
             if (code === 'Digit3' || key === '3') {
