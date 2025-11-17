@@ -49,8 +49,12 @@ export class Player {
         console.log('🎮 Character animations:', this.characterAnimations);
 
         // ✅ Use correct character base (matches folder and atlas name)
-        const characterBase = this.getArchetypeDisplayName().toLowerCase(); // e.g. "magician"
+        let characterBase = this.getArchetypeDisplayName().toLowerCase(); // e.g. "magician"
         const formattedName = characterBase.charAt(0).toUpperCase() + characterBase.slice(1);
+
+        if (characterBase === 'rogue') {
+            characterBase = 'ninja';
+        }
 
         // ✅ Pick correct idle name for each archetype
         const idleName =
@@ -148,7 +152,7 @@ export class Player {
             case PlayerArchetypeType.GLASS_CANNON:
                 return 'Magician';
             case PlayerArchetypeType.EVASIVE:
-                return 'Rogue';
+                return 'Ninja';
         }
     }
     public setEnemyDeathCallback(callback: (x: number, y: number, enemyType: EnemyType, xpValue: number) => void): void {

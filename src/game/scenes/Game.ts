@@ -401,9 +401,9 @@ export class Game extends Scene {
         });
 
         const archetypeToCharacter: Record<string, string> = {
-            glass_cannon: '', //magician
+            glass_cannon: 'magician', //magician
             tank: 'knight',
-            assassin: 'rogue'
+            evasive: 'ninja'
         };
 
         const selected = this.selectedArchetype?.toString().toLowerCase() || 'magician';

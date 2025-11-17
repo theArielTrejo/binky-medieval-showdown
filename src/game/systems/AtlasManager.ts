@@ -31,6 +31,11 @@ export class AtlasManager {
     // Knight
     { name: 'idle', frames: 18, rate: 6, repeat: -1 },
     { name: 'walking', frames: 24, rate: 12, repeat: -1 },
+    { name: 'attackRun', frames: 12, rate: 14, repeat: 0 },
+
+    // Ninja
+    { name: 'idle', frames: 18, rate: 6, repeat: -1 },
+    { name: 'walking', frames: 24, rate: 12, repeat: -1 },
     { name: 'attackRun', frames: 12, rate: 14, repeat: 0 }
   ];
 
@@ -48,13 +53,14 @@ export class AtlasManager {
 
         const characterSets: Record<string, string[]> = {
             magician: ['idle_blinking', 'walking', 'attack'],
-            knight: ['idle', 'walking', 'attackrun']
+            knight: ['idle', 'walking', 'attackrun'],
+            ninja: ['idle_blinking', 'walking', 'attackrun']
         };
 
         const setsToLoad = characterSets[cleanCharacter] || [];
 
         if (setsToLoad.length === 0) {
-            console.warn(`⚠️ No animation sets defined for character: ${cleanCharacter}`);
+            console.warn(` No animation sets defined for character: ${cleanCharacter}`);
             return;
         }
 
@@ -65,7 +71,7 @@ export class AtlasManager {
 
             console.log(`🔹 Queuing atlas: key="${key}"`, { png, json });
 
-            // ✅ Simple, clean, correct:
+            //  Simple, clean, correct:
             this.scene.load.atlas(key, png, json);
         });
     }
@@ -84,25 +90,25 @@ export class AtlasManager {
 
             // Skip if animation already exists
             if (this.scene.anims.exists(animKey)) {
-                console.log(`⚠️ Animation already exists: ${animKey}`);
+                console.log(` Animation already exists: ${animKey}`);
                 return;
             }
 
             const texture = this.scene.textures.get(atlasKey);
             if (!texture) {
-                console.warn(`⚠️ Texture not found for atlasKey=${atlasKey}`);
+                console.warn(` Texture not found for atlasKey=${atlasKey}`);
                 return;
             }
 
-            // ✅ Dynamically grab all frames from the atlas JSON
+            //  Dynamically grab all frames from the atlas JSON
             const frameNames = texture.getFrameNames().sort((a, b) => a.localeCompare(b));
 
             if (frameNames.length === 0) {
-                console.warn(`⚠️ No frames found for atlasKey=${atlasKey}`);
+                console.warn(` No frames found for atlasKey=${atlasKey}`);
                 return;
             }
 
-            // ✅ Create animation dynamically
+            //  Create animation dynamically
             this.scene.anims.create({
                 key: animKey,
                 frames: frameNames.map(name => ({ key: atlasKey, frame: name })),
@@ -110,10 +116,10 @@ export class AtlasManager {
                 repeat: set.repeat ?? -1,
             });
 
-            console.log(`[AtlasManager] ✅ Created animation: ${animKey} (${frameNames.length} frames)`);
+            console.log(`[AtlasManager]  Created animation: ${animKey} (${frameNames.length} frames)`);
         });
 
-        console.log('✅ All loaded atlases:', this.scene.textures.list);
+        console.log(' All loaded atlases:', this.scene.textures.list);
     }
 
 

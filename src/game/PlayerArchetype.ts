@@ -23,7 +23,7 @@ export const CHARACTER_VARIANTS: Record<string, string[]> = {
     'armored knight': ['White Armored Knight', 'Medieval Knight', 'Templar Knight'],
     'paladin knight': ['Paladin_1', 'Paladin_2', 'Paladin_3'],
     'magician': ['Magician_1', 'Magician_2', 'Magician_3'],
-    'ninja': ['Black Ninja', 'White Ninja', 'Assassin Guy'],
+    'ninja': ['Black_Ninja', 'White Ninja', 'Assassin Guy'],
     'archer': ['Archer_1', 'Archer_3'],
     'elf archer': ['Archer_1', 'Archer_2']
 };

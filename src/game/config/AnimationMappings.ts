@@ -72,10 +72,10 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
 
   // Archer variants
   'Archer_1': {
-    idle: 'Archer_1_idle',
-    walk: 'Archer_1_walk',
-    attack: 'Magician_1_Attack', // Temp Place Holder
-    texture: 'char-texture-6'
+    idle: 'Ninja_1_Idle_Blinking',
+    walk: 'Ninja_1_Walking',
+    attack: 'Ninja_1_AttackRun', // Temp Place Holder
+    texture: 'ninja_idle_blinking-texture-6'
   },
   'Archer_2': {
     idle: 'Archer_2_idle',
@@ -92,10 +92,10 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
 
   // Ninja/Assassin variants (for Rogue class)
   'Black_Ninja': {
-    idle: 'Black_Ninja_idle',
-    walk: 'Black_Ninja_walk',
-    attack: 'Magician_1_Attack', // Temp Place Holder
-    texture: 'char-texture-9'
+    idle: 'Ninja_1_Idle_Blinking',
+    walk: 'Ninja_1_Walking',
+    attack: 'Ninja_1_AttackRun', // Temp Place Holder
+    texture: 'ninja_idle_blinking'
   },
   'White_Ninja': {
     idle: 'White_Ninja_idle',
