@@ -10,6 +10,14 @@ export class XPOrb extends Phaser.Physics.Arcade.Sprite {
     private isCollected: boolean = false;
     private pulseTimer: number = 0;
     
+    // Magnet behavior properties
+    private isMagnetized: boolean = false;
+    private targetX: number = 0;
+    private targetY: number = 0;
+    private magnetSpeed: number = 0;
+    private velocityX: number = 0;
+    private velocityY: number = 0;
+    
     constructor(scene: Scene, x: number, y: number) {
         // Call the parent constructor (Sprite)
         super(scene, x, y, 'green_orb');
@@ -28,22 +36,24 @@ export class XPOrb extends Phaser.Physics.Arcade.Sprite {
      * This method is used by the object pool to activate and initialize a recycled orb.
      */
     public launch(x: number, y: number, xpValue: number): void {
-        if (this.body) {
-            this.body.reset(x, y);
-        }
-        this.setActive(true);
-        this.setVisible(true);
+        // Reset and enable the body, show the sprite, and set active
+        this.enableBody(true, x, y, true, true);
         
         this.xpValue = xpValue;
         this.creationTime = this.scene.time.now;
         this.isCollected = false;
+        
+        // Reset magnet state
+        this.isMagnetized = false;
+        this.magnetSpeed = 0;
+        this.velocityX = 0;
+        this.velocityY = 0;
         
         // Play spawn animation
         this.setScale(0);
         EffectManager.createSpawnAnimation(this.scene, [this]);
     }
     
-    // Renamed from 'update' to 'preUpdate' to be automatically called by the Group
     preUpdate(time: number, delta: number): void {
         super.preUpdate(time, delta);
         
@@ -53,7 +63,12 @@ export class XPOrb extends Phaser.Physics.Arcade.Sprite {
 
         const age = time - this.creationTime;
         
-        if (age >= this.lifetime) {
+        // Handle magnet movement
+        if (this.isMagnetized && !this.isCollected) {
+            this.updateMagnetMovement(delta);
+        }
+
+        if (age >= this.lifetime && !this.isMagnetized) {
             this.kill(); // Deactivate instead of destroying
             return;
         }
@@ -69,28 +84,52 @@ export class XPOrb extends Phaser.Physics.Arcade.Sprite {
         EffectManager.updateBlinkEffect(this, age, this.lifetime);
     }
     
-    public collect(targetX: number, targetY: number, onComplete: () => void): void {
+    /**
+     * Starts moving the orb towards the target (player)
+     */
+    public magnetize(targetX: number, targetY: number, speed: number): void {
+        this.isMagnetized = true;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.magnetSpeed = speed;
+    }
+
+    private updateMagnetMovement(delta: number): void {
+        // Accelerate towards target
+        const angle = Phaser.Math.Angle.Between(this.x, this.y, this.targetX, this.targetY);
+        
+        // Simple acceleration
+        this.magnetSpeed += (delta * 0.5); // Increase speed over time
+        
+        this.velocityX = Math.cos(angle) * this.magnetSpeed;
+        this.velocityY = Math.sin(angle) * this.magnetSpeed;
+        
+        this.x += this.velocityX * (delta / 1000);
+        this.y += this.velocityY * (delta / 1000);
+        
+        // Update body if it exists to keep physics sync (though we are manually moving x/y)
+        if (this.body) {
+            this.body.reset(this.x, this.y);
+        }
+    }
+
+    public collect(onComplete: () => void): void {
         if (this.isCollected) return;
         this.isCollected = true;
         
-        EffectManager.createCollectionAnimation(this.scene, [this], targetX, targetY, () => {
-            this.kill(); // Deactivate when collection is complete
-            onComplete();
-        });
-        
+        // Instant visual feedback instead of long tween
         EffectManager.createFlashEffect(this.scene, this.x, this.y);
+        
+        this.kill();
+        onComplete();
     }
 
     /**
      * Deactivates the orb and returns it to the object pool.
      */
     public kill(): void {
-        this.setActive(false);
-        this.setVisible(false);
-        // It's good practice to disable the body as well
-        if (this.body) {
-            this.body.enable = false;
-        }
+        // Disable the body (removes debug box), hide sprite, and deactivate
+        this.disableBody(true, true);
     }
 
     public isWithinRange(x: number, y: number, range: number): boolean {

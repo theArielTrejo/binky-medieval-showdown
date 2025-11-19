@@ -25,6 +25,12 @@ export class AIMetricsDashboard {
     private rewardHistory: number[] = [];
     private lossHistory: number[] = [];
     private maxHistoryLength: number = 100;
+
+    // Chart UI Elements
+    private rewardTitleText: Phaser.GameObjects.Text;
+    private rewardValueText: Phaser.GameObjects.Text;
+    private lossTitleText: Phaser.GameObjects.Text;
+    private lossValueText: Phaser.GameObjects.Text;
     
     constructor(scene: Phaser.Scene, aiDirector: AIDirector, config?: Partial<DashboardConfig>) {
         this.scene = scene;
@@ -47,7 +53,6 @@ export class AIMetricsDashboard {
         // Create container
         this.container = this.scene.add.container(this.config.position.x, this.config.position.y);
         this.container.setDepth(1000); // Ensure it's on top
-        this.container.setScrollFactor(0); // Make UI fixed to screen
         
         // Create background with standardized styling
         this.background = this.scene.add.graphics();
@@ -124,6 +129,63 @@ export class AIMetricsDashboard {
         // Create chart graphics
         this.chartGraphics = this.scene.add.graphics();
         this.container.add(this.chartGraphics);
+
+        // --- Initialize Chart Labels (Fixes Memory Leak) ---
+        
+        // Reward Chart Labels
+        const rewardBounds = { x: 230, y: 55, width: 150, height: 55 };
+        this.rewardTitleText = this.scene.add.text(
+            rewardBounds.x + EnhancedDesignSystem.spacing.xs, 
+            rewardBounds.y - 18, 
+            'Reward Trend', 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: EnhancedDesignSystem.colors.accent,
+                fontFamily: 'primary',
+                stroke: true
+            })
+        );
+        this.rewardValueText = this.scene.add.text(
+            rewardBounds.x + rewardBounds.width - 50,
+            rewardBounds.y + rewardBounds.height + EnhancedDesignSystem.spacing.xs,
+            '--',
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: '#d4af37', // Default gold
+                fontFamily: 'primary',
+                stroke: true
+            })
+        );
+        this.container.add([this.rewardTitleText, this.rewardValueText]);
+
+        // Loss Chart Labels
+        const lossBounds = { x: 230, y: 135, width: 150, height: 55 };
+        this.lossTitleText = this.scene.add.text(
+            lossBounds.x + EnhancedDesignSystem.spacing.xs, 
+            lossBounds.y - 18, 
+            'Loss Trend', 
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: EnhancedDesignSystem.colors.accent,
+                fontFamily: 'primary',
+                stroke: true
+            })
+        );
+        this.lossValueText = this.scene.add.text(
+            lossBounds.x + lossBounds.width - 50,
+            lossBounds.y + lossBounds.height + EnhancedDesignSystem.spacing.xs,
+            '--',
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'xs',
+                color: '#c9b037', // Default dark gold
+                fontFamily: 'primary',
+                stroke: true
+            })
+        );
+        this.container.add([this.lossTitleText, this.lossValueText]);
+
+        // Set scroll factor for container AND children
+        this.container.setScrollFactor(0);
         
         // Set initial visibility
         this.container.setVisible(this.config.visible);
@@ -258,7 +320,7 @@ export class AIMetricsDashboard {
             this.rewardHistory,
             { x: 230, y: 55, width: 150, height: 55 },
             0xd4af37,
-            'Reward Trend'
+            this.rewardValueText
         );
         
         // Draw loss chart with golden theme
@@ -266,11 +328,11 @@ export class AIMetricsDashboard {
             this.lossHistory,
             { x: 230, y: 135, width: 150, height: 55 },
             0xc9b037,
-            'Loss Trend'
+            this.lossValueText
         );
     }
     
-    private drawChart(data: number[], bounds: any, color: number, title: string): void {
+    private drawChart(data: number[], bounds: any, color: number, valueTextObj: Phaser.GameObjects.Text): void {
         if (data.length < 2) return;
         
         // Draw chart background with standardized styling
@@ -278,20 +340,6 @@ export class AIMetricsDashboard {
         this.chartGraphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
         this.chartGraphics.lineStyle(EnhancedDesignSystem.borders.thin, 0xd4af37, 0.8);
         this.chartGraphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        
-        // Draw title with standardized styling
-        const titleText = this.scene.add.text(
-            bounds.x + EnhancedDesignSystem.spacing.xs, 
-            bounds.y - 18, 
-            title, 
-            EnhancedStyleHelpers.createTextStyle({
-                size: 'xs',
-                color: EnhancedDesignSystem.colors.accent,
-                fontFamily: 'primary',
-                stroke: true
-            })
-        );
-        this.container.add(titleText);
         
         // Calculate data range
         const minValue = Math.min(...data);
@@ -310,20 +358,10 @@ export class AIMetricsDashboard {
             this.chartGraphics.lineBetween(x1, y1, x2, y2);
         }
         
-        // Draw current value with standardized styling
+        // Update current value text
         const currentValue = data[data.length - 1];
-        const valueText = this.scene.add.text(
-            bounds.x + bounds.width - 50,
-            bounds.y + bounds.height + EnhancedDesignSystem.spacing.xs,
-            currentValue.toFixed(3),
-            EnhancedStyleHelpers.createTextStyle({
-                size: 'xs',
-                color: `#${color.toString(16).padStart(6, '0')}`,
-                fontFamily: 'primary',
-                stroke: true
-            })
-        );
-        this.container.add(valueText);
+        valueTextObj.setText(currentValue.toFixed(3));
+        valueTextObj.setColor(`#${color.toString(16).padStart(6, '0')}`);
     }
     
     // Public methods for dashboard control

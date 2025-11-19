@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
 
 export class Menu extends Scene {
     constructor() {
@@ -8,10 +9,10 @@ export class Menu extends Scene {
     preload(): void {
         console.log('Menu: preload started');
         this.load.setPath('assets');
-        
+
         // Load tilemap and all tilesets for background rendering
         this.load.tilemapTiledJSON('menuMap', 'tilemaps/binkymap1.json');
-        
+
         // Load all tileset images
         this.load.image('floor1', 'tilemaps/floor1.png');
         this.load.image('GraveyardTileset', 'tilemaps/GraveyardTileset.png');
@@ -36,20 +37,20 @@ export class Menu extends Scene {
         this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
         this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
 
-    // Knight atlases (for background ambient animation)
-    this.load.atlas('knight_walking', 'atlases/knight/knight_walking.png', 'atlases/knight/knight_walking.json');
-    this.load.atlas('knight_idle', 'atlases/knight/knight_idle.png', 'atlases/knight/knight_idle.json');
-        
+        // Knight atlases (for background ambient animation)
+        this.load.atlas('knight_walking', 'atlases/knight/knight_walking.png', 'atlases/knight/knight_walking.json');
+        this.load.atlas('knight_idle', 'atlases/knight/knight_idle.png', 'atlases/knight/knight_idle.json');
+
         console.log('Menu: preload finished');
     }
 
     create(): void {
         console.log('Menu: create started');
-        
+
         // Create the tilemap
         const map = this.make.tilemap({ key: 'menuMap' });
         console.log('Tilemap created:', map.width, 'x', map.height);
-        
+
         // Add all tilesets to the map
         const tilesetNames = [
             'floor1', 'GraveyardTileset', 'tiledwallandfloor', 'gatedoorandflags', 'castlewall',
@@ -58,7 +59,7 @@ export class Menu extends Scene {
             'farmgrass', 'farmobjects', /* 'collision' intentionally excluded for menu */ 'D_CastleGate', 'Portcullis',
             'grassclippings2', 'objectbrickstools', 'FieldsTileset'
         ];
-        
+
         const tilesets = [];
         for (const name of tilesetNames) {
             const tileset = map.addTilesetImage(name, name);
@@ -66,7 +67,7 @@ export class Menu extends Scene {
                 tilesets.push(tileset);
             }
         }
-        
+
         // Create all layers from the tilemap
         const shouldSkip = (name: string) => /collision|barrier|block|debug/i.test(name);
         for (let i = 0; i < map.layers.length; i++) {
@@ -86,30 +87,37 @@ export class Menu extends Scene {
                 console.warn(`Could not create layer ${i}: ${layer.name}`);
             }
         }
-        
-    // Position camera at spawn location (73% right, 25% down)
-    const spawnX = map.widthInPixels * 0.73;
-    const spawnY = map.heightInPixels * 0.25;
-        
+
+        // Position camera at spawn location (73% right, 25% down)
+        const spawnX = map.widthInPixels * 0.73;
+        const spawnY = map.heightInPixels * 0.25;
+
         this.cameras.main.centerOn(spawnX, spawnY);
-    this.cameras.main.setZoom(1.5);
-        
+        this.cameras.main.setZoom(1.5);
+
         console.log('Camera positioned at spawn:', spawnX, spawnY);
 
         // Semi-transparent dark overlay for menu buttons readability
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
-    const overlay = this.add.rectangle(centerX, centerY, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.5);
-    overlay.setOrigin(0.5).setDepth(10).setScrollFactor(0);
+        const centerX = this.cameras.main.width / 2;
+        const centerY = this.cameras.main.height / 2;
+
+        // Use design system colors for overlay
+        const overlay = this.add.rectangle(centerX, centerY, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.6);
+        overlay.setOrigin(0.5).setDepth(10).setScrollFactor(0);
 
         // Add menu title at fixed screen position
-        const titleText = this.add.text(centerX, 160, "Binky's Medieval Showdown", {
-            fontSize: '45px',
-            color: '#ffffff',
+        // Using Design System styles but keeping the size reasonable (45px) as requested
+        const titleText = this.add.text(centerX, 160, "Binky's Medieval Showdown", EnhancedStyleHelpers.createTextStyle({
+            size: 'title', // Base size
+            color: EnhancedDesignSystem.colors.accent, // Gold
+            fontFamily: 'primary',
             fontStyle: 'bold',
-            fontFamily: 'Cinzel, serif',
-            align: 'center',
-        });
+            align: 'center'
+        }));
+        titleText.setFontSize(45); // Explicitly set to 45px as per original
+        titleText.setStroke('#000000', 4);
+        titleText.setShadow(0, 0, EnhancedDesignSystem.colors.accent, 10, true, true);
+
         titleText.setOrigin(0.5).setDepth(100).setScrollFactor(0);
         console.log('✅ Title text created');
 
@@ -259,79 +267,54 @@ export class Menu extends Scene {
     }
 
     private createMenuButtons(): void {
-    // Place buttons at fixed screen positions so they are always visible
-    const centerX = this.cameras.main.width / 2;
-    const buttonY = 300;
-    const spacing = 100;
+        // Place buttons at fixed screen positions so they are always visible
+        const centerX = this.cameras.main.width / 2;
+        const buttonY = 300;
+        const spacing = 100;
+
+        // Helper to create styled text button using the simple text method
+        const createButton = (y: number, text: string, callback: () => void) => {
+            const button = this.add.text(centerX, y, text, EnhancedStyleHelpers.createTextStyle({
+                size: 'xl',
+                color: EnhancedDesignSystem.colors.text, // Parchment color
+                fontFamily: 'primary',
+                fontStyle: 'bold',
+                align: 'center'
+            }));
+
+            button.setFontSize(32); // Match original size
+            button.setStroke('#000000', 4); // Add stroke for readability
+            button.setOrigin(0.5).setInteractive().setDepth(101).setScrollFactor(0);
+
+            button.on('pointerdown', callback);
+
+            button.on('pointerover', () => {
+                button.setColor(EnhancedDesignSystem.colors.accent); // Gold on hover
+                button.setScale(1.1);
+            });
+
+            button.on('pointerout', () => {
+                button.setColor(EnhancedDesignSystem.colors.text); // Back to parchment
+                button.setScale(1);
+            });
+
+            return button;
+        };
 
         // Play Button
-        const playButton = this.add.text(centerX, buttonY, '▶ PLAY', {
-            fontSize: '32px',
-            color: '#00ff00',
-            stroke: '#00ff00',
-            strokeThickness: 2,
-            fontFamily: 'Cinzel, serif',
-            align: 'center',
-        });
-        playButton.setOrigin(0.5).setInteractive().setDepth(101).setScrollFactor(0);
-
-        playButton.on('pointerdown', () => {
+        createButton(buttonY, '▶ PLAY', () => {
             console.log('Play clicked');
             this.scene.start('Game');
         });
 
-        playButton.on('pointerover', () => {
-            playButton.setStyle({ color: '#66ff66' });
-        });
-
-        playButton.on('pointerout', () => {
-            playButton.setStyle({ color: '#00ff00' });
-        });
-
         // Settings Button
-        const settingsButton = this.add.text(centerX, buttonY + spacing, '⚙ SETTINGS', {
-            fontSize: '32px',
-            color: '#ffff00',
-            stroke: '#ffff00',
-            strokeThickness: 2,
-            fontFamily: 'Cinzel, serif',
-            align: 'center',
-        });
-        settingsButton.setOrigin(0.5).setInteractive().setDepth(101).setScrollFactor(0);
-
-        settingsButton.on('pointerdown', () => {
+        createButton(buttonY + spacing, '⚙ SETTINGS', () => {
             console.log('Settings clicked');
         });
 
-        settingsButton.on('pointerover', () => {
-            settingsButton.setStyle({ color: '#ffff99' });
-        });
-
-        settingsButton.on('pointerout', () => {
-            settingsButton.setStyle({ color: '#ffff00' });
-        });
-
         // Quit Button
-        const quitButton = this.add.text(centerX, buttonY + spacing * 2, '✕ QUIT', {
-            fontSize: '32px',
-            color: '#ff0000',
-            stroke: '#ff0000',
-            strokeThickness: 2,
-            fontFamily: 'Cinzel, serif',
-            align: 'center',
-        });
-        quitButton.setOrigin(0.5).setInteractive().setDepth(101).setScrollFactor(0);
-
-        quitButton.on('pointerdown', () => {
+        createButton(buttonY + spacing * 2, '✕ QUIT', () => {
             console.log('Quit clicked');
-        });
-
-        quitButton.on('pointerover', () => {
-            quitButton.setStyle({ color: '#ff6666' });
-        });
-
-        quitButton.on('pointerout', () => {
-            quitButton.setStyle({ color: '#ff0000' });
         });
     }
 }

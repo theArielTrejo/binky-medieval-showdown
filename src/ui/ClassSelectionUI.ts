@@ -295,10 +295,10 @@ export class ClassSelectionUI {
         this.updateSelectButton();
         
         // Auto-start the game after a short delay to allow visual feedback
-        setTimeout(() => {
+        this.scene.time.delayedCall(500, () => {
             console.log('Auto-starting game with archetype:', archetype);
             this.config.onClassSelected(archetype);
-        }, 500);
+        });
     }
 
     private createDetailsPanel(): void {

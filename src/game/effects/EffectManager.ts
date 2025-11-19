@@ -111,10 +111,11 @@ export class EffectManager {
         XP_CONSTANTS.FLASH_ALPHA
       );
       flash.setDepth(XP_CONSTANTS.DEPTH.FLASH);
-      const bloom = flash.postFX.addBloom(XP_CONSTANTS.COLORS.FLASH, 0, 0, 1, 1.2);
+      // Optimized: Removed Bloom FX which causes severe lag on mass pickup
+      // const bloom = flash.postFX.addBloom(XP_CONSTANTS.COLORS.FLASH, 0, 0, 1, 1.2);
+      
       scene.tweens.add({
-        targets: [flash, bloom],
-        strength: 0,
+        targets: flash,
         alpha: 0,
         scaleX: XP_CONSTANTS.FLASH_SCALE_MULTIPLIER,
         scaleY: XP_CONSTANTS.FLASH_SCALE_MULTIPLIER,

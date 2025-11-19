@@ -52,7 +52,6 @@ export class AssetManager {
   public async loadAllAssets(tilemapConfigs: TilemapConfig[] = []): Promise<AssetLoadingResult> {
     if (this.scene.registry.get(REGISTRY_KEYS.ASSET_LOADING_STATE) === 'loading') {
       console.warn('Asset loading already in progress.');
-      // Or throw new Error('Asset loading already in progress');
       return { success: false, errors: ['Loading already in progress'], duration: 0, loadedAssets: 0, failedAssets: 0, totalAssets: 0 };
     }
 
@@ -60,8 +59,35 @@ export class AssetManager {
     this.resetProgressInRegistry();
     this.scene.registry.set(REGISTRY_KEYS.ASSET_LOADING_STATE, 'loading');
 
+    // Setup listener for individual file progress (mainly for spritesheets)
+    const onFileComplete = (key: string, type: string, data: any) => {
+       // Check if this file corresponds to a tracked asset in the registry
+       const registryKey = `${REGISTRY_KEYS.ASSET_INFO_PREFIX}${key}`;
+       const assetInfo = this.scene.registry.get(registryKey);
+       
+       if (assetInfo && assetInfo.state !== AssetLoadingState.LOADED) {
+           assetInfo.state = AssetLoadingState.LOADED;
+           this.scene.registry.set(registryKey, assetInfo);
+           this.updateOverallProgress(true);
+       }
+    };
+
+    const onFileError = (file: Phaser.Loader.File) => {
+        const registryKey = `${REGISTRY_KEYS.ASSET_INFO_PREFIX}${file.key}`;
+        const assetInfo = this.scene.registry.get(registryKey);
+
+        if (assetInfo) {
+            assetInfo.state = AssetLoadingState.FAILED;
+            assetInfo.error = `Failed to load ${file.key}`;
+            this.scene.registry.set(registryKey, assetInfo);
+            this.updateOverallProgress(false, assetInfo.error);
+        }
+    };
+
+    this.scene.load.on(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+    this.scene.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
+
     try {
-      // The results object is now for the final return value, not for internal state tracking.
       const finalResults: AssetLoadingResult = {
         success: true,
         totalAssets: 0,
@@ -74,24 +100,35 @@ export class AssetManager {
         spritesheetResults: []
       };
 
-      // Load essential spritesheets first
-      const spritesheetResults = this.loadSpritesheets();
+      // 1. Queue Spritesheets (Initializes registry entries as 'loading')
+      const spritesheetResults = this.queueSpritesheets();
       finalResults.spritesheetResults = spritesheetResults;
 
-      // Skip mob loading - now using spritesheets
-      // const mobResults = await this.loadMobs();
-      // finalResults.mobResults = mobResults;
-      finalResults.mobResults = [];
+      // 2. Queue Tilemaps (Initializes registry entries as 'loading')
+      // We don't await loadTilemaps here yet, we just want to queue them if possible, 
+      // but TilemapManager.loadTilemap is designed to start the loader.
+      // So we will let TilemapManager handle the tilemaps, but we need to ensure we wait for everything.
       
-      // Load tilemaps
-      if (tilemapConfigs.length > 0) {
-        const tilemapResults = await this.loadTilemaps(tilemapConfigs);
-        finalResults.tilemapResults = tilemapResults;
-      } else {
-        finalResults.tilemapResults = [];
-      }
+      let tilemapResults: TilemapLoadResult[] = [];
 
-      // Finalize results from the registry
+      if (tilemapConfigs.length > 0) {
+        // TilemapManager.loadTilemap internally calls scene.load.start() and waits for COMPLETE.
+        // This will cover the spritesheets we just queued as well.
+        tilemapResults = await this.loadTilemaps(tilemapConfigs);
+      } else {
+        // If no tilemaps, we must manually start the loader for the spritesheets and wait.
+        if (spritesheetResults.length > 0) {
+            await this.waitForCompletion();
+        }
+      }
+      finalResults.tilemapResults = tilemapResults;
+      finalResults.mobResults = []; // Deprecated
+
+      // Cleanup listeners
+      this.scene.load.off(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+      this.scene.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
+
+      // Finalize results
       finalResults.totalAssets = this.scene.registry.get(REGISTRY_KEYS.ASSETS_TOTAL) || 0;
       finalResults.loadedAssets = this.scene.registry.get(REGISTRY_KEYS.ASSETS_LOADED) || 0;
       finalResults.failedAssets = this.scene.registry.get(REGISTRY_KEYS.ASSETS_FAILED) || 0;
@@ -105,85 +142,130 @@ export class AssetManager {
       return finalResults;
 
     } catch (error) {
+      // Cleanup listeners in case of error
+      this.scene.load.off(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);
+      this.scene.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, onFileError);
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown error during asset loading';
-      this.scene.registry.get(REGISTRY_KEYS.ASSET_ERRORS).push(errorMessage);
+      
+      // Safe array update
+      const currentErrors = [...(this.scene.registry.get(REGISTRY_KEYS.ASSET_ERRORS) || [])];
+      currentErrors.push(errorMessage);
+      this.scene.registry.set(REGISTRY_KEYS.ASSET_ERRORS, currentErrors);
+      
       this.scene.registry.set(REGISTRY_KEYS.ASSET_LOADING_STATE, 'error');
       
       throw new Error(errorMessage);
-
     }
   }
 
-  // Removed unused loadMobs method (mobs are now handled via spritesheets)
-  
-  private loadSpritesheets(): SpriteSheetLoadResult[] {
+  /**
+   * Helper to wait for the global loader to finish.
+   */
+  private async waitForCompletion(): Promise<void> {
+      return new Promise((resolve) => {
+          if (!this.scene.load.isLoading()) {
+              this.scene.load.start();
+          }
+          this.scene.load.once(Phaser.Loader.Events.COMPLETE, () => {
+              resolve();
+          });
+      });
+  }
+
+  private queueSpritesheets(): SpriteSheetLoadResult[] {
     const results = this.spritesheetManager.loadEssentialSpritesheets();
     
-    // Update registry after all spritesheets are processed
+    // Initialize registry entries for spritesheets (but do NOT mark as loaded yet)
     for (const result of results) {
       const assetInfo: AssetInfo = {
         key: result.key,
         type: AssetType.SPRITESHEET,
         path: `assets/spritesheets/${result.key}`,
-        state: result.success ? AssetLoadingState.LOADED : AssetLoadingState.FAILED,
-        error: result.error,
+        state: AssetLoadingState.LOADING, // Start as LOADING
+        error: undefined,
         retryCount: 0,
         maxRetries: this.config.maxRetries
       };
       
-      // Store individual asset info in the registry
       this.scene.registry.set(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${result.key}`, assetInfo);
-
-      this.updateOverallProgress(result.success, result.error);
+      
+      // Increment TOTAL assets count
+      this.scene.registry.inc(REGISTRY_KEYS.ASSETS_TOTAL, 1);
     }
-    return results;
-  }
-
-  private async loadTilemaps(configs: TilemapConfig[]): Promise<TilemapLoadResult[]> {
-    const loadPromises = configs.map(config => this.tilemapManager.loadTilemap(config));
-    const results = await Promise.all(loadPromises);
-
-    for (const result of results) {
-        const assetInfo: AssetInfo = {
-            key: result.tilemapName,
-            type: AssetType.TILEMAP,
-            path: configs.find(c => c.name === result.tilemapName)?.jsonPath || '',
-            state: result.success ? AssetLoadingState.LOADED : AssetLoadingState.FAILED,
-            error: result.error,
-            retryCount: 0,
-            maxRetries: this.config.maxRetries,
-        };
-        
-        this.scene.registry.set(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${result.tilemapName}`, assetInfo);
-
-        this.updateOverallProgress(result.success, result.error);
-    }
+    // Update percentage (will be 0 initially)
+    this.updatePercentage();
     
     return results;
   }
 
+  private async loadTilemaps(configs: TilemapConfig[]): Promise<TilemapLoadResult[]> {
+    // Register tilemaps in registry before loading
+    for (const config of configs) {
+        const assetInfo: AssetInfo = {
+            key: config.name,
+            type: AssetType.TILEMAP,
+            path: config.jsonPath,
+            state: AssetLoadingState.LOADING,
+            error: undefined,
+            retryCount: 0,
+            maxRetries: this.config.maxRetries,
+        };
+        this.scene.registry.set(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${config.name}`, assetInfo);
+        this.scene.registry.inc(REGISTRY_KEYS.ASSETS_TOTAL, 1);
+    }
+    this.updatePercentage();
+
+    // TilemapManager handles its own "Loaded" updates via its internal promise resolution,
+    // but we also have global listeners. To avoid double counting, we rely on TilemapManager's
+    // result to update the specific Tilemap asset entry state, OR we let the global listener handle files.
+    // However, a Tilemap is a composite asset (JSON + Images).
+    // The global listener will hear about the JSON and the Images separately.
+    // TilemapManager.loadTilemap returns when the whole map is ready.
+    
+    const loadPromises = configs.map(config => this.tilemapManager.loadTilemap(config));
+    const results = await Promise.all(loadPromises);
+
+    for (const result of results) {
+        // Update the Tilemap Asset entry to LOADED/FAILED based on the manager's result
+        // This overrides whatever intermediate state the file listeners might have set
+        const assetInfo = this.scene.registry.get(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${result.tilemapName}`);
+        if (assetInfo) {
+            assetInfo.state = result.success ? AssetLoadingState.LOADED : AssetLoadingState.FAILED;
+            assetInfo.error = result.error;
+            this.scene.registry.set(`${REGISTRY_KEYS.ASSET_INFO_PREFIX}${result.tilemapName}`, assetInfo);
+            
+            // We manually update overall progress for the "Tilemap" asset itself
+            // (Files inside it might have already triggered progress updates, but the Map concept is separate)
+            this.updateOverallProgress(result.success, result.error);
+        }
+    }
+    
+    return results;
+  }
+  
+  private updatePercentage(): void {
+      const total = this.scene.registry.get(REGISTRY_KEYS.ASSETS_TOTAL) || 1;
+      const loaded = this.scene.registry.get(REGISTRY_KEYS.ASSETS_LOADED) || 0;
+      const percentage = (loaded / total) * 100;
+      this.scene.registry.set(REGISTRY_KEYS.ASSETS_PERCENTAGE, percentage);
+  }
+
   /**
    * Increments asset counts in the registry and recalculates the percentage.
-   * This method replaces the old updateOverallProgress and becomes the single point of update.
    */
   private updateOverallProgress(wasSuccessful: boolean, error?: string): void {
       if (wasSuccessful) {
-        // Use the 'inc' method for atomic increments
         this.scene.registry.inc(REGISTRY_KEYS.ASSETS_LOADED, 1);
       } else {
         this.scene.registry.inc(REGISTRY_KEYS.ASSETS_FAILED, 1);
         if (error) {
-          // It's better to update arrays by getting, modifying, and setting back.
-          const currentErrors = this.scene.registry.get(REGISTRY_KEYS.ASSET_ERRORS) || [];
+          const currentErrors = [...(this.scene.registry.get(REGISTRY_KEYS.ASSET_ERRORS) || [])];
           currentErrors.push(error);
           this.scene.registry.set(REGISTRY_KEYS.ASSET_ERRORS, currentErrors);
         }
       }
-
-      const total = this.scene.registry.get(REGISTRY_KEYS.ASSETS_TOTAL) || 1; // Avoid division by zero
-      const loaded = this.scene.registry.get(REGISTRY_KEYS.ASSETS_LOADED) || 0;
-      const percentage = (loaded / total) * 100;
-      this.scene.registry.set(REGISTRY_KEYS.ASSETS_PERCENTAGE, percentage);
+      this.updatePercentage();
   }
 
   /**

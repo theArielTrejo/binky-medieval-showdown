@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
-import { skillTreeData, SkillTree, Skill, SkillArchetype } from '../game/SkillTreeData';
+import { skillTreeData, SkillTree, Skill } from '../game/SkillTreeData';
 import { Player } from '../game/Player';
 import { playerArchetypeToSkillArchetype } from '../game/PlayerArchetype';
 
@@ -10,6 +10,11 @@ export class SkillTreeUI {
     private overlay: Phaser.GameObjects.Rectangle;
     private skillTreesContainer: Phaser.GameObjects.Container;
     private tooltip: Phaser.GameObjects.Container;
+    private tooltipBg: Phaser.GameObjects.Graphics;
+    private tooltipName: Phaser.GameObjects.Text;
+    private tooltipType: Phaser.GameObjects.Text;
+    private tooltipDesc: Phaser.GameObjects.Text;
+    private skillPointsText: Phaser.GameObjects.Text;
     private player: Player;
 
     private unlockedSkills: Map<string, boolean> = new Map();
@@ -17,11 +22,16 @@ export class SkillTreeUI {
     constructor(scene: Phaser.Scene, player: Player) {
         this.scene = scene;
         this.player = player;
+        this.player.setSkillTreeUI(this); // Register UI with player
         this.container = this.scene.add.container(0, 0);
         this.skillTreesContainer = this.scene.add.container(0, 0);
         this.tooltip = this.scene.add.container(0, 0);
         this.overlay = this.scene.add.rectangle(0, 0, 0, 0);
         this.create();
+    }
+
+    public getUnlockedSkills(): Map<string, boolean> {
+        return this.unlockedSkills;
     }
 
     private create(): void {
@@ -45,7 +55,13 @@ export class SkillTreeUI {
         title.setShadow(0, 0, EnhancedDesignSystem.colors.accent, 10, true, true);
         this.container.add(title);
 
-
+        // Skill Points Display
+        this.skillPointsText = this.scene.add.text(0, -height / 2 + 150, `Skill Points: ${this.player.getSkillPoints()}`, EnhancedStyleHelpers.createTextStyle({
+            size: 'lg',
+            color: '#ffffff',
+            fontFamily: 'primary'
+        })).setOrigin(0.5);
+        this.container.add(this.skillPointsText);
 
         this.container.add(this.skillTreesContainer);
         this.createSkillTrees();
@@ -53,6 +69,12 @@ export class SkillTreeUI {
         this.createTooltip();
 
         this.container.setVisible(false);
+    }
+
+    public updateSkillPointsDisplay(): void {
+        if (this.skillPointsText) {
+            this.skillPointsText.setText(`Skill Points: ${this.player.getSkillPoints()}`);
+        }
     }
 
     private createStarrySkyBackground(width: number, height: number): Phaser.GameObjects.Graphics {
@@ -84,7 +106,8 @@ export class SkillTreeUI {
             return;
         }
 
-        const tree = skillTreeData[skillArchetype];
+        // Deep copy the data to ensure we don't modify the global source
+        const tree = JSON.parse(JSON.stringify(skillTreeData[skillArchetype]));
         const treeContainer = this.createSkillTree(tree, 0, 0, width);
         this.skillTreesContainer.add(treeContainer);
     }
@@ -135,7 +158,7 @@ export class SkillTreeUI {
 
         // This Map will store references to the node GameObjects
         const nodes: Map<string, Phaser.GameObjects.Container> = new Map();
-        
+
         // --- Create Connection Lines ---
         const lineGraphics = this.scene.add.graphics();
         lineGraphics.lineStyle(4, 0x333333, 1);
@@ -158,7 +181,7 @@ export class SkillTreeUI {
         path.skills.forEach((skill: Skill) => {
             if (skill.prerequisites && skill.prerequisites.length > 0) {
                 const toNode = nodes.get(skill.name);
-                
+
                 skill.prerequisites.forEach((prereqName: string) => {
                     const fromNode = nodes.get(prereqName);
                     if (fromNode && toNode) {
@@ -207,7 +230,7 @@ export class SkillTreeUI {
     // --- MODIFIED FUNCTION ---
     private drawNode(graphics: Phaser.GameObjects.Graphics, isUnlocked: boolean): void {
         graphics.clear();
-        
+
         const colorValue = isUnlocked ? EnhancedDesignSystem.colors.accent : 0x222222;
         const borderColorValue = isUnlocked ? EnhancedDesignSystem.colors.accentLight : 0x444444;
 
@@ -222,7 +245,7 @@ export class SkillTreeUI {
 
         graphics.fillStyle(Phaser.Display.Color.ValueToColor(colorValue).color, 1);
         graphics.fillPoints(diamond.points, true);
-        
+
         graphics.lineStyle(4, Phaser.Display.Color.ValueToColor(borderColorValue).color, 1);
         graphics.strokePoints(diamond.points, true); // true to close the shape
     }
@@ -236,23 +259,51 @@ export class SkillTreeUI {
         const prerequisitesMet = skill.prerequisites.every(prereq => this.unlockedSkills.get(prereq));
 
         if (prerequisitesMet) {
-            this.unlockedSkills.set(skill.name, true);
-            this.drawNode(graphics, true);
+            if (this.player.spendSkillPoints(1)) {
+                this.unlockedSkills.set(skill.name, true);
+                this.drawNode(graphics, true);
+                this.updateSkillPointsDisplay();
 
-            const particles = this.scene.add.particles(worldX, worldY, 'sparkle', {
-                speed: { min: -100, max: 100 },
-                angle: { min: 0, max: 360 },
-                scale: { start: 0.5, end: 0 },
-                blendMode: 'ADD',
-                lifespan: 400,
-                frequency: -1
-            });
-            particles.setDepth(this.container.depth + 1);
-            particles.setScrollFactor(0);
-            
-            particles.explode(20, 0, 0); 
+                const particles = this.scene.add.particles(worldX, worldY, 'sparkle', {
+                    speed: { min: -100, max: 100 },
+                    angle: { min: 0, max: 360 },
+                    scale: { start: 0.5, end: 0 },
+                    blendMode: 'ADD',
+                    lifespan: 400,
+                    frequency: -1
+                });
+                particles.setDepth(this.container.depth + 1);
+                particles.setScrollFactor(0);
 
-            this.scene.time.delayedCall(1000, () => particles.destroy());
+                particles.explode(20, 0, 0);
+
+                this.scene.time.delayedCall(1000, () => particles.destroy());
+            } else {
+                // Not enough points
+                console.log("Not enough skill points!");
+                // Convert world coordinates to local coordinates relative to the container
+                // This ensures the text appears inside the UI and scales correctly
+                const scale = this.container.scaleX;
+                const localX = (worldX - this.container.x) / scale;
+                const localY = (worldY - this.container.y) / scale;
+
+                const text = this.scene.add.text(localX, localY - 50, "Not enough points!", {
+                    fontSize: '20px',
+                    color: '#ff0000',
+                    stroke: '#000000',
+                    strokeThickness: 3
+                }).setOrigin(0.5);
+
+                this.container.add(text);
+
+                this.scene.tweens.add({
+                    targets: text,
+                    y: text.y - 30,
+                    alpha: 0,
+                    duration: 1000,
+                    onComplete: () => text.destroy()
+                });
+            }
         } else {
             // Optional: Add some feedback to the user that prerequisites are not met
             console.log(`Cannot unlock ${skill.name}. Prerequisites not met.`);
@@ -271,32 +322,41 @@ export class SkillTreeUI {
         this.tooltip = this.scene.add.container(0, 0);
         this.tooltip.setDepth(EnhancedDesignSystem.zIndex.overlay);
         this.tooltip.setVisible(false);
+
+        // Initialize reused objects
+        this.tooltipBg = this.scene.add.graphics();
+        this.tooltipName = this.scene.add.text(0, 0, '', EnhancedStyleHelpers.createTextStyle({ size: 'lg', color: EnhancedDesignSystem.colors.accent })).setOrigin(0.5, 0);
+        this.tooltipType = this.scene.add.text(0, 0, '', EnhancedStyleHelpers.createTextStyle({ size: 'sm', color: EnhancedDesignSystem.colors.textMuted })).setOrigin(0.5, 0);
+        this.tooltipDesc = this.scene.add.text(0, 0, '', EnhancedStyleHelpers.createTextStyle({ size: 'sm', color: EnhancedDesignSystem.colors.text, wordWrap: { width: 270 } })).setOrigin(0.5, 0);
+
+        this.tooltip.add([this.tooltipBg, this.tooltipName, this.tooltipType, this.tooltipDesc]);
         this.container.add(this.tooltip);
     }
 
     private showTooltip(skill: Skill, pointerX: number, pointerY: number): void {
-        this.tooltip.removeAll(true);
-
-        const bg = this.scene.add.graphics();
-        this.tooltip.add(bg);
-
         const padding = 15;
         const bgWidth = 300;
 
-        const name = this.scene.add.text(0, padding, skill.name, EnhancedStyleHelpers.createTextStyle({ size: 'lg', color: EnhancedDesignSystem.colors.accent })).setOrigin(0.5, 0);
-        const type = this.scene.add.text(0, name.y + name.height + 5, `[${skill.type}]`, EnhancedStyleHelpers.createTextStyle({ size: 'sm', color: EnhancedDesignSystem.colors.textMuted })).setOrigin(0.5, 0);
-        const description = this.scene.add.text(0, type.y + type.height + 10, skill.description, EnhancedStyleHelpers.createTextStyle({ size: 'sm', color: EnhancedDesignSystem.colors.text, wordWrap: { width: bgWidth - (padding * 2) } })).setOrigin(0.5, 0);
-        
-        this.tooltip.add([name, type, description]);
+        // Update content
+        this.tooltipName.setText(skill.name);
+        this.tooltipName.setPosition(0, padding);
 
-        const bgHeight = description.y + description.height + padding;
+        this.tooltipType.setText(`[${skill.type}]`);
+        this.tooltipType.setPosition(0, this.tooltipName.y + this.tooltipName.height + 5);
 
+        this.tooltipDesc.setText(skill.description);
+        this.tooltipDesc.setPosition(0, this.tooltipType.y + this.tooltipType.height + 10);
+
+        // Redraw background
+        const bgHeight = this.tooltipDesc.y + this.tooltipDesc.height + padding;
+        this.tooltipBg.clear();
         const borderColor = Phaser.Display.Color.ValueToColor(EnhancedDesignSystem.colors.border).color;
-        EnhancedStyleHelpers.createBackground(bg, { width: bgWidth, height: bgHeight, color: 0x111111, borderColor: borderColor, borderWidth: 2 });
-        bg.setPosition(-bgWidth / 2, 0);
+        EnhancedStyleHelpers.createBackground(this.tooltipBg, { width: bgWidth, height: bgHeight, color: 0x111111, borderColor: borderColor, borderWidth: 2 });
+        this.tooltipBg.setPosition(-bgWidth / 2, 0);
 
+        // Position logic
         const { width, height } = this.scene.scale;
-        
+
         const localX = pointerX - this.container.x;
         const localY = pointerY - this.container.y;
 
@@ -327,6 +387,7 @@ export class SkillTreeUI {
     }
 
     public show(): void {
+        this.updateSkillPointsDisplay();
         this.container.setVisible(true);
         this.container.setAlpha(0);
         this.scene.tweens.add({
@@ -354,5 +415,21 @@ export class SkillTreeUI {
     public hideImmediately(): void {
         this.container.setAlpha(0);
         this.container.setVisible(false);
+    }
+
+    public destroy(): void {
+        if (this.container) {
+            this.container.destroy();
+        }
+        if (this.overlay) {
+            this.overlay.destroy();
+        }
+        if (this.skillTreesContainer) {
+            this.skillTreesContainer.destroy();
+        }
+        if (this.tooltip) {
+            this.tooltip.destroy();
+        }
+        this.unlockedSkills.clear();
     }
 }

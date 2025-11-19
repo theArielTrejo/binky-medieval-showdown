@@ -31,6 +31,8 @@ export class MobSpawnerUI {
         this.createToggleHint();
         this.setupKeyboardShortcuts();
 
+        this.container.setScrollFactor(0); // Fixed to camera
+
         // Default: hidden (toggled off)
         this.container.setVisible(false);
         if (this.toggleHint) {

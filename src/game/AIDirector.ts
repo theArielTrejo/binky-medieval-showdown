@@ -3,7 +3,8 @@ import { Player } from './Player';
 import { EnemySystem } from './EnemySystem';
 import { EnemyType } from './types/EnemyTypes';
 
-// Enhanced AI Director with improved architecture and training
+// AI Director using Contextual Bandits (Neural Bandit)
+// Optimizes for immediate player engagement/flow rather than long-term returns.
 
 export enum DirectorAction {
     SPAWN_SKELETON_VIKINGS = 0,
@@ -50,11 +51,10 @@ export interface GameState {
 }
 
 export interface TrainingMetrics {
-    totalEpisodes: number;
+    totalSteps: number;
     averageReward: number;
     explorationRate: number;
     lossValue: number;
-    qValueMean: number;
     trainingTime: number;
 }
 
@@ -68,531 +68,431 @@ export interface ModelConfig {
 }
 
 export class AIDirector {
+    // Contextual Bandit Model: Predicts Reward for each Action given State
     private models: Map<DifficultyLevel, tf.LayersModel | null> = new Map();
-    private targetModels: Map<DifficultyLevel, tf.LayersModel | null> = new Map();
     private currentDifficulty: DifficultyLevel = DifficultyLevel.MEDIUM;
     private difficultyConfigs: Map<DifficultyLevel, DifficultyConfig> = new Map();
+    
     private trainingMode: boolean = false;
+    private isActive: boolean = true;
     private gameStartTime: number;
     private lastActionTime: number = 0;
-    private actionInterval: number = 3000; // 3 seconds between actions
+    private actionInterval: number = 3000;
     
-    // Legacy properties for backward compatibility
-    private get model(): tf.LayersModel | null {
-        return this.models.get(this.currentDifficulty) || null;
-    }
-    
-    private set model(value: tf.LayersModel | null) {
-        this.models.set(this.currentDifficulty, value);
-    }
-    
-    private get targetModel(): tf.LayersModel | null {
-        return this.targetModels.get(this.currentDifficulty) || null;
-    }
-    
-    private set targetModel(value: tf.LayersModel | null) {
-        this.targetModels.set(this.currentDifficulty, value);
-    }
-
     private stateHistory: GameState[] = [];
     private actionHistory: DirectorAction[] = [];
     
-    // Enhanced training parameters
-    private epsilon: number = 0.9; // Higher initial exploration
-    private epsilonMin: number = 0.01;
-    private epsilonDecay: number = 0.995;
-    private learningRate: number = 0.0005; // Lower learning rate for stability
-    private discountFactor: number = 0.99;
-    private targetUpdateFreq: number = 1000; // Update target network every 1000 steps
+    // Bandit Parameters
+    private epsilon: number = 0.5; // Start high for exploration
+    private epsilonMin: number = 0.05;
+    private epsilonDecay: number = 0.99;
     private trainSteps: number = 0;
     
-    // Prioritized Experience Replay
+    // Simple Replay Buffer for Batch Training (Stability)
     private replayBuffer: Array<{
         state: GameState;
         action: DirectorAction;
         reward: number;
-        nextState: GameState;
-        done: boolean;
-        priority: number;
-        tdError: number;
     }> = [];
-    private maxReplayBufferSize: number = 50000;
-    private alpha: number = 0.6; // Prioritization exponent
-    private beta: number = 0.4; // Importance sampling exponent
-    private betaIncrement: number = 0.001;
-    private lastSaveTime: number = 0; // Last auto-save timestamp
-    
+    private maxReplayBufferSize: number = 1000; // Smaller buffer needed for bandits
+    private batchSize: number = 32;
+
     // Model persistence and metrics
     private modelConfig: ModelConfig;
     private trainingMetrics: TrainingMetrics;
-    private autoSaveInterval: number = 10000; // Auto-save every 10k steps
-    private modelVersion: string = '1.0.0';
+    private autoSaveInterval: number = 20; // Train/Save every 20 actions
+    private modelVersion: string = '3.0.0-bandit'; // Version bump for new algorithm
     
-    // Performance tracking
-    private episodeRewards: number[] = [];
+    private recentRewards: number[] = [];
     private recentLosses: number[] = [];
-    private qValues: number[] = [];
     
     // Resource Budget System
     private currentBudget: number = 0;
     private maxBudget: number = 500;
-    private budgetRegenRate: number = 10; // Budget points per second
+    private budgetRegenRate: number = 10;
     private lastBudgetUpdate: number = 0;
-    private budgetHistory: Array<{time: number, budget: number, spent: number}> = [];
     private emergencyBudgetMultiplier: number = 1.0;
     private budgetEfficiencyBonus: number = 1.0;
     
-    // Tactical decision-making properties
-    private tacticalMemory: Array<{gameState: GameState, action: DirectorAction, outcome: number}> = [];
-    private playerBehaviorPattern: Map<string, number> = new Map();
-    private threatAssessmentHistory: Array<{time: number, threat: number, response: DirectorAction}> = [];
+    // Tactical properties
     private adaptiveStrategy: 'aggressive' | 'defensive' | 'balanced' | 'counter' = 'balanced';
     private playerPerformanceMetrics: {
         averageSurvivalTime: number;
         damageDealtPerSecond: number;
         movementPatterns: string[];
         preferredPositions: {x: number, y: number}[];
-        reactionTime: number;
     } = {
         averageSurvivalTime: 0,
         damageDealtPerSecond: 0,
         movementPatterns: [],
-        preferredPositions: [],
-        reactionTime: 0
+        preferredPositions: []
     };
+    
+    private threatAssessmentHistory: Array<{time: number, threat: number, response: DirectorAction}> = [];
+    private budgetHistory: Array<{time: number, budget: number, spent: number}> = [];
+    private tacticalMemory: Array<{gameState: GameState, action: DirectorAction, outcome: number}> = [];
     private strategicObjectives: Array<{
         type: 'pressure' | 'overwhelm' | 'adapt' | 'counter';
         priority: number;
         conditions: (state: GameState) => boolean;
         actions: DirectorAction[];
     }> = [];
+    private playerBehaviorPattern: Map<string, number> = new Map();
+
+    // Adaptive Difficulty
+    private adaptiveDifficultyEnabled: boolean = true;
+    private performanceWindow: Array<{timestamp: number, performance: number}> = [];
+    private lastDifficultyAdjustment: number = 0;
+    private targetPerformanceRange = { min: 0.4, max: 0.7 };
 
     constructor() {
         this.gameStartTime = Date.now();
-        this.lastSaveTime = Date.now();
         this.lastBudgetUpdate = Date.now();
-        this.clearOldIncompatibleModels(); // Clear models trained with old 10-action system
         this.initializeDifficultyConfigs();
         this.initializeMetrics();
         this.initializeBudgetSystem();
         this.initializeStrategicObjectives();
-        this.initializeAllModels();
-    }
-    
-    private async clearOldIncompatibleModels(): Promise<void> {
-        // Clear any models trained with the old 10-action system
-        // New system has 6 actions (SKELETON_VIKING, ARCHER, GNOLL, OGRE, INCREASE_SPAWN_RATE, DO_NOTHING)
-        const modelVersion = '2.0.0'; // Increment when action space changes
         
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const storedVersion = localStorage.getItem('ai-director-version');
-            if (storedVersion !== modelVersion) {
-                console.log(`Clearing old AI models (version ${storedVersion} -> ${modelVersion})`);
-                
-                // Clear all models
-                try {
-                    const modelKeys = await tf.io.listModels();
-                    for (const key of Object.keys(modelKeys)) {
-                        if (key.includes('ai-director') || key.includes('easy') || key.includes('medium') || key.includes('hard')) {
-                            await tf.io.removeModel(key);
-                            console.log(`Removed old model: ${key}`);
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Error clearing old models:', error);
-                }
-                
-                // Update version
-                localStorage.setItem('ai-director-version', modelVersion);
-                this.modelVersion = modelVersion;
-            }
-        }
+        // Initialize
+        this.initializeAllModels().catch(err => console.error("Failed to init AI models:", err));
     }
-    
+
     private initializeDifficultyConfigs(): void {
-        // Easy difficulty - more forgiving, slower actions
         this.difficultyConfigs.set(DifficultyLevel.EASY, {
             name: 'Easy',
-            epsilon: 0.7,
-            epsilonDecay: 0.998,
-            learningRate: 0.001,
+            epsilon: 0.4,
+            epsilonDecay: 0.995,
+            learningRate: 0.01, // Higher LR for bandits
             actionInterval: 5000,
             aggressiveness: 0.3,
             rewardMultiplier: 1.2
         });
         
-        // Medium difficulty - balanced
         this.difficultyConfigs.set(DifficultyLevel.MEDIUM, {
             name: 'Medium',
-            epsilon: 0.9,
-            epsilonDecay: 0.995,
-            learningRate: 0.0005,
+            epsilon: 0.5,
+            epsilonDecay: 0.99,
+            learningRate: 0.005,
             actionInterval: 3000,
             aggressiveness: 0.6,
             rewardMultiplier: 1.0
         });
         
-        // Hard difficulty - aggressive, faster actions
         this.difficultyConfigs.set(DifficultyLevel.HARD, {
             name: 'Hard',
-            epsilon: 0.95,
-            epsilonDecay: 0.992,
-            learningRate: 0.0003,
+            epsilon: 0.6,
+            epsilonDecay: 0.98,
+            learningRate: 0.005,
             actionInterval: 2000,
             aggressiveness: 0.9,
             rewardMultiplier: 0.8
         });
      }
-     
-     private initializeBudgetSystem(): void {
-        // Initialize budget based on difficulty
-        this.maxBudget = 300 + (this.currentDifficulty * 200); // Easy: 300, Medium: 500, Hard: 700
-        this.budgetRegenRate = 8 + (this.currentDifficulty * 4); // Easy: 8/s, Medium: 12/s, Hard: 16/s
-        this.currentBudget = this.maxBudget * 0.5; // Start with half budget
-        
-        console.log(`Budget system initialized: Max=${this.maxBudget}, Regen=${this.budgetRegenRate}/s`);
-     }
-     
-     private initializeStrategicObjectives(): void {
-         // Define strategic objectives for tactical decision-making
-         this.strategicObjectives = [
-             {
-                 type: 'pressure',
-                 priority: 0.8,
-                 conditions: (state: GameState) => state.playerHealthPercent > 0.7 && state.engagementScore < 0.5,
-                actions: [DirectorAction.SPAWN_GNOLLS, DirectorAction.SPAWN_ARCHERS, DirectorAction.INCREASE_SPAWN_RATE]
-             },
-             {
-                 type: 'overwhelm',
-                 priority: 0.9,
-                 conditions: (state: GameState) => state.playerDPS > 100 && state.playerHealthPercent > 0.5,
-                actions: [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_SKELETON_VIKINGS]
-             },
-             {
-                 type: 'adapt',
-                 priority: 0.7,
-                 conditions: (state: GameState) => state.playerStressLevel < 0.3 && state.gameTimer > 30000,
-                actions: [DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_SKELETON_VIKINGS]
-             },
-             {
-                 type: 'counter',
-                 priority: 1.0,
-                 conditions: (state: GameState) => this.detectPlayerPattern(state),
-                actions: [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_GNOLLS]
-             }
-         ];
-     }
-     
-     private detectPlayerPattern(state: GameState): boolean {
-         // Analyze player behavior patterns
-         const movementKey = `${Math.floor(state.playerPositionX / 50)}_${Math.floor(state.playerPositionY / 50)}`;
-         const currentCount = this.playerBehaviorPattern.get(movementKey) || 0;
-         this.playerBehaviorPattern.set(movementKey, currentCount + 1);
-         
-         // Detect if player is camping in one area
-         return currentCount > 10;
-     }
-     
-     private assessThreatLevel(state: GameState): number {
-        // Calculate current threat level based on multiple factors
-        let threatLevel = 0;
-        
-        // Player capability assessment
-        const playerThreat = (state.playerDPS / 100) * (state.playerHealthPercent / 100);
-         
-         // Enemy presence assessment
-         const totalEnemies = state.enemyCountSkeletonVikings + state.enemyCountOgres + 
-                             state.enemyCountArchers + state.enemyCountGnolls;
-         const enemyThreat = Math.min(totalEnemies / 20, 1.0);
-         
-         // Budget efficiency assessment
-         const budgetEfficiency = this.currentBudget / this.maxBudget;
-         
-         // Combine factors
-         threatLevel = (playerThreat * 0.4) + (enemyThreat * 0.3) + (budgetEfficiency * 0.3);
-         
-         // Store in history
-         this.threatAssessmentHistory.push({
-             time: Date.now(),
-             threat: threatLevel,
-             response: DirectorAction.DO_NOTHING // Will be updated when action is chosen
-         });
-         
-         // Keep only recent history
-         if (this.threatAssessmentHistory.length > 100) {
-             this.threatAssessmentHistory = this.threatAssessmentHistory.slice(-100);
-         }
-         
-         return threatLevel;
-     }
-     
-     private updatePlayerPerformanceMetrics(state: GameState): void {
-         // Update survival time
-         const currentTime = Date.now() - this.gameStartTime;
-         this.playerPerformanceMetrics.averageSurvivalTime = 
-             (this.playerPerformanceMetrics.averageSurvivalTime + currentTime) / 2;
-         
-         // Update DPS tracking
-         this.playerPerformanceMetrics.damageDealtPerSecond = 
-             (this.playerPerformanceMetrics.damageDealtPerSecond + state.playerDPS) / 2;
-         
-         // Track movement patterns
-         const movementPattern = this.categorizeMovement(state);
-         if (!this.playerPerformanceMetrics.movementPatterns.includes(movementPattern)) {
-             this.playerPerformanceMetrics.movementPatterns.push(movementPattern);
-         }
-         
-         // Track preferred positions
-         this.playerPerformanceMetrics.preferredPositions.push({
-             x: state.playerPositionX,
-             y: state.playerPositionY
-         });
-         
-         // Keep only recent positions
-         if (this.playerPerformanceMetrics.preferredPositions.length > 50) {
-             this.playerPerformanceMetrics.preferredPositions = 
-                 this.playerPerformanceMetrics.preferredPositions.slice(-50);
-         }
-     }
-     
-     private categorizeMovement(state: GameState): string {
-         if (state.playerMovementDistance < 10) return 'stationary';
-         if (state.playerMovementDistance < 50) return 'cautious';
-         if (state.playerMovementDistance < 100) return 'moderate';
-         return 'aggressive';
-     }
-     
-     private selectStrategicAction(state: GameState, enemySystem: EnemySystem): DirectorAction | null {
-         // Evaluate strategic objectives
-         const applicableObjectives = this.strategicObjectives.filter(obj => obj.conditions(state));
-         
-         if (applicableObjectives.length === 0) {
-             return null;
-         }
-         
-         // Sort by priority
-         applicableObjectives.sort((a, b) => b.priority - a.priority);
-         
-         // Select action from highest priority objective
-         const selectedObjective = applicableObjectives[0];
-         const availableActions = selectedObjective.actions.filter(action => {
-             // Check if we have budget for this action
-             const spawns = this.calculateOptimalSpawns(action, enemySystem);
-             return spawns.totalCost <= this.currentBudget;
-         });
-         
-         if (availableActions.length === 0) {
-             return null;
-         }
-         
-         // Select best action based on current strategy
-        return this.selectActionByStrategy(availableActions);
-     }
-     
-     private selectActionByStrategy(actions: DirectorAction[]): DirectorAction {
-         switch (this.adaptiveStrategy) {
-             case 'aggressive':
-                const aggressiveActions = [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_SKELETON_VIKINGS];
-                 for (const action of aggressiveActions) {
-                     if (actions.includes(action)) return action;
-                 }
-                 break;
-                 
-             case 'defensive':
-                const defensiveActions = [DirectorAction.SPAWN_SKELETON_VIKINGS, DirectorAction.SPAWN_ARCHERS];
-                 for (const action of defensiveActions) {
-                     if (actions.includes(action)) return action;
-                 }
-                 break;
-                 
-             case 'counter':
-                 if (this.playerPerformanceMetrics.movementPatterns.includes('stationary')) {
-                    const counterStatic = [DirectorAction.SPAWN_ARCHERS, DirectorAction.SPAWN_GNOLLS];
-                     for (const action of counterStatic) {
-                         if (actions.includes(action)) return action;
-                     }
-                 }
-                 break;
-                 
-             case 'balanced':
-             default:
-                 // Mix of different approaches
-                 break;
-         }
-         
-         // Default: random selection from available actions
-         return actions[Math.floor(Math.random() * actions.length)];
-     }
-     
-     private updateAdaptiveStrategy(state: GameState): void {
-         const threatLevel = this.assessThreatLevel(state);
-         
-         // Adapt strategy based on player performance and threat level
-         if (state.playerHealthPercent > 0.8 && state.playerDPS > 150) {
-             this.adaptiveStrategy = 'aggressive';
-         } else if (state.playerHealthPercent < 0.3 || threatLevel < 0.3) {
-             this.adaptiveStrategy = 'defensive';
-         } else if (this.detectPlayerPattern(state)) {
-             this.adaptiveStrategy = 'counter';
-         } else {
-             this.adaptiveStrategy = 'balanced';
-         }
-     }
-     
-    private async initializeAllModels(): Promise<void> {
-        // Initialize models for all difficulty levels
-        for (const difficulty of [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD]) {
-            this.currentDifficulty = difficulty;
-            await this.initializeModel();
-            await this.tryLoadSavedModel();
-        }
-        // Reset to medium difficulty
-        this.currentDifficulty = DifficultyLevel.MEDIUM;
-     }
 
     private initializeMetrics(): void {
         this.trainingMetrics = {
-            totalEpisodes: 0,
+            totalSteps: 0,
             averageReward: 0,
             explorationRate: this.epsilon,
             lossValue: 0,
-            qValueMean: 0,
             trainingTime: 0
         };
         
         this.modelConfig = {
-            name: 'Enhanced_AI_Director',
+            name: 'AI_Director_Contextual_Bandit',
             version: this.modelVersion,
-            architecture: 'Double_DQN_with_Prioritized_Replay',
+            architecture: 'Neural_Contextual_Bandit_v1',
             hyperparameters: {
-                learningRate: this.learningRate,
-                discountFactor: this.discountFactor,
                 epsilon: this.epsilon,
                 epsilonDecay: this.epsilonDecay,
-                targetUpdateFreq: this.targetUpdateFreq,
-                alpha: this.alpha,
-                beta: this.beta
+                epsilonMin: this.epsilonMin
             },
             trainingMetrics: this.trainingMetrics,
             createdAt: new Date().toISOString()
         };
     }
 
+    private async initializeAllModels(): Promise<void> {
+        for (const difficulty of [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD]) {
+            this.currentDifficulty = difficulty;
+            await this.initializeModel();
+            // Attempt to load existing model
+            const loaded = await this.loadModel(`ai-director-bandit-${DifficultyLevel[difficulty]}`);
+            if (loaded) {
+                console.log(`Loaded existing bandit model for ${DifficultyLevel[difficulty]}`);
+            }
+        }
+        this.currentDifficulty = DifficultyLevel.MEDIUM; // Default
+    }
+
     private async initializeModel(): Promise<void> {
         const config = this.difficultyConfigs.get(this.currentDifficulty)!;
         
-        // Create enhanced neural network with difficulty-specific architecture
-        const modelArchitecture = {
-            layers: [
-                tf.layers.dense({
-                    inputShape: [16], // Enhanced features: playerArchetype(3) + 13 other features = 16
-                    units: this.currentDifficulty === DifficultyLevel.HARD ? 512 : 256,
-                    activation: 'relu',
-                    kernelInitializer: 'heNormal'
-                }),
-                tf.layers.batchNormalization(),
-                tf.layers.dropout({ rate: this.currentDifficulty === DifficultyLevel.EASY ? 0.2 : 0.3 }),
-                tf.layers.dense({
-                    units: this.currentDifficulty === DifficultyLevel.HARD ? 256 : 128,
-                    activation: 'relu',
-                    kernelInitializer: 'heNormal'
-                }),
-                tf.layers.batchNormalization(),
-                tf.layers.dropout({ rate: this.currentDifficulty === DifficultyLevel.EASY ? 0.2 : 0.3 }),
-                tf.layers.dense({
-                    units: this.currentDifficulty === DifficultyLevel.HARD ? 128 : 64,
-                    activation: 'relu',
-                    kernelInitializer: 'heNormal'
-                }),
-                tf.layers.dropout({ rate: this.currentDifficulty === DifficultyLevel.EASY ? 0.1 : 0.2 }),
-                tf.layers.dense({
-                    units: 32,
-                    activation: 'relu',
-                    kernelInitializer: 'heNormal'
-                }),
-                tf.layers.dense({
-                    units: 6, // Number of possible actions
-                    activation: 'linear',
-                    kernelInitializer: 'glorotUniform'
-                })
-            ]
-        };
-
-        const mainModel = tf.sequential(modelArchitecture);
-        const targetModel = tf.sequential(modelArchitecture);
+        // Neural Bandit Architecture
+        // Input: 16 State Features
+        // Output: 6 Predicted Rewards (one for each Action)
+        const model = tf.sequential();
         
-        this.models.set(this.currentDifficulty, mainModel);
-        this.targetModels.set(this.currentDifficulty, targetModel);
-
-        const optimizer = tf.train.adam(config.learningRate);
+        model.add(tf.layers.dense({
+            inputShape: [16],
+            units: 32,
+            activation: 'relu',
+            kernelInitializer: 'heNormal'
+        }));
         
-        mainModel.compile({
-            optimizer: optimizer,
-            loss: 'meanSquaredError', // Standard loss for regression
-            metrics: ['mae']
+        model.add(tf.layers.dropout({ rate: 0.1 }));
+        
+        model.add(tf.layers.dense({
+            units: 24,
+            activation: 'relu',
+            kernelInitializer: 'heNormal'
+        }));
+
+        // Output layer: Linear activation to predict Reward value directly
+        model.add(tf.layers.dense({
+            units: 6, 
+            activation: 'linear',
+            kernelInitializer: 'zeros'
+        }));
+
+        model.compile({
+            optimizer: tf.train.adam(config.learningRate),
+            loss: 'meanSquaredError'
         });
         
-        targetModel.compile({
-            optimizer: optimizer,
-            loss: 'meanSquaredError',
-            metrics: ['mae']
-        });
-        
-        // Initialize target model with same weights
-        await this.updateTargetModel();
+        this.models.set(this.currentDifficulty, model);
     }
 
-    /**
-     * Gets the current game state for AI processing
-     * @param player - The player archetype instance
-     * @param enemySystem - The enemy system instance
-     * @returns Current game state object with normalized values
-     */
+    // --- Core Bandit Logic ---
+
+    public async update(player: Player, enemySystem: EnemySystem): Promise<void> {
+        if (!this.isActive) return;
+
+        const currentTime = Date.now();
+        if (currentTime - this.lastActionTime < this.actionInterval) return;
+
+        // 1. Get Context (State)
+        const currentState = this.getGameState(player, enemySystem);
+        
+        // 2. Update Last Action's Outcome (if exists)
+        // In Bandits, we need to link (State_t, Action_t) -> Reward_t.
+        // Since rewards are calculated based on the change/impact over the interval,
+        // we calculate the reward for the action taken at t-1 now at time t.
+        if (this.stateHistory.length > 0 && this.actionHistory.length > 0) {
+            const lastState = this.stateHistory[this.stateHistory.length - 1];
+            const lastAction = this.actionHistory[this.actionHistory.length - 1];
+            
+            const reward = this.calculateReward(lastState, currentState);
+            
+            // Store experience
+            this.replayBuffer.push({
+                state: lastState,
+                action: lastAction,
+                reward: reward
+            });
+
+            if (this.replayBuffer.length > this.maxReplayBufferSize) {
+                this.replayBuffer.shift();
+            }
+            
+            // Update metrics
+            this.recentRewards.push(reward);
+            if (this.recentRewards.length > 100) this.recentRewards.shift();
+            this.trainingMetrics.averageReward = this.recentRewards.reduce((a,b)=>a+b,0) / this.recentRewards.length;
+
+            // Update Tactical Outcome
+            this.updateTacticalOutcome(reward);
+        }
+
+        // 3. Train Model (Online Learning)
+        if (this.trainingMode && this.replayBuffer.length >= this.batchSize) {
+             await this.trainBandit();
+             this.trainSteps++;
+             
+             // Auto-save occasionally
+             if (this.trainSteps % this.autoSaveInterval === 0) {
+                 await this.saveModel(`ai-director-bandit-${DifficultyLevel[this.currentDifficulty]}`);
+             }
+        }
+
+        // 4. Select New Action
+        const action = await this.chooseAction(currentState, enemySystem);
+        
+        // 5. Execute Action
+        this.executeAction(action, enemySystem);
+        
+        // 6. Store History
+        this.stateHistory.push(currentState);
+        this.actionHistory.push(action);
+        this.lastActionTime = currentTime;
+        
+        // 7. Adaptive Logic
+        if (this.adaptiveDifficultyEnabled) {
+            this.updatePerformanceWindow(this.calculatePlayerPerformance(currentState));
+            if (this.shouldAdjustDifficulty()) {
+                this.adjustDifficultyBasedOnPerformance();
+            }
+        }
+    }
+
+    private async chooseAction(state: GameState, enemySystem?: EnemySystem): Promise<DirectorAction> {
+        const config = this.difficultyConfigs.get(this.currentDifficulty)!;
+        const model = this.models.get(this.currentDifficulty);
+
+        // Update strategy
+        this.updatePlayerPerformanceMetrics(state);
+        this.updateAdaptiveStrategy(state);
+
+        // Strategic Override (Rule-based high priority actions)
+        if (enemySystem) {
+            const strategicAction = this.selectStrategicAction(state, enemySystem);
+            if (strategicAction !== null) {
+                // Log intent but don't force it 100% of the time if we want to learn new things
+                // But for a Director, rules usually trump learning if critical
+                return strategicAction;
+            }
+        }
+
+        // Exploration (Epsilon-Greedy)
+        if (this.trainingMode && Math.random() < this.epsilon) {
+            // Decay epsilon
+            this.epsilon = Math.max(this.epsilonMin, this.epsilon * this.epsilonDecay);
+            this.trainingMetrics.explorationRate = this.epsilon;
+            
+            // Random action
+            return Math.floor(Math.random() * 6) as DirectorAction;
+        }
+
+        // Exploitation (Model Prediction)
+        if (model) {
+            const stateTensor = this.gameStateToTensor(state);
+            const prediction = model.predict(stateTensor) as tf.Tensor;
+            const predictedRewards = await prediction.data();
+            
+            stateTensor.dispose();
+            prediction.dispose();
+
+            // Find action with max predicted reward
+            let bestAction = 0;
+            let maxReward = -Infinity;
+            
+            for (let i = 0; i < 6; i++) {
+                if (predictedRewards[i] > maxReward) {
+                    maxReward = predictedRewards[i];
+                    bestAction = i;
+                }
+            }
+            
+            return bestAction as DirectorAction;
+        }
+
+        return DirectorAction.DO_NOTHING;
+    }
+
+    private async trainBandit(): Promise<void> {
+        const model = this.models.get(this.currentDifficulty);
+        if (!model) return;
+
+        const startTime = Date.now();
+        
+        // Sample batch from buffer (random sampling to break correlations)
+        const batchSize = Math.min(this.batchSize, this.replayBuffer.length);
+        const batch = [];
+        const indices = new Set<number>();
+        while(batch.length < batchSize) {
+            const idx = Math.floor(Math.random() * this.replayBuffer.length);
+            if (!indices.has(idx)) {
+                indices.add(idx);
+                batch.push(this.replayBuffer[idx]);
+            }
+        }
+
+        // Prepare Tensors
+        // Inputs: States
+        const statesTensor = tf.concat(batch.map(exp => this.gameStateToTensor(exp.state)));
+        
+        // Targets: This is the "Contextual Bandit" trick.
+        // We want to train ONLY the output neuron corresponding to the action taken.
+        // We do this by predicting current values, replacing the value for the taken action with the actual reward,
+        // and training on that.
+        const predictionsTensor = model.predict(statesTensor) as tf.Tensor;
+        const predictions = await predictionsTensor.array() as number[][];
+        
+        const targets = predictions.map((predRow, i) => {
+            const experience = batch[i];
+            const newRow = [...predRow];
+            // Set the target for the taken action to the actual reward observed
+            newRow[experience.action] = experience.reward; 
+            return newRow;
+        });
+
+        const targetsTensor = tf.tensor2d(targets);
+
+        // Train
+        const history = await model.fit(statesTensor, targetsTensor, {
+            epochs: 1,
+            verbose: 0,
+            shuffle: true
+        });
+
+        // Cleanup
+        statesTensor.dispose();
+        predictionsTensor.dispose();
+        targetsTensor.dispose();
+
+        // Update Metrics
+        const loss = Array.isArray(history.history.loss) ? history.history.loss[0] : history.history.loss;
+        this.recentLosses.push(loss as number);
+        if (this.recentLosses.length > 50) this.recentLosses.shift();
+        
+        this.trainingMetrics.lossValue = this.recentLosses.reduce((a,b)=>a+b,0)/this.recentLosses.length;
+        this.trainingMetrics.trainingTime += Date.now() - startTime;
+        this.trainingMetrics.totalSteps = this.trainSteps;
+    }
+
+    // --- State & Reward ---
+
     public getGameState(player: Player, enemySystem: EnemySystem): GameState {
         const currentTime = Date.now();
-        const gameTimer = (currentTime - this.gameStartTime) / 1000; // Game time in seconds
-        
-        // Calculate enhanced metrics
+        const gameTimer = (currentTime - this.gameStartTime) / 1000;
         const healthPercent = player.getHealthPercentage();
-        const playerDPS = player.getDPSOverLastTenSeconds();
-        const movementDistance = player.getMovementDistanceLastTenSeconds();
         
-        // Calculate difficulty level based on game progression
-        const difficultyLevel = Math.min(gameTimer / 180, 1); // Ramp up over 3 minutes
+        // Calculate difficulty progression (0 to 1)
+        const progression = Math.min(gameTimer / 300, 1); // 5 min cap
         
-        // Calculate player stress level (low health + high enemy count)
-        const totalEnemies = enemySystem.getEnemyCount();
-        const playerStressLevel = Math.min((1 - healthPercent) * 0.7 + (totalEnemies / 50) * 0.3, 1);
-        
-        // Calculate engagement score (movement + damage dealing)
-        const engagementScore = Math.min(
-            (Math.min(movementDistance / 500, 1) * 0.4) + 
-            (Math.min(playerDPS / 100, 1) * 0.6), 1
-        );
+        // Stress Level (The "Flow" Channel)
+        const enemies = enemySystem.getEnemyCount();
+        const stress = Math.min((1 - healthPercent) * 0.6 + (enemies / 20) * 0.4, 1);
+
+        // Engagement (Movement + DPS)
+        const dps = player.getDPSOverLastTenSeconds();
+        const moveDist = player.getMovementDistanceLastTenSeconds();
+        const engagement = Math.min((dps/50)*0.5 + (moveDist/500)*0.5, 1);
 
         return {
             playerArchetype: player.getArchetypeVector(),
             playerHealthPercent: healthPercent,
-            playerDPS: Math.min(playerDPS / 100, 1), // Normalize
-            playerPositionX: (player.position.x - player.getScene().physics.world.bounds.x) / player.getScene().physics.world.bounds.width, // Normalize to 0-1 using actual world bounds
-            playerPositionY: (player.position.y - player.getScene().physics.world.bounds.y) / player.getScene().physics.world.bounds.height, // Normalize to 0-1 using actual world bounds
+            playerDPS: Math.min(dps / 100, 1),
+            playerPositionX: (player.position.x) / 2000, // Approx world width
+            playerPositionY: (player.position.y) / 2000,
             damageTakenRecently: Math.min(player.getDamageTakenRecently() / 50, 1),
-            playerMovementDistance: Math.min(movementDistance / 1000, 1), // Normalize
-            resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1), // Normalize
-            gameTimer: Math.min(gameTimer / 300, 1), // Normalize to 5 minutes max
+            playerMovementDistance: Math.min(moveDist / 1000, 1),
+            resourceGeneration: Math.min(player.getXPGenerationRate() / 10, 1),
+            gameTimer: progression,
             enemyCountSkeletonVikings: Math.min(enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING) / 10, 1),
-            enemyCountOgres: Math.min(enemySystem.getEnemyCountByType(EnemyType.OGRE) / 8, 1),
-            enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 15, 1),
-            enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 20, 1),
-            difficultyLevel: difficultyLevel,
-            playerStressLevel: playerStressLevel,
-            engagementScore: engagementScore
+            enemyCountOgres: Math.min(enemySystem.getEnemyCountByType(EnemyType.OGRE) / 5, 1),
+            enemyCountArchers: Math.min(enemySystem.getEnemyCountByType(EnemyType.ARCHER) / 10, 1),
+            enemyCountGnolls: Math.min(enemySystem.getEnemyCountByType(EnemyType.GNOLL) / 15, 1),
+            difficultyLevel: progression,
+            playerStressLevel: stress,
+            engagementScore: engagement
         };
     }
 
     private gameStateToTensor(state: GameState): tf.Tensor2D {
-        const stateArray = [
-            ...state.playerArchetype, // 3 elements
+        // Flatten state to vector
+        const arr = [
+            ...state.playerArchetype, // 3
             state.playerHealthPercent,
             state.playerDPS,
             state.playerPositionX,
@@ -610,157 +510,61 @@ export class AIDirector {
             state.engagementScore
         ];
         
-        // Debug: Check array length
-        if (stateArray.length !== 16) {
-            console.warn(`Expected 16 features, got ${stateArray.length}:`, stateArray);
-            // Ensure exactly 16 features
-            while (stateArray.length < 16) stateArray.push(0);
-            if (stateArray.length > 16) stateArray.splice(16);
-        }
+        // Padding/Truncating just in case
+        while(arr.length < 16) arr.push(0);
+        return tf.tensor2d([arr.slice(0, 16)]);
+    }
+
+    public calculateReward(prevState: GameState, currState: GameState): number {
+        // Bandit Reward Function
+        // We want to maximize "Fun/Flow".
+        // Flow is defined as: Challenging but not impossible.
         
-        return tf.tensor2d([stateArray]);
-    }
-    
-    private async updateTargetModel(): Promise<void> {
-        const currentModel = this.models.get(this.currentDifficulty);
-        const currentTargetModel = this.targetModels.get(this.currentDifficulty);
+        let reward = 0;
+        const config = this.difficultyConfigs.get(this.currentDifficulty)!;
+
+        // 1. Target Stress Level
+        // Easy: 0.3-0.5, Medium: 0.5-0.7, Hard: 0.7-0.9
+        let targetStress = 0.6;
+        if (this.currentDifficulty === DifficultyLevel.EASY) targetStress = 0.4;
+        if (this.currentDifficulty === DifficultyLevel.HARD) targetStress = 0.8;
         
-        if (!currentModel || !currentTargetModel) return;
+        const stressDist = Math.abs(currState.playerStressLevel - targetStress);
         
-        const weights = currentModel.getWeights();
-        currentTargetModel.setWeights(weights);
+        // High reward for being close to target stress (The "Zone")
+        if (stressDist < 0.1) reward += 1.0;
+        else if (stressDist < 0.2) reward += 0.5;
+        else reward -= 0.5; // Too boring or too hard
+
+        // 2. Engagement Bonus
+        reward += currState.engagementScore * 0.5;
+
+        // 3. Survival Penalty (Immediate Death is bad, but low health is exciting)
+        if (currState.playerHealthPercent <= 0) reward -= 5.0; // Player died, very bad for "fun" usually (unless roguelike)
+        
+        // 4. Variety Bonus (Simple implementation)
+        // Checks if enemy composition is mixed
+        const enemies = [
+            currState.enemyCountSkeletonVikings, 
+            currState.enemyCountArchers, 
+            currState.enemyCountGnolls, 
+            currState.enemyCountOgres
+        ];
+        const activeTypes = enemies.filter(c => c > 0).length;
+        if (activeTypes >= 3) reward += 0.3;
+
+        return reward * config.rewardMultiplier;
     }
-    
-    private async tryLoadSavedModel(): Promise<void> {
-        try {
-            const savedModel = localStorage.getItem('ai_director_model');
-            const savedConfig = localStorage.getItem('ai_director_config');
-            
-            if (savedModel && savedConfig) {
-                const config = JSON.parse(savedConfig);
-                
-                // Load model from IndexedDB or localStorage
-                this.model = await tf.loadLayersModel('indexeddb://ai-director-model');
-                this.targetModel = await tf.loadLayersModel('indexeddb://ai-director-target-model');
-                
-                this.modelConfig = config;
-                this.trainingMetrics = config.trainingMetrics;
-                
-                console.log('Loaded saved AI Director model:', config.version);
-            }
-        } catch (error) {
-            console.log('No saved model found or failed to load, using new model');
-        }
-    }
 
-    public async chooseAction(gameState: GameState, enemySystem?: EnemySystem): Promise<DirectorAction> {
-        try {
-            const currentModel = this.models.get(this.currentDifficulty);
-            if (!currentModel) {
-                return DirectorAction.DO_NOTHING;
-            }
-
-            const config = this.difficultyConfigs.get(this.currentDifficulty)!;
-            
-            // Update tactical analysis
-            this.updatePlayerPerformanceMetrics(gameState);
-            this.updateAdaptiveStrategy(gameState);
-            
-            // Try strategic action selection first
-            if (enemySystem) {
-                const strategicAction = this.selectStrategicAction(gameState, enemySystem);
-                if (strategicAction !== null) {
-                    // Update threat assessment history with chosen action
-                    if (this.threatAssessmentHistory.length > 0) {
-                        this.threatAssessmentHistory[this.threatAssessmentHistory.length - 1].response = strategicAction;
-                    }
-                    
-                    // Store tactical memory
-                    this.tacticalMemory.push({
-                        gameState: { ...gameState },
-                        action: strategicAction,
-                        outcome: 0 // Will be updated later with reward
-                    });
-                    
-                    // Keep tactical memory size manageable
-                    if (this.tacticalMemory.length > 1000) {
-                        this.tacticalMemory = this.tacticalMemory.slice(-1000);
-                    }
-                    
-                    return strategicAction;
-                }
-            }
-            
-            // Difficulty-specific epsilon-greedy action selection
-            const currentEpsilon = Math.max(this.epsilonMin, config.epsilon * Math.pow(config.epsilonDecay, this.trainSteps));
-            
-            if (this.trainingMode && Math.random() < currentEpsilon) {
-                // Random action (exploration)
-                let action: DirectorAction;
-                if (this.currentDifficulty === DifficultyLevel.HARD && Math.random() < config.aggressiveness) {
-                    const aggressiveActions = [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_GNOLLS, DirectorAction.INCREASE_SPAWN_RATE];
-                    action = aggressiveActions[Math.floor(Math.random() * aggressiveActions.length)];
-                } else if (this.currentDifficulty === DifficultyLevel.EASY && Math.random() < (1 - config.aggressiveness)) {
-                    const passiveActions = [DirectorAction.DO_NOTHING, DirectorAction.SPAWN_ARCHERS];
-                    action = passiveActions[Math.floor(Math.random() * passiveActions.length)];
-                } else {
-                    action = Math.floor(Math.random() * 6) as DirectorAction;
-                }
-                console.log(`AI Director: Random exploration - chose action ${DirectorAction[action]} (${action})`);
-                return action;
-            }
-
-            // Use the model to predict the best action
-            const stateTensor = this.gameStateToTensor(gameState);
-            const prediction = currentModel.predict(stateTensor) as tf.Tensor;
-            const actionValues = await prediction.data();
-            
-            // Store Q-values for metrics
-            this.qValues.push(...Array.from(actionValues));
-            if (this.qValues.length > 1000) {
-                this.qValues = this.qValues.slice(-1000); // Keep last 1000 values
-            }
-            
-            stateTensor.dispose();
-            prediction.dispose();
-
-            // Choose action with highest Q-value
-            let bestAction = 0;
-            let bestValue = actionValues[0];
-            for (let i = 1; i < actionValues.length && i < 6; i++) { // Limit to 6 actions
-                if (actionValues[i] > bestValue) {
-                    bestValue = actionValues[i];
-                    bestAction = i;
-                }
-            }
-            
-            // Clamp action to valid range (0-5)
-            bestAction = Math.min(bestAction, 5);
-            
-            console.log(`AI Director: Model prediction - chose action ${DirectorAction[bestAction]} (${bestAction}), Q-value: ${bestValue.toFixed(3)}, actionValues length: ${actionValues.length}`);
-            
-            // Decay epsilon
-            if (this.trainingMode && this.epsilon > this.epsilonMin) {
-                this.epsilon *= this.epsilonDecay;
-                this.trainingMetrics.explorationRate = this.epsilon;
-            }
-
-            return bestAction as DirectorAction;
-        } catch (error) {
-            console.warn('AI Director chooseAction failed:', error);
-            // Fallback to random action if model fails
-            return Math.floor(Math.random() * 6) as DirectorAction;
-        }
-    }
+    // --- Execution & Budget ---
 
     public executeAction(action: DirectorAction, enemySystem: EnemySystem): void {
         this.updateBudget();
         
-        // Calculate optimal spawn counts based on budget and enemy costs
         const spawnPlans = this.calculateOptimalSpawns(action, enemySystem);
         
+        // Budget Check
         if (spawnPlans.totalCost <= this.currentBudget) {
-            // Execute the spawn plan
             switch (action) {
                 case DirectorAction.SPAWN_SKELETON_VIKINGS:
                     if (spawnPlans.skeletonVikings > 0) {
@@ -788,971 +592,209 @@ export class AIDirector {
                     break;
                 case DirectorAction.INCREASE_SPAWN_RATE:
                     enemySystem.increaseSpawnRate(10);
-                    this.budgetEfficiencyBonus = Math.min(this.budgetEfficiencyBonus + 0.1, 2.0);
-                    break;
-                case DirectorAction.DO_NOTHING:
                     break;
             }
         } else {
-            // Not enough budget - consider emergency spending or wait
+            // Emergency Handling
             if (this.shouldUseEmergencyBudget(enemySystem)) {
                 this.activateEmergencyBudget();
-                this.executeAction(action, enemySystem); // Retry with emergency budget
-            }
-        }
-    }
-
-    public calculateReward(previousState: GameState, currentState: GameState): number {
-        let reward = 0;
-
-        // Enhanced reward system based on engagement and difficulty balance
-        const config = this.difficultyConfigs.get(this.currentDifficulty)!;
-        
-        // Difficulty-specific optimal stress levels
-        let optimalStress: number;
-        switch (this.currentDifficulty) {
-            case DifficultyLevel.EASY:
-                optimalStress = 0.4; // Lower stress for easy mode
-                break;
-            case DifficultyLevel.HARD:
-                optimalStress = 0.8; // Higher stress for hard mode
-                break;
-            default:
-                optimalStress = 0.6; // Medium stress for normal mode
-        }
-        
-        // Reward for optimal stress level (challenging but not overwhelming)
-        const stressDiff = Math.abs(currentState.playerStressLevel - optimalStress);
-        reward += (1 - stressDiff) * 15 * config.rewardMultiplier; // Max 15 points for optimal stress
-        
-        // Reward for high engagement score
-        reward += currentState.engagementScore * 10 * config.rewardMultiplier;
-        
-        // Difficulty-specific health thresholds
-        const dangerZoneMin = this.currentDifficulty === DifficultyLevel.EASY ? 0.3 : 0.2;
-        const dangerZoneMax = this.currentDifficulty === DifficultyLevel.HARD ? 0.6 : 0.7;
-        const safeZoneThreshold = this.currentDifficulty === DifficultyLevel.EASY ? 0.8 : 0.9;
-        
-        // Reward for maintaining health in danger zone (exciting gameplay)
-        if (currentState.playerHealthPercent > dangerZoneMin && currentState.playerHealthPercent < dangerZoneMax) {
-            reward += 8 * config.rewardMultiplier;
-        }
-        
-        // Penalty for player being too safe (boring)
-        if (currentState.playerHealthPercent > safeZoneThreshold) {
-            reward -= 10 * config.aggressiveness;
-        }
-        
-        // Penalty for player being overwhelmed (too difficult)
-        const overwhelmedThreshold = this.currentDifficulty === DifficultyLevel.HARD ? 0.9 : 0.8;
-        if (currentState.playerStressLevel > overwhelmedThreshold) {
-            reward -= 8 * config.rewardMultiplier;
-        }
-        
-        // Large penalty if player dies (scaled by difficulty)
-        if (currentState.playerHealthPercent === 0) {
-            reward -= 100 * config.rewardMultiplier;
-        }
-        
-        // Reward for forcing movement (anti-camping)
-        const movementIncrease = currentState.playerMovementDistance - previousState.playerMovementDistance;
-        
-        // Update tactical outcome for strategic learning
-        this.updateTacticalOutcome(reward);
-        if (movementIncrease > 0.05) {
-            reward += movementIncrease * 20 * config.rewardMultiplier;
-        }
-        
-        // Reward for appropriate difficulty scaling
-        const expectedDifficulty = currentState.difficultyLevel;
-        const actualDifficulty = currentState.playerStressLevel;
-        const difficultyBalance = 1 - Math.abs(expectedDifficulty - actualDifficulty);
-        reward += difficultyBalance * 5 * config.rewardMultiplier;
-        
-        // Bonus for sustained engagement over time
-        if (currentState.gameTimer > 60 && currentState.engagementScore > 0.5) {
-            reward += 3 * config.rewardMultiplier;
-        }
-
-        return reward;
-    }
-
-    public async update(player: Player, enemySystem: EnemySystem): Promise<void> {
-        const currentTime = Date.now();
-        
-        // Only take action every few seconds
-        if (currentTime - this.lastActionTime < this.actionInterval) {
-            return;
-        }
-
-        const currentState = this.getGameState(player, enemySystem);
-        
-        // Choose and execute action
-        const action = await this.chooseAction(currentState, enemySystem);
-        this.executeAction(action, enemySystem);
-        
-        // Store for training with prioritized experience replay
-        if (this.stateHistory.length > 0) {
-            const previousState = this.stateHistory[this.stateHistory.length - 1];
-            const reward = this.calculateReward(previousState, currentState);
-            const done = player.currentHealth <= 0;
-            
-            // Calculate initial priority (TD error approximation)
-            const priority = Math.abs(reward) + 0.01; // Small constant to ensure non-zero priority
-            
-            this.replayBuffer.push({
-                state: previousState,
-                action: this.actionHistory[this.actionHistory.length - 1],
-                reward: reward,
-                nextState: currentState,
-                done: done,
-                priority: priority,
-                tdError: 0 // Will be updated during training
-            });
-            
-            // Track episode rewards
-            this.episodeRewards.push(reward);
-            if (this.episodeRewards.length > 1000) {
-                this.episodeRewards = this.episodeRewards.slice(-1000);
-            }
-            
-            // Limit replay buffer size
-            if (this.replayBuffer.length > this.maxReplayBufferSize) {
-                this.replayBuffer.shift();
-            }
-            
-            // Update metrics
-            this.trainingMetrics.averageReward = this.episodeRewards.reduce((a, b) => a + b, 0) / this.episodeRewards.length;
-            this.trainingMetrics.qValueMean = this.qValues.length > 0 ? this.qValues.reduce((a, b) => a + b, 0) / this.qValues.length : 0;
-        }
-        
-        this.stateHistory.push(currentState);
-        this.actionHistory.push(action);
-        this.lastActionTime = currentTime;
-        
-        // Train the model periodically
-        if (this.trainingMode && this.replayBuffer.length >= 64) {
-            await this.trainModelEnhanced();
-            this.trainSteps++;
-            
-            // Update target network periodically
-            if (this.trainSteps % this.targetUpdateFreq === 0) {
-                await this.updateTargetModel();
-            }
-            
-            // Auto-save model periodically
-            if (this.trainSteps % this.autoSaveInterval === 0) {
-                await this.autoSaveModel();
-            }
-        }
-        
-        // Update training metrics
-        this.trainingMetrics.totalEpisodes = this.trainSteps;
-        this.trainingMetrics.explorationRate = this.epsilon;
-        
-        // Adaptive difficulty monitoring and adjustment
-        if (this.adaptiveDifficultyEnabled) {
-            const performance = this.calculatePlayerPerformance(currentState);
-            this.updatePerformanceWindow(performance);
-            
-            if (this.shouldAdjustDifficulty()) {
-                this.adjustDifficultyBasedOnPerformance();
-            }
-        }
-    }
-
-    private async trainModelEnhanced(): Promise<void> {
-        const currentModel = this.models.get(this.currentDifficulty);
-        const currentTargetModel = this.targetModels.get(this.currentDifficulty);
-        
-        if (!currentModel || !currentTargetModel || this.replayBuffer.length < 64) return;
-
-        const startTime = Date.now();
-        const batchSize = Math.min(64, this.replayBuffer.length);
-        
-        // Prioritized sampling
-        const batch = this.samplePrioritizedBatch(batchSize);
-        
-        // Prepare training data
-        const states = batch.map(exp => this.gameStateToTensor(exp.experience.state));
-        const nextStates = batch.map(exp => this.gameStateToTensor(exp.experience.nextState));
-        
-        const statesBatch = tf.concat(states);
-        const nextStatesBatch = tf.concat(nextStates);
-        
-        // Double DQN: Use main network to select actions, target network to evaluate
-        const currentQValues = currentModel.predict(statesBatch) as tf.Tensor;
-        const nextQValuesMain = currentModel.predict(nextStatesBatch) as tf.Tensor;
-        const nextQValuesTarget = currentTargetModel.predict(nextStatesBatch) as tf.Tensor;
-        
-        const currentQData = await currentQValues.data();
-        const nextQMainData = await nextQValuesMain.data();
-        const nextQTargetData = await nextQValuesTarget.data();
-        
-        // Update Q-values using Double DQN
-        const updatedQValues = new Float32Array(currentQData);
-        const tdErrors: number[] = [];
-        
-        for (let i = 0; i < batch.length; i++) {
-            const experience = batch[i].experience;
-            const actionIndex = experience.action;
-            const reward = experience.reward;
-            
-            let targetValue = reward;
-            if (!experience.done) {
-                // Double DQN: Select action with main network, evaluate with target network
-                const nextQMain = Array.from(nextQMainData.slice(i * 6, (i + 1) * 6));
-                const bestNextAction = nextQMain.indexOf(Math.max(...nextQMain));
-                const nextQTarget = Array.from(nextQTargetData.slice(i * 6, (i + 1) * 6));
-                targetValue += this.discountFactor * nextQTarget[bestNextAction];
-            }
-            
-            const currentQ = currentQData[i * 6 + actionIndex];
-            const tdError = Math.abs(targetValue - currentQ);
-            tdErrors.push(tdError);
-            
-            updatedQValues[i * 6 + actionIndex] = targetValue;
-        }
-        
-        // Update priorities in replay buffer
-        for (let i = 0; i < batch.length; i++) {
-            const bufferIndex = batch[i].index;
-            this.replayBuffer[bufferIndex].tdError = tdErrors[i];
-            this.replayBuffer[bufferIndex].priority = Math.pow(tdErrors[i] + 0.01, this.alpha);
-        }
-        
-        // Importance sampling weights
-        const maxWeight = Math.max(...batch.map(b => b.weight));
-        const weights = batch.map(b => b.weight / maxWeight);
-        const weightsTensor = tf.tensor1d(weights);
-        
-        const targetTensor = tf.tensor2d(Array.from(updatedQValues), [batchSize, 6]);
-        
-        // Train the model with importance sampling
-        const history = await currentModel.fit(statesBatch, targetTensor, {
-            epochs: 1,
-            verbose: 0,
-            sampleWeight: weightsTensor
-        });
-        
-        // Update training metrics
-        const loss = Array.isArray(history.history.loss) ? history.history.loss[0] : history.history.loss;
-        this.recentLosses.push(loss as number);
-        if (this.recentLosses.length > 100) {
-            this.recentLosses = this.recentLosses.slice(-100);
-        }
-        this.trainingMetrics.lossValue = this.recentLosses.reduce((a, b) => a + b, 0) / this.recentLosses.length;
-        this.trainingMetrics.trainingTime += Date.now() - startTime;
-        
-        // Update beta for importance sampling
-        this.beta = Math.min(1.0, this.beta + this.betaIncrement);
-        
-        // Clean up tensors
-        states.forEach(tensor => tensor.dispose());
-        nextStates.forEach(tensor => tensor.dispose());
-        statesBatch.dispose();
-        nextStatesBatch.dispose();
-        currentQValues.dispose();
-        nextQValuesMain.dispose();
-        nextQValuesTarget.dispose();
-        targetTensor.dispose();
-        weightsTensor.dispose();
-    }
-    
-    private samplePrioritizedBatch(batchSize: number): Array<{experience: any, index: number, weight: number}> {
-        // Calculate total priority
-        const totalPriority = this.replayBuffer.reduce((sum, exp) => sum + exp.priority, 0);
-        
-        const batch = [];
-        const segment = totalPriority / batchSize;
-        
-        for (let i = 0; i < batchSize; i++) {
-            const a = segment * i;
-            const b = segment * (i + 1);
-            const value = Math.random() * (b - a) + a;
-            
-            let cumulativePriority = 0;
-            for (let j = 0; j < this.replayBuffer.length; j++) {
-                cumulativePriority += this.replayBuffer[j].priority;
-                if (cumulativePriority >= value) {
-                    const probability = this.replayBuffer[j].priority / totalPriority;
-                    const weight = Math.pow(this.replayBuffer.length * probability, -this.beta);
-                    
-                    batch.push({
-                        experience: this.replayBuffer[j],
-                        index: j,
-                        weight: weight
-                    });
-                    break;
-                }
-            }
-        }
-        
-        return batch;
-    }
-
-    /**
-     * Sets the training mode for the AI Director
-     * @param training - Whether to enable training mode
-     */
-    public setTrainingMode(training: boolean): void {
-        this.trainingMode = training;
-    }
-
-    /**
-     * Gets the current training mode status
-     * @returns True if training mode is enabled, false otherwise
-     */
-    public isTraining(): boolean {
-        return this.trainingMode;
-    }
-
-    public setDifficulty(difficulty: DifficultyLevel): void {
-        const oldDifficulty = this.currentDifficulty;
-        this.currentDifficulty = difficulty;
-        const config = this.difficultyConfigs.get(difficulty)!;
-        
-        // Update action interval based on difficulty
-        this.actionInterval = config.actionInterval;
-        
-        // Reset epsilon for new difficulty
-        this.epsilon = config.epsilon;
-        
-        console.log(`AI Director difficulty changed from ${this.difficultyConfigs.get(oldDifficulty)?.name} to ${config.name}`);
-        
-        // If model doesn't exist for this difficulty, initialize it
-        if (!this.models.has(difficulty)) {
-            this.initializeModel().catch(error => {
-                console.error(`Failed to initialize model for ${config.name} difficulty:`, error);
-            });
-        }
-    }
-
-    public getCurrentDifficulty(): DifficultyLevel {
-        return this.currentDifficulty;
-    }
-
-    public getDifficultyConfig(difficulty?: DifficultyLevel): DifficultyConfig {
-        const targetDifficulty = difficulty || this.currentDifficulty;
-        return { ...this.difficultyConfigs.get(targetDifficulty)! };
-    }
-
-    /**
-     * Gets all difficulty configurations
-     * @returns Map containing all difficulty level configurations
-     */
-    public getAllDifficultyConfigs(): Map<DifficultyLevel, DifficultyConfig> {
-        return this.difficultyConfigs;
-    }
-    
-    /**
-     * Cycles through difficulty levels in order (Easy -> Medium -> Hard -> Easy)
-     */
-    public cycleDifficulty(): void {
-        const difficulties = [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD];
-        const currentIndex = difficulties.indexOf(this.currentDifficulty);
-        const nextIndex = (currentIndex + 1) % difficulties.length;
-        this.setDifficulty(difficulties[nextIndex]);
-    }
-    
-    public getDifficultyStats(): string {
-        const stats = [];
-        for (const [difficulty, config] of this.difficultyConfigs.entries()) {
-            const model = this.models.get(difficulty);
-            const status = model ? 'Ready' : 'Not Loaded';
-            const current = difficulty === this.currentDifficulty ? ' (Current)' : '';
-            stats.push(`${config.name}: ${status}${current}`);
-        }
-        return stats.join(' | ');
-    }
-
-
-
-    public getReplayBufferSize(): number {
-        return this.replayBuffer.length;
-    }
-
-    public resetGame(): void {
-        this.gameStartTime = Date.now();
-        this.lastActionTime = 0;
-        this.stateHistory = [];
-        this.actionHistory = [];
-    }
-
-    public getTrainingStatus(): string {
-        const status = [];
-        status.push(`Training: ${this.trainingMode ? 'ON' : 'OFF'}`);
-        status.push(`Difficulty: ${this.difficultyConfigs.get(this.currentDifficulty)?.name || 'Unknown'}`);
-        
-        const currentModel = this.models.get(this.currentDifficulty);
-        status.push(`Model: ${currentModel ? 'Loaded' : 'Not Loaded'}`);
-        
-        const config = this.difficultyConfigs.get(this.currentDifficulty);
-        if (config) {
-            status.push(`ε: ${config.epsilon.toFixed(3)}`);
-        }
-        
-        const bufferFill = (this.replayBuffer.length / this.maxReplayBufferSize * 100).toFixed(1);
-        status.push(`Buffer: ${bufferFill}%`);
-        status.push(`Steps: ${this.trainSteps}`);
-        
-        if (this.recentLosses.length > 0) {
-            const avgLoss = this.recentLosses.reduce((a, b) => a + b, 0) / this.recentLosses.length;
-            status.push(`Loss: ${avgLoss.toFixed(4)}`);
-        }
-        
-        const avgReward = this.trainingMetrics.averageReward.toFixed(2);
-        status.push(`Avg Reward: ${avgReward}`);
-        
-        return status.join(' | ');
-    }
-    
-    // Model persistence methods
-    public async saveModel(modelName?: string): Promise<boolean> {
-        try {
-            const name = modelName || `ai-director-model-v${this.modelVersion}`;
-            
-            // Update model config before saving
-            this.modelConfig.version = this.modelVersion;
-            this.modelConfig.trainingMetrics = { ...this.trainingMetrics };
-            this.modelConfig.createdAt = new Date().toISOString();
-            
-            // Save models for all difficulty levels
-            for (const [difficulty, model] of this.models.entries()) {
-                if (model) {
-                    const difficultyName = this.difficultyConfigs.get(difficulty)!.name.toLowerCase();
-                    const mainModelUrl = `indexeddb://${name}-${difficultyName}`;
-                    await model.save(mainModelUrl);
-                    
-                    const targetModel = this.targetModels.get(difficulty);
-                    if (targetModel) {
-                        const targetModelUrl = `indexeddb://${name}-${difficultyName}-target`;
-                        await targetModel.save(targetModelUrl);
-                    }
-                }
-            }
-            
-            // Save model configuration and training data
-            await this.saveModelMetadata(name);
-            
-            console.log(`All difficulty models saved successfully as: ${name}`);
-            return true;
-        } catch (error) {
-            console.error('Failed to save models:', error);
-            return false;
-        }
-    }
-    
-    public async loadModel(modelName: string): Promise<boolean> {
-        try {
-            // Load models for all difficulty levels
-            for (const [difficulty, config] of this.difficultyConfigs.entries()) {
-                const difficultyName = config.name.toLowerCase();
-                const mainModelUrl = `indexeddb://${modelName}-${difficultyName}`;
-                
-                try {
-                    // Load the main model
-                    const model = await tf.loadLayersModel(mainModelUrl);
-                    this.models.set(difficulty, model);
-                    
-                    // Try to load the target model
-                    try {
-                        const targetModelUrl = `indexeddb://${modelName}-${difficultyName}-target`;
-                        const targetModel = await tf.loadLayersModel(targetModelUrl);
-                        this.targetModels.set(difficulty, targetModel);
-                    } catch {
-                        // If target model doesn't exist, create a copy of the main model
-                        const targetModel = tf.sequential();
-                        for (const layer of model.layers) {
-                            targetModel.add(layer);
-                        }
-                        targetModel.compile({
-                            optimizer: tf.train.adam(config.learningRate),
-                            loss: 'meanSquaredError',
-                            metrics: ['mae']
-                        });
-                        this.targetModels.set(difficulty, targetModel);
-                    }
-                } catch (error) {
-                    console.warn(`Failed to load model for ${difficultyName} difficulty:`, error);
-                    // Initialize new model for this difficulty if loading fails
-                    const originalDifficulty = this.currentDifficulty;
-                    this.currentDifficulty = difficulty;
-                    await this.initializeModel();
-                    this.currentDifficulty = originalDifficulty;
-                }
-            }
-            
-            // Load model metadata
-            await this.loadModelMetadata(modelName);
-            
-            console.log(`Models loaded successfully: ${modelName}`);
-            return true;
-        } catch (error) {
-            console.error('Failed to load models:', error);
-            return false;
-        }
-    }
-    
-    /**
-     * Lists all saved AI Director models
-     * @returns Promise resolving to array of saved model names
-     */
-    public async listSavedModels(): Promise<string[]> {
-        try {
-            const models = await tf.io.listModels();
-            return Object.keys(models)
-                .filter(key => key.includes('ai-director-model'))
-                .map(key => key.replace('indexeddb://', ''));
-        } catch (error) {
-            console.error('Failed to list models:', error);
-            return [];
-        }
-    }
-    
-    /**
-     * Deletes a saved AI Director model and its metadata
-     * @param modelName - Name of the model to delete
-     * @returns Promise resolving to true if deletion was successful, false otherwise
-     */
-    public async deleteModel(modelName: string): Promise<boolean> {
-        try {
-            // Delete models for all difficulty levels
-            for (const [, config] of this.difficultyConfigs.entries()) {
-                const difficultyName = config.name.toLowerCase();
-                
-                try {
-                    await tf.io.removeModel(`indexeddb://${modelName}-${difficultyName}`);
-                    await tf.io.removeModel(`indexeddb://${modelName}-${difficultyName}-target`);
-                } catch (error) {
-                    console.warn(`Failed to delete ${difficultyName} model:`, error);
-                }
-            }
-            
-            // Remove metadata
-            if (typeof window !== 'undefined' && window.localStorage) {
-                localStorage.removeItem(`ai-director-metadata-${modelName}`);
-            }
-            
-            console.log(`All difficulty models deleted successfully: ${modelName}`);
-            return true;
-        } catch (error) {
-            console.error('Failed to delete models:', error);
-            return false;
-        }
-    }
-    
-    private async saveModelMetadata(modelName: string): Promise<void> {
-        const metadata = {
-            modelConfig: this.modelConfig,
-            trainingMetrics: this.trainingMetrics,
-            hyperparameters: {
-                learningRate: this.learningRate,
-                discountFactor: this.discountFactor,
-                epsilon: this.epsilon,
-                epsilonDecay: this.epsilonDecay,
-                epsilonMin: this.epsilonMin,
-                alpha: this.alpha,
-                beta: this.beta,
-                targetUpdateFreq: this.targetUpdateFreq
-            },
-            replayBufferSize: this.replayBuffer.length,
-            modelVersion: this.modelVersion
-        };
-        
-        if (typeof window !== 'undefined' && window.localStorage) {
-            localStorage.setItem(`ai-director-metadata-${modelName}`, JSON.stringify(metadata));
-        }
-    }
-    
-    private async loadModelMetadata(modelName: string): Promise<void> {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const metadataStr = localStorage.getItem(`ai-director-metadata-${modelName}`);
-            if (metadataStr) {
-                const metadata = JSON.parse(metadataStr);
-                this.modelConfig = metadata.modelConfig || this.modelConfig;
-                this.trainingMetrics = metadata.trainingMetrics || this.trainingMetrics;
-                this.modelVersion = metadata.modelVersion || this.modelVersion;
-                
-                // Restore hyperparameters
-                if (metadata.hyperparameters) {
-                    this.learningRate = metadata.hyperparameters.learningRate || this.learningRate;
-                    this.epsilon = metadata.hyperparameters.epsilon || this.epsilon;
-                    this.alpha = metadata.hyperparameters.alpha || this.alpha;
-                    this.beta = metadata.hyperparameters.beta || this.beta;
-                }
+                // Try again immediately
+                this.executeAction(action, enemySystem); 
             }
         }
     }
     
-    // Training data export functionality
-    public exportTrainingData(): any {
-        return {
-            modelConfig: this.modelConfig,
-            trainingMetrics: this.trainingMetrics,
-            replayBuffer: this.replayBuffer.slice(-1000), // Export last 1000 experiences
-            hyperparameters: {
-                learningRate: this.learningRate,
-                discountFactor: this.discountFactor,
-                epsilon: this.epsilon,
-                epsilonDecay: this.epsilonDecay,
-                epsilonMin: this.epsilonMin,
-                alpha: this.alpha,
-                beta: this.beta,
-                targetUpdateFreq: this.targetUpdateFreq
-            },
-            episodeRewards: this.episodeRewards,
-            recentLosses: this.recentLosses,
-            exportedAt: new Date().toISOString()
-        };
-    }
-    
-    public getTrainingMetrics(): TrainingMetrics {
-        return { ...this.trainingMetrics };
-    }
-    
-    public getModelConfig(): ModelConfig {
-        return { ...this.modelConfig };
+    private initializeBudgetSystem(): void {
+        this.maxBudget = 300 + (this.currentDifficulty * 200);
+        this.budgetRegenRate = 8 + (this.currentDifficulty * 4);
+        this.currentBudget = this.maxBudget * 0.5;
     }
 
-    private async autoSaveModel(): Promise<void> {
-        const currentTime = Date.now();
-        if (currentTime - this.lastSaveTime > this.autoSaveInterval) {
-            await this.saveModel(`ai-director-autosave-${Date.now()}`);
-            this.lastSaveTime = currentTime;
-        }
-    }
-
-    // Budget Management Methods
     private updateBudget(): void {
-        const currentTime = Date.now();
-        const deltaTime = (currentTime - this.lastBudgetUpdate) / 1000; // Convert to seconds
-        
-        if (deltaTime > 0) {
-            const regenAmount = this.budgetRegenRate * deltaTime * this.budgetEfficiencyBonus;
-            this.currentBudget = Math.min(this.currentBudget + regenAmount, this.maxBudget);
-            this.lastBudgetUpdate = currentTime;
+        const now = Date.now();
+        const dt = (now - this.lastBudgetUpdate) / 1000;
+        if (dt > 0) {
+            this.currentBudget = Math.min(this.currentBudget + (this.budgetRegenRate * dt * this.budgetEfficiencyBonus), this.maxBudget);
+            this.lastBudgetUpdate = now;
             
-            // Track budget history
-            this.budgetHistory.push({
-                time: currentTime,
-                budget: this.currentBudget,
-                spent: 0
-            });
-            
-            // Keep only last 100 entries
-            if (this.budgetHistory.length > 100) {
-                this.budgetHistory = this.budgetHistory.slice(-100);
-            }
+            this.budgetHistory.push({time: now, budget: this.currentBudget, spent: 0});
+            if (this.budgetHistory.length > 50) this.budgetHistory.shift();
         }
     }
-    
-    private spendBudget(amount: number): boolean {
-        if (this.currentBudget >= amount) {
-            this.currentBudget -= amount;
-            
-            // Update last budget history entry with spent amount
-            if (this.budgetHistory.length > 0) {
-                this.budgetHistory[this.budgetHistory.length - 1].spent += amount;
-            }
-            
-            return true;
+
+    private spendBudget(amount: number): void {
+        this.currentBudget = Math.max(0, this.currentBudget - amount);
+        if (this.budgetHistory.length > 0) {
+            this.budgetHistory[this.budgetHistory.length-1].spent += amount;
         }
-        return false;
+    }
+
+    // --- Helper Logic (Tactical/Strategic) ---
+
+    private initializeStrategicObjectives(): void {
+        this.strategicObjectives = [
+            {
+                type: 'pressure',
+                priority: 0.8,
+                conditions: (state) => state.playerHealthPercent > 0.8 && state.enemyCountGnolls < 0.2,
+                actions: [DirectorAction.SPAWN_GNOLLS, DirectorAction.SPAWN_ARCHERS]
+            },
+            {
+                type: 'overwhelm',
+                priority: 0.9,
+                conditions: (state) => state.gameTimer > 0.8 && state.playerStressLevel < 0.5,
+                actions: [DirectorAction.SPAWN_OGRES, DirectorAction.SPAWN_SKELETON_VIKINGS]
+            }
+        ];
+    }
+
+    private selectStrategicAction(state: GameState, enemySystem: EnemySystem): DirectorAction | null {
+        const validObjectives = this.strategicObjectives
+            .filter(o => o.conditions(state))
+            .sort((a,b) => b.priority - a.priority);
+            
+        if (validObjectives.length > 0) {
+            const obj = validObjectives[0];
+            // Pick random valid action from objective
+            const action = obj.actions[Math.floor(Math.random() * obj.actions.length)];
+            return action;
+        }
+        return null;
+    }
+
+    private updatePlayerPerformanceMetrics(state: GameState): void {
+        // Update rolling averages
+        this.playerPerformanceMetrics.damageDealtPerSecond = 
+            (this.playerPerformanceMetrics.damageDealtPerSecond * 0.9) + (state.playerDPS * 100 * 0.1);
+    }
+
+    private updateAdaptiveStrategy(state: GameState): void {
+        // Simple heuristic
+        if (state.playerHealthPercent > 0.8) this.adaptiveStrategy = 'aggressive';
+        else if (state.playerHealthPercent < 0.3) this.adaptiveStrategy = 'defensive';
+        else this.adaptiveStrategy = 'balanced';
     }
     
-    private calculateOptimalSpawns(action: DirectorAction, enemySystem: EnemySystem): {
-        skeletonVikings: number;
-        archers: number;
-        gnolls: number;
-        ogres: number;
-        skeletonVikingCost: number;
-        archerCost: number;
-        gnollCost: number;
-        ogreCost: number;
-         totalCost: number;
-     } {
-         const enemyCosts = {
-            skeletonViking: 50,
-            archer: 30,
-            gnoll: 20,
-            ogre: 100
-        };
-       
-         const currentEnemies = {
-            skeletonVikings: enemySystem.getEnemyCountByType(EnemyType.SKELETON_VIKING),
-            archers: enemySystem.getEnemyCountByType(EnemyType.ARCHER),
-            gnolls: enemySystem.getEnemyCountByType(EnemyType.GNOLL),
-            ogres: enemySystem.getEnemyCountByType(EnemyType.OGRE)
-        };
-        
-         const maxSpawns = {
-            skeletonVikings: Math.min(Math.floor(this.currentBudget / enemyCosts.skeletonViking), Math.max(0, 8 - currentEnemies.skeletonVikings)),
-            archers: Math.min(Math.floor(this.currentBudget / enemyCosts.archer), Math.max(0, 12 - currentEnemies.archers)),
-            gnolls: Math.min(Math.floor(this.currentBudget / enemyCosts.gnoll), Math.max(0, 15 - currentEnemies.gnolls)),
-            ogres: Math.min(Math.floor(this.currentBudget / enemyCosts.ogre), Math.max(0, 4 - currentEnemies.ogres))
-         };
-        
-        let spawns = { skeletonVikings: 0, archers: 0, gnolls: 0, ogres: 0 };
-         
-         switch (action) {
-            case DirectorAction.SPAWN_SKELETON_VIKINGS:
-                spawns.skeletonVikings = Math.min(3, maxSpawns.skeletonVikings);
-                 break;
-            case DirectorAction.SPAWN_ARCHERS:
-                spawns.archers = Math.min(5, maxSpawns.archers);
-                 break;
-            case DirectorAction.SPAWN_GNOLLS:
-                spawns.gnolls = Math.min(8, maxSpawns.gnolls);
-                 break;
-            case DirectorAction.SPAWN_OGRES:
-                spawns.ogres = Math.min(2, maxSpawns.ogres);
-                 break;
-         }
-        
-         const costs = {
-            skeletonVikingCost: spawns.skeletonVikings * enemyCosts.skeletonViking,
-            archerCost: spawns.archers * enemyCosts.archer,
-            gnollCost: spawns.gnolls * enemyCosts.gnoll,
-            ogreCost: spawns.ogres * enemyCosts.ogre
-         };
-         
-         return {
-             ...spawns,
-             ...costs,
-            totalCost: costs.skeletonVikingCost + costs.archerCost + costs.gnollCost + costs.ogreCost
-         };
+    private detectPlayerPattern(state: GameState): boolean {
+         const movementKey = `${Math.floor(state.playerPositionX * 40)}_${Math.floor(state.playerPositionY * 40)}`;
+         const currentCount = this.playerBehaviorPattern.get(movementKey) || 0;
+         this.playerBehaviorPattern.set(movementKey, currentCount + 1);
+         return currentCount > 10; // Camping check
     }
     
     private shouldUseEmergencyBudget(enemySystem: EnemySystem): boolean {
-        // Use emergency budget if player is doing too well (low stress, high health)
-        const totalEnemies = enemySystem.getEnemyCount();
-        const lowEnemyCount = totalEnemies < 5;
-        const budgetStarved = this.currentBudget < (this.maxBudget * 0.1);
-        
-        return lowEnemyCount && budgetStarved && this.emergencyBudgetMultiplier === 1.0;
+        return enemySystem.getEnemyCount() < 3 && this.currentBudget < 50 && this.emergencyBudgetMultiplier === 1.0;
     }
     
     private activateEmergencyBudget(): void {
         this.emergencyBudgetMultiplier = 2.0;
-        this.currentBudget *= this.emergencyBudgetMultiplier;
+        this.currentBudget += 100;
+        console.log("Director: Emergency Budget Activated");
+        setTimeout(() => this.emergencyBudgetMultiplier = 1.0, 15000);
+    }
+
+    private calculateOptimalSpawns(action: DirectorAction, enemySystem: EnemySystem) {
+        // Simplified costs for brevity
+        const costs = { skeletonViking: 50, archer: 30, gnoll: 20, ogre: 100 };
         
-        console.log('Emergency budget activated! Current budget:', this.currentBudget);
+        const spawn = { skeletonVikings: 0, archers: 0, gnolls: 0, ogres: 0, skeletonVikingCost: 0, archerCost: 0, gnollCost: 0, ogreCost: 0, totalCost: 0 };
         
-        // Reset emergency budget after some time
-        setTimeout(() => {
-            this.emergencyBudgetMultiplier = 1.0;
-        }, 30000); // 30 seconds
-    }
-    
-    public getBudgetStatus(): string {
-        const budgetPercent = (this.currentBudget / this.maxBudget * 100).toFixed(1);
-        const regenRate = (this.budgetRegenRate * this.budgetEfficiencyBonus).toFixed(1);
-        const emergency = this.emergencyBudgetMultiplier > 1.0 ? ' (EMERGENCY)' : '';
+        // How many can we afford?
+        const budget = this.currentBudget;
         
-        return `Budget: ${this.currentBudget.toFixed(0)}/${this.maxBudget} (${budgetPercent}%) | Regen: ${regenRate}/s${emergency}`;
-    }
-    
-    public getCurrentBudget(): number {
-        return this.currentBudget;
-    }
-    
-    public getMaxBudget(): number {
-        return this.maxBudget;
-    }
-    
-    public getBudgetHistory(): Array<{time: number, budget: number, spent: number}> {
-        return this.budgetHistory;
-    }
-    
-    // Tactical decision-making information methods
-    public getTacticalStatus(): string {
-        const recentActions = this.tacticalMemory.slice(-10);
-        const avgOutcome = recentActions.length > 0 ? 
-            recentActions.reduce((sum, mem) => sum + mem.outcome, 0) / recentActions.length : 0;
+        if (action === DirectorAction.SPAWN_SKELETON_VIKINGS) spawn.skeletonVikings = Math.min(3, Math.floor(budget / costs.skeletonViking));
+        if (action === DirectorAction.SPAWN_ARCHERS) spawn.archers = Math.min(5, Math.floor(budget / costs.archer));
+        if (action === DirectorAction.SPAWN_GNOLLS) spawn.gnolls = Math.min(8, Math.floor(budget / costs.gnoll));
+        if (action === DirectorAction.SPAWN_OGRES) spawn.ogres = Math.min(2, Math.floor(budget / costs.ogre));
         
-        return `Strategy: ${this.adaptiveStrategy.toUpperCase()} | ` +
-               `Threat Level: ${this.threatAssessmentHistory.length > 0 ? 
-                   this.threatAssessmentHistory[this.threatAssessmentHistory.length - 1].threat.toFixed(2) : '0.00'} | ` +
-               `Tactical Memory: ${this.tacticalMemory.length} | ` +
-               `Avg Outcome: ${avgOutcome.toFixed(2)}`;
+        spawn.skeletonVikingCost = spawn.skeletonVikings * costs.skeletonViking;
+        spawn.archerCost = spawn.archers * costs.archer;
+        spawn.gnollCost = spawn.gnolls * costs.gnoll;
+        spawn.ogreCost = spawn.ogres * costs.ogre;
+        spawn.totalCost = spawn.skeletonVikingCost + spawn.archerCost + spawn.gnollCost + spawn.ogreCost;
+        
+        return spawn;
     }
     
-    public getAdaptiveStrategy(): string {
-        return this.adaptiveStrategy;
-    }
-    
-    public getPlayerPerformanceMetrics(): any {
-        return { ...this.playerPerformanceMetrics };
-    }
-    
-    public getThreatAssessmentHistory(): Array<{time: number, threat: number, response: DirectorAction}> {
-        return [...this.threatAssessmentHistory];
-    }
-    
-    public updateTacticalOutcome(reward: number): void {
-        // Update the most recent tactical memory with the outcome
+    private updateTacticalOutcome(reward: number): void {
         if (this.tacticalMemory.length > 0) {
             this.tacticalMemory[this.tacticalMemory.length - 1].outcome = reward;
         }
     }
+
+    // --- Adaptive Difficulty Scaling ---
     
-    public getStrategicObjectivesStatus(): string {
-        const activeObjectives = this.strategicObjectives.filter(obj => {
-            // We need a dummy state to test conditions, using last known state
-            if (this.stateHistory.length === 0) return false;
-            const lastState = this.stateHistory[this.stateHistory.length - 1];
-            return obj.conditions(lastState);
-        });
-        
-        return `Active Objectives: ${activeObjectives.map(obj => obj.type).join(', ')} | ` +
-               `Total Objectives: ${this.strategicObjectives.length}`;
-    }
-
-    // Adaptive Difficulty Scaling System
-    private adaptiveDifficultyEnabled: boolean = true;
-    private performanceWindow: Array<{timestamp: number, performance: number}> = [];
-    private difficultyAdjustmentCooldown: number = 30000; // 30 seconds
-    private lastDifficultyAdjustment: number = 0;
-    private targetPerformanceRange = { min: 0.4, max: 0.7 }; // Target player performance range
-
     private calculatePlayerPerformance(state: GameState): number {
-        // Calculate normalized performance score (0-1)
-        const healthScore = state.playerHealthPercent;
-        const stressScore = 1 - Math.min(state.playerStressLevel, 1);
-        const engagementScore = Math.min(state.engagementScore / 100, 1);
-        
-        return (healthScore * 0.4 + stressScore * 0.3 + engagementScore * 0.3);
+        return (state.playerHealthPercent * 0.5) + (state.engagementScore * 0.5);
     }
 
-    private updatePerformanceWindow(performance: number): void {
-        const now = Date.now();
-        this.performanceWindow.push({ timestamp: now, performance });
-        
-        // Keep only last 2 minutes of data
-        const cutoff = now - 120000;
-        this.performanceWindow = this.performanceWindow.filter(entry => entry.timestamp > cutoff);
+    private updatePerformanceWindow(perf: number): void {
+        this.performanceWindow.push({timestamp: Date.now(), performance: perf});
+        if (this.performanceWindow.length > 20) this.performanceWindow.shift();
     }
-
-    private getAveragePerformance(): number {
-        if (this.performanceWindow.length === 0) return 0.5;
-        
-        const sum = this.performanceWindow.reduce((acc, entry) => acc + entry.performance, 0);
-        return sum / this.performanceWindow.length;
-    }
-
+    
     private shouldAdjustDifficulty(): boolean {
-        const now = Date.now();
-        if (now - this.lastDifficultyAdjustment < this.difficultyAdjustmentCooldown) {
-            return false;
-        }
-        
-        if (this.performanceWindow.length < 10) {
-            return false; // Need enough data
-        }
-        
-        const avgPerformance = this.getAveragePerformance();
-        return avgPerformance < this.targetPerformanceRange.min || avgPerformance > this.targetPerformanceRange.max;
+        return (Date.now() - this.lastDifficultyAdjustment) > 30000;
     }
-
+    
     private adjustDifficultyBasedOnPerformance(): void {
-        const avgPerformance = this.getAveragePerformance();
-        const now = Date.now();
-        
-        if (avgPerformance < this.targetPerformanceRange.min) {
-            // Player struggling - reduce difficulty
-            this.maxBudget = Math.max(300, this.maxBudget - 50);
-            this.budgetRegenRate = Math.max(5, this.budgetRegenRate - 1);
-            this.emergencyBudgetMultiplier = Math.max(0.8, this.emergencyBudgetMultiplier - 0.1);
-        } else if (avgPerformance > this.targetPerformanceRange.max) {
-            // Player doing too well - increase difficulty
-            this.maxBudget = Math.min(800, this.maxBudget + 50);
-            this.budgetRegenRate = Math.min(20, this.budgetRegenRate + 1);
-            this.emergencyBudgetMultiplier = Math.min(2.0, this.emergencyBudgetMultiplier + 0.1);
+        const avg = this.performanceWindow.reduce((a,b) => a + b.performance, 0) / this.performanceWindow.length;
+        if (avg < this.targetPerformanceRange.min) {
+             // Make easier
+             this.maxBudget = Math.max(200, this.maxBudget - 50);
+             console.log("Director: Adapting - Difficulty Decreased");
+        } else if (avg > this.targetPerformanceRange.max) {
+             // Make harder
+             this.maxBudget = Math.min(1000, this.maxBudget + 50);
+             console.log("Director: Adapting - Difficulty Increased");
         }
-        
-        this.lastDifficultyAdjustment = now;
+        this.lastDifficultyAdjustment = Date.now();
     }
 
-    public enableAdaptiveDifficulty(enabled: boolean): void {
-        this.adaptiveDifficultyEnabled = enabled;
-    }
+    // --- Public Getters/Setters ---
 
-    public getAdaptiveDifficultyStatus(): string {
-        const avgPerformance = this.getAveragePerformance();
-        const status = this.adaptiveDifficultyEnabled ? 'Enabled' : 'Disabled';
-        return `Adaptive Difficulty: ${status}, Avg Performance: ${(avgPerformance * 100).toFixed(1)}%, Budget: ${this.maxBudget}, Regen: ${this.budgetRegenRate}/s`;
+    public setActive(active: boolean): void { this.isActive = active; }
+    public setTrainingMode(training: boolean): void { this.trainingMode = training; }
+    public isTraining(): boolean { return this.trainingMode; }
+    
+    public getTrainingMetrics(): TrainingMetrics { return this.trainingMetrics; }
+    public getModelConfig(): ModelConfig { return this.modelConfig; }
+    public getTrainingStatus(): string {
+        return `Mode: ${this.trainingMode ? 'Bandit Learning' : 'Inference'} | Steps: ${this.trainSteps} | Avg Reward: ${this.trainingMetrics.averageReward.toFixed(2)}`;
     }
-
-    public setTargetPerformanceRange(min: number, max: number): void {
-        this.targetPerformanceRange = { min: Math.max(0, min), max: Math.min(1, max) };
+    
+    public getBudgetStatus(): string {
+        return `Budget: ${this.currentBudget.toFixed(0)}/${this.maxBudget}`;
     }
-
-    /**
-     * Get consolidated metrics for the AI Director
-     * This method provides a comprehensive overview of all AI Director metrics
-     */
-    public getMetrics(): any {
-        const avgPerformance = this.getAveragePerformance();
-        const recentThreat = this.threatAssessmentHistory.length > 0 ? 
-            this.threatAssessmentHistory[this.threatAssessmentHistory.length - 1].threat : 0;
-        
-        return {
-            // Training metrics
-            training: this.getTrainingMetrics(),
-            
-            // Model configuration
-            model: this.getModelConfig(),
-            
-            // Training status
-            trainingStatus: this.getTrainingStatus(),
-            
-            // Budget information
-            budget: {
-                current: this.currentBudget,
-                max: this.maxBudget,
-                percentage: (this.currentBudget / this.maxBudget) * 100,
-                regenRate: this.budgetRegenRate,
-                efficiency: this.budgetEfficiencyBonus,
-                emergency: this.emergencyBudgetMultiplier > 1.0,
-                status: this.getBudgetStatus()
-            },
-            
-            // Tactical information
-            tactical: {
-                strategy: this.adaptiveStrategy,
-                threatLevel: recentThreat,
-                memorySize: this.tacticalMemory.length,
-                status: this.getTacticalStatus()
-            },
-            
-            // Adaptive difficulty
-            adaptiveDifficulty: {
-                enabled: this.adaptiveDifficultyEnabled,
-                performance: avgPerformance,
-                performancePercent: avgPerformance * 100,
-                targetRange: this.targetPerformanceRange,
-                status: this.getAdaptiveDifficultyStatus()
-            },
-            
-            // Player performance
-            playerPerformance: this.getPlayerPerformanceMetrics(),
-            
-            // Strategic objectives
-            strategicObjectives: {
-                total: this.strategicObjectives.length,
-                status: this.getStrategicObjectivesStatus()
-            },
-            
-            // History data
-            history: {
-                threatAssessment: this.getThreatAssessmentHistory(),
-                budget: this.getBudgetHistory(),
-                performanceWindow: [...this.performanceWindow]
-            },
-            
-            // Timestamp
-            timestamp: Date.now()
-        };
+    public getCurrentBudget(): number { return this.currentBudget; }
+    public getMaxBudget(): number { return this.maxBudget; }
+    
+    public getTacticalStatus(): string {
+        return `Strategy: ${this.adaptiveStrategy} | Stress: ${this.stateHistory.length > 0 ? this.stateHistory[this.stateHistory.length-1].playerStressLevel.toFixed(2) : 0}`;
     }
+    
+    public getAdaptiveStrategy(): string { return this.adaptiveStrategy; }
+    public getAdaptiveDifficultyStatus(): string { return this.adaptiveDifficultyEnabled ? "Active" : "Disabled"; }
+    
+    // Persistence
+    public async saveModel(name: string): Promise<void> {
+        if (typeof window !== 'undefined' && window.localStorage) {
+            const model = this.models.get(this.currentDifficulty);
+            if (model) await model.save(`indexeddb://${name}`);
+        }
+    }
+    
+    public async loadModel(name: string): Promise<boolean> {
+        try {
+            const model = await tf.loadLayersModel(`indexeddb://${name}`);
+            this.models.set(this.currentDifficulty, model);
+            return true;
+        } catch (e) { return false; }
+    }
+    
+    // Legacy/Compatibility Getters
+    public getPlayerPerformanceMetrics(): any { return this.playerPerformanceMetrics; }
+    public getThreatAssessmentHistory(): any[] { return this.threatAssessmentHistory; }
+    public getBudgetHistory(): any[] { return this.budgetHistory; }
+    public getStrategicObjectivesStatus(): string { return `${this.strategicObjectives.length} objectives active`; }
 }

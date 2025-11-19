@@ -369,8 +369,6 @@ export const EnhancedStyleHelpers = {
   enemy: {
     getColor: (type: EnemyType): number => {
       switch (type) {
-        case EnemyType.GOLEM:
-          return parseInt(EnhancedDesignSystem.colors.enemy.tank.replace('#', '0x'));
         case EnemyType.ARCHER:
           return parseInt(EnhancedDesignSystem.colors.enemy.projectile.replace('#', '0x'));
         case EnemyType.GNOLL:

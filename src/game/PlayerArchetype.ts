@@ -46,6 +46,12 @@ export class PlayerArchetype {
     public movementHistory: { x: number; y: number; time: number }[] = [];
     public xpGained: number = 0;
     public lastXpTime: number = 0;
+    
+    // Leveling system
+    public level: number = 1;
+    public currentLevelXP: number = 0;
+    public xpToNextLevel: number = 100;
+    public skillPoints: number = 0;
 
     constructor(type: PlayerArchetypeType) {
         this.type = type;
@@ -101,10 +107,11 @@ export class PlayerArchetype {
     /**
      * Applies damage to the player archetype
      * @param amount - Amount of damage to apply
+     * @param time - Current game time
      */
-    public takeDamage(amount: number): void {
+    public takeDamage(amount: number, time: number): void {
         this.currentHealth = Math.max(0, this.currentHealth - amount);
-        this.lastDamageTime = Date.now();
+        this.lastDamageTime = time;
     }
 
     /**
@@ -119,23 +126,62 @@ export class PlayerArchetype {
      * Updates the player's position and tracks movement history
      * @param x - New X coordinate
      * @param y - New Y coordinate
+     * @param time - Current game time
      */
-    public updatePosition(x: number, y: number): void {
+    public updatePosition(x: number, y: number, time: number): void {
         this.position = { x, y };
-        this.movementHistory.push({ x, y, time: Date.now() });
+        this.movementHistory.push({ x, y, time });
         
         // Keep only last 10 seconds of movement history
-        const tenSecondsAgo = Date.now() - 10000;
+        const tenSecondsAgo = time - 10000;
         this.movementHistory = this.movementHistory.filter(entry => entry.time > tenSecondsAgo);
     }
 
     /**
-     * Adds experience points to the player
+     * Adds experience points to the player and handles leveling up
      * @param amount - Amount of XP to gain
+     * @param time - Current game time
+     * @returns Number of levels gained
      */
-    public gainXP(amount: number): void {
+    public gainXP(amount: number, time: number): number {
         this.xpGained += amount;
-        this.lastXpTime = Date.now();
+        this.currentLevelXP += amount;
+        this.lastXpTime = time;
+
+        let levelsGained = 0;
+        while (this.currentLevelXP >= this.xpToNextLevel) {
+            this.currentLevelXP -= this.xpToNextLevel;
+            this.level++;
+            this.skillPoints++;
+            this.xpToNextLevel = Math.floor(this.xpToNextLevel * 1.2); // Increase XP requirement by 20%
+            levelsGained++;
+        }
+        return levelsGained;
+    }
+
+    /**
+     * Attempts to spend skill points
+     * @param amount - Amount of points to spend
+     * @returns True if successful, false if not enough points
+     */
+    public spendSkillPoints(amount: number): boolean {
+        if (this.skillPoints >= amount) {
+            this.skillPoints -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Debug method to add levels directly
+     * @param amount - Number of levels to add
+     */
+    public addLevels(amount: number): void {
+        for (let i = 0; i < amount; i++) {
+            this.level++;
+            this.skillPoints++;
+            this.xpToNextLevel = Math.floor(this.xpToNextLevel * 1.2);
+        }
     }
 
     /**
@@ -148,18 +194,20 @@ export class PlayerArchetype {
 
     /**
      * Calculates damage per second over the last 10 seconds
+     * @param time - Current game time
      * @returns Average DPS over the last 10 seconds
      */
-    public getDPSOverLastTenSeconds(): number {
+    public getDPSOverLastTenSeconds(time: number): number {
         // This would need to be tracked more precisely in a real implementation
         return this.totalDamageDealt / 10; // Simplified calculation
     }
 
     /**
      * Calculates total movement distance over the last 10 seconds
+     * @param time - Current game time
      * @returns Total distance moved in pixels
      */
-    public getMovementDistanceLastTenSeconds(): number {
+    public getMovementDistanceLastTenSeconds(time: number): number {
         if (this.movementHistory.length < 2) return 0;
         
         let totalDistance = 0;
@@ -175,19 +223,21 @@ export class PlayerArchetype {
 
     /**
      * Checks if damage was taken recently (within last 5 seconds)
+     * @param time - Current game time
      * @returns 1 if damage taken recently, 0 otherwise
      */
-    public getDamageTakenRecently(): number {
-        const fiveSecondsAgo = Date.now() - 5000;
+    public getDamageTakenRecently(time: number): number {
+        const fiveSecondsAgo = time - 5000;
         return this.lastDamageTime > fiveSecondsAgo ? 1 : 0; // Simplified: 1 if damaged recently, 0 if not
     }
 
     /**
      * Calculates experience point generation rate over the last 10 seconds
+     * @param time - Current game time
      * @returns XP per second rate
      */
-    public getXPGenerationRate(): number {
-        const tenSecondsAgo = Date.now() - 10000;
+    public getXPGenerationRate(time: number): number {
+        const tenSecondsAgo = time - 10000;
         return this.lastXpTime > tenSecondsAgo ? this.xpGained / 10 : 0;
     }
 }

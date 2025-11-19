@@ -16,10 +16,10 @@ export class EnemySpawnerUI {
         this.scene = scene;
         this.container = scene.add.container(20, 20);
         this.container.setDepth(1000); // Above everything
-        this.container.setScrollFactor(0); // Fixed to camera - doesn't move with world
         this.container.setVisible(false); // Start hidden
         
         this.createUI();
+        this.container.setScrollFactor(0); // Fixed to camera - doesn't move with world
     }
 
     private createUI(): void {

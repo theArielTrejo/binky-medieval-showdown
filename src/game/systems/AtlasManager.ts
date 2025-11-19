@@ -69,6 +69,12 @@ export class AtlasManager {
             const png = `/atlases/${cleanCharacter}/${key}.png`;
             const json = `/atlases/${cleanCharacter}/${key}.json`;
 
+            // Check if texture already exists before loading
+            if (this.scene.textures.exists(key)) {
+                console.log(`🔹 Atlas already loaded: key="${key}"`);
+                return;
+            }
+
             console.log(`🔹 Queuing atlas: key="${key}"`, { png, json });
 
             //  Simple, clean, correct:
