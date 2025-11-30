@@ -44,6 +44,7 @@ export class Player {
     private slowEndTime: number = 0;
     private lastVortexHitTime: number = 0;
     private vortexHitCooldown: number = 500;
+    private facingLeft: boolean = false;
     /** Convert "idle_blinking" → "Idle_Blinking" for JSON frame names */
     private capitalizeWords(name: string): string {
         return name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('_');
@@ -267,19 +268,18 @@ export class Player {
             return;
         }
 
-        // --- REMOVED FLIP LOGIC ---
-        // if (leftPressed && !rightPressed) {
-        //     if (!this.facingLeft) {
-        //         this.facingLeft = true;
-        //         this.sprite.setFlipX(true);
-        //     }
-        // } else if (rightPressed && !leftPressed) {
-        //     if (this.facingLeft) {
-        //         this.facingLeft = false;
-        //         this.sprite.setFlipX(false);
-        //     }
-        // }
-        // --- END REMOVED FLIP LOGIC ---
+        // Handle sprite facing direction
+        if (leftPressed && !rightPressed) {
+            if (!this.facingLeft) {
+                this.facingLeft = true;
+                this.sprite.setFlipX(true);
+            }
+        } else if (rightPressed && !leftPressed) {
+            if (this.facingLeft) {
+                this.facingLeft = false;
+                this.sprite.setFlipX(false);
+            }
+        }
 
         // Play the animation (idle or walk)
         this.playAnimation(targetAnimationKey as keyof CharacterAnimationSet);
