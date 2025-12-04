@@ -21,23 +21,21 @@ export interface CharacterAnimationSet {
 export class AtlasManager {
   private scene: Phaser.Scene;
 
-  // default animation sets per character type
-  private defaultSets: CharacterAnimationSet[] = [
-    // Magician
-    { name: 'idle_blinking', frames: 18, rate: 12, repeat: -1 },
-    { name: 'walking', frames: 24, rate: 18, repeat: -1 },
-    { name: 'attack', frames: 12, rate: 20, repeat: 0}, // Do not repeat, plays once
+  // Animation configuration by suffix
+  private animationConfig: Record<string, CharacterAnimationSet> = {
+      'idle_blinking': { name: 'idle_blinking', frames: 18, rate: 12, repeat: -1 },
+      'walking': { name: 'walking', frames: 24, rate: 18, repeat: -1 },
+      'attack': { name: 'attack', frames: 12, rate: 20, repeat: 0 },
+      'idle': { name: 'idle', frames: 18, rate: 6, repeat: -1 },
+      'attackRun': { name: 'attackRun', frames: 12, rate: 14, repeat: 0 } // CamelCase for animation key generation
+  };
 
-    // Knight
-    { name: 'idle', frames: 18, rate: 6, repeat: -1 },
-    { name: 'walking', frames: 24, rate: 12, repeat: -1 },
-    { name: 'attackRun', frames: 12, rate: 14, repeat: 0 },
-
-    // Ninja
-    { name: 'idle', frames: 18, rate: 6, repeat: -1 },
-    { name: 'walking', frames: 24, rate: 12, repeat: -1 },
-    { name: 'attackRun', frames: 12, rate: 14, repeat: 0 }
-  ];
+  // Valid animation sets per character
+  private characterSets: Record<string, string[]> = {
+      magician: ['idle_blinking', 'walking', 'attack'],
+      knight: ['idle', 'walking', 'attackRun'],
+      ninja: ['idle_blinking', 'walking', 'attackRun']
+  };
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -50,14 +48,7 @@ export class AtlasManager {
      */
     public loadAllForCharacter(characterFolder: string): void {
         const cleanCharacter = characterFolder.toLowerCase();
-
-        const characterSets: Record<string, string[]> = {
-            magician: ['idle_blinking', 'walking', 'attack'],
-            knight: ['idle', 'walking', 'attackrun'],
-            ninja: ['idle_blinking', 'walking', 'attackrun']
-        };
-
-        const setsToLoad = characterSets[cleanCharacter] || [];
+        const setsToLoad = this.characterSets[cleanCharacter] || [];
 
         if (setsToLoad.length === 0) {
             console.warn(` No animation sets defined for character: ${cleanCharacter}`);
@@ -65,17 +56,18 @@ export class AtlasManager {
         }
 
         setsToLoad.forEach(setName => {
-            const key = `${cleanCharacter}_${setName}`;
+            // Force lowercase for file/atlas key matching to handle 'attackRun' vs 'attackrun'
+            const key = `${cleanCharacter}_${setName.toLowerCase()}`;
             const png = `/atlases/${cleanCharacter}/${key}.png`;
             const json = `/atlases/${cleanCharacter}/${key}.json`;
 
             // Check if texture already exists before loading
             if (this.scene.textures.exists(key)) {
-                console.log(`🔹 Atlas already loaded: key="${key}"`);
+                // console.log(`🔹 Atlas already loaded: key="${key}"`);
                 return;
             }
 
-            console.log(`🔹 Queuing atlas: key="${key}"`, { png, json });
+            console.log(`🔹 Queuing atlas: key="${key}"`);
 
             //  Simple, clean, correct:
             this.scene.load.atlas(key, png, json);
@@ -87,21 +79,30 @@ export class AtlasManager {
      * Builds Phaser animations for a given character using its atlases.
      */
     createAnimations(character: string) {
-        const sets = this.defaultSets;
         const cleanCharacter = character.replace(/[0-9]+$/, '').toLowerCase();
+        const setsToCreate = this.characterSets[cleanCharacter] || [];
 
-        sets.forEach(set => {
-            const atlasKey = `${cleanCharacter}_${set.name}`;
-            const animKey = `${this.capitalize(cleanCharacter)}_1_${this.toPascal(set.name)}`;
+        setsToCreate.forEach(setName => {
+            const config = this.animationConfig[setName];
+            if (!config) {
+                console.warn(` No config found for animation set: ${setName}`);
+                return;
+            }
+
+            // Atlas key is always lowercase (matches file loading)
+            const atlasKey = `${cleanCharacter}_${config.name.toLowerCase()}`;
+            
+            // Animation key uses PascalCase (matches AnimationMappings.ts)
+            // e.g. Ninja_1_AttackRun
+            const animKey = `${this.capitalize(cleanCharacter)}_1_${this.toPascal(config.name)}`;
 
             // Skip if animation already exists
             if (this.scene.anims.exists(animKey)) {
-                console.log(` Animation already exists: ${animKey}`);
                 return;
             }
 
             const texture = this.scene.textures.get(atlasKey);
-            if (!texture) {
+            if (!texture || texture.key === '__MISSING') {
                 console.warn(` Texture not found for atlasKey=${atlasKey}`);
                 return;
             }
@@ -118,14 +119,12 @@ export class AtlasManager {
             this.scene.anims.create({
                 key: animKey,
                 frames: frameNames.map(name => ({ key: atlasKey, frame: name })),
-                frameRate: set.rate,
-                repeat: set.repeat ?? -1,
+                frameRate: config.rate,
+                repeat: config.repeat ?? -1,
             });
 
             console.log(`[AtlasManager]  Created animation: ${animKey} (${frameNames.length} frames)`);
         });
-
-        console.log(' All loaded atlases:', this.scene.textures.list);
     }
 
 
@@ -136,6 +135,11 @@ export class AtlasManager {
 
   /** Utility: convert idle_blinking → Idle_Blinking */
   private toPascal(str: string): string {
-    return str.split('_').map(s => this.capitalize(s)).join('_');
+    // split by underscore, capitalize each part
+    return str.split('_').map(s => {
+        // Handle CamelCase within parts if needed, but for now simple capitalize
+        // If s is "attackRun", Capitalize -> "AttackRun"
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }).join('_');
   }
 }

@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { Player } from '../game/Player';
-import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
+import { EnhancedStyleHelpers } from './EnhancedDesignSystem';
 
 export class LevelBarUI {
     private scene: Phaser.Scene;

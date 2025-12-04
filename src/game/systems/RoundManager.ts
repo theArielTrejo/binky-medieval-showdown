@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
-import { EnemySystem } from '../EnemySystem';
-import { AIDirector } from '../AIDirector';
+import { EnemySystem } from './EnemySystem';
+import { AIDirector } from './AIDirector';
 import { EnemyType } from '../types/EnemyTypes';
 
 export enum RoundState {
@@ -8,12 +8,6 @@ export enum RoundState {
     SPAWNING,         // Spawning enemies
     IN_PROGRESS,      // Enemies are alive, fighting
     ROUND_COMPLETED   // All enemies dead
-}
-
-interface WaveConfig {
-    round: number;
-    enemies: { type: EnemyType; count: number }[];
-    useAiDirector?: boolean; // If true, enables AI Director for this round instead of fixed spawns
 }
 
 export class RoundManager {

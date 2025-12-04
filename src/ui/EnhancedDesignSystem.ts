@@ -1,6 +1,6 @@
 // Enhanced Design System with comprehensive UI/UX standardization
-import { PlayerArchetypeType } from '../game/PlayerArchetype';
-import { EnemyType } from '../game/EnemySystem';
+import { PlayerArchetypeType } from '../game/objects/PlayerArchetype';
+import { EnemyType } from '../game/systems/EnemySystem';
 
 // Extended Design System with all identified missing components
 export const EnhancedDesignSystem = {

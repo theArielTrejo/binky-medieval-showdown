@@ -1,6 +1,6 @@
 // Enhanced Class Selection UI with elegant styling
 import { Scene } from 'phaser';
-import { PlayerArchetypeType } from '../game/PlayerArchetype';
+import { PlayerArchetypeType } from '../game/objects/PlayerArchetype';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
 
 export interface ClassData {

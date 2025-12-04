@@ -197,7 +197,7 @@ export class PlayerArchetype {
      * @param time - Current game time
      * @returns Average DPS over the last 10 seconds
      */
-    public getDPSOverLastTenSeconds(time: number): number {
+    public getDPSOverLastTenSeconds(_time: number): number {
         // This would need to be tracked more precisely in a real implementation
         return this.totalDamageDealt / 10; // Simplified calculation
     }
@@ -207,7 +207,7 @@ export class PlayerArchetype {
      * @param time - Current game time
      * @returns Total distance moved in pixels
      */
-    public getMovementDistanceLastTenSeconds(time: number): number {
+    public getMovementDistanceLastTenSeconds(_time: number): number {
         if (this.movementHistory.length < 2) return 0;
         
         let totalDistance = 0;
@@ -242,7 +242,7 @@ export class PlayerArchetype {
     }
 }
 
-import { SkillArchetype } from './SkillTreeData';
+import { SkillArchetype } from '../data/SkillTreeData';
 
 export const playerArchetypeToSkillArchetype: Record<PlayerArchetypeType, SkillArchetype> = {
     [PlayerArchetypeType.TANK]: SkillArchetype.MELEE,

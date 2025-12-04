@@ -1,7 +1,9 @@
 import { Menu } from './scenes/Menu';
 import { Game as MainGame } from './scenes/Game';
 import { UIScene } from '../ui/UIScene';
+import { SkillTreeScene } from './scenes/SkillTreeScene';
 import { AUTO, Game, Types, Scale } from 'phaser';
+import AnimatedTiles from 'phaser-animated-tiles';
 
 // Full-window configuration
 const config: Types.Core.GameConfig = {
@@ -15,6 +17,9 @@ const config: Types.Core.GameConfig = {
     mode: Scale.FIT,
     autoCenter: Scale.CENTER_BOTH,
   },
+  dom: {
+    createContainer: true
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -22,7 +27,16 @@ const config: Types.Core.GameConfig = {
       debug: true,               // shows collision boxes
     },
   },
-  scene: [Menu, MainGame, UIScene],
+  plugins: {
+    scene: [
+      {
+        key: 'AnimatedTiles',
+        plugin: AnimatedTiles,
+        mapping: 'animatedTiles'
+      }
+    ]
+  },
+  scene: [Menu, MainGame, UIScene, SkillTreeScene],
 };
 
 // Export StartGame function (so index.ts can call StartGame('game-container'))

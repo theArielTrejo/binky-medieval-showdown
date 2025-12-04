@@ -1,8 +1,9 @@
 import { Scene } from 'phaser';
-import { XPOrb } from './XPOrb';
-import { EnemyType } from './types/EnemyTypes';
-import { XP_CONSTANTS, getOrbConfigForEnemyType, clampCollectionRange, clampToGameBounds } from './constants/XPConstants';
-import { EffectManager } from './effects/EffectManager';
+import { XPOrb } from '../objects/XPOrb';
+import { XP_CONSTANTS } from '../constants/XPConstants';
+import { EnemyType } from '../types/EnemyTypes';
+import { EffectManager } from '../effects/EffectManager';
+import { getOrbConfigForEnemyType, clampToGameBounds, clampCollectionRange } from '../constants/XPConstants';
 
 export class XPOrbSystem {
     private scene: Scene;

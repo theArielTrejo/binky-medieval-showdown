@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
-import { Player } from './Player';
+import { Player } from '../Player';
 import { EnemySystem } from './EnemySystem';
-import { EnemyType } from './types/EnemyTypes';
+import { EnemyType } from '../types/EnemyTypes';
 
 // AI Director using Contextual Bandits (Neural Bandit)
 // Optimizes for immediate player engagement/flow rather than long-term returns.
@@ -128,7 +128,6 @@ export class AIDirector {
         preferredPositions: []
     };
     
-    private threatAssessmentHistory: Array<{time: number, threat: number, response: DirectorAction}> = [];
     private budgetHistory: Array<{time: number, budget: number, spent: number}> = [];
     private tacticalMemory: Array<{gameState: GameState, action: DirectorAction, outcome: number}> = [];
     private strategicObjectives: Array<{
@@ -137,7 +136,6 @@ export class AIDirector {
         conditions: (state: GameState) => boolean;
         actions: DirectorAction[];
     }> = [];
-    private playerBehaviorPattern: Map<string, number> = new Map();
 
     // Adaptive Difficulty
     private adaptiveDifficultyEnabled: boolean = true;
@@ -226,11 +224,10 @@ export class AIDirector {
     }
 
     private async initializeModel(): Promise<void> {
-        const config = this.difficultyConfigs.get(this.currentDifficulty)!;
-        
         // Neural Bandit Architecture
         // Input: 16 State Features
         // Output: 6 Predicted Rewards (one for each Action)
+        const config = this.difficultyConfigs.get(this.currentDifficulty)!;
         const model = tf.sequential();
         
         model.add(tf.layers.dense({
@@ -336,7 +333,6 @@ export class AIDirector {
     }
 
     private async chooseAction(state: GameState, enemySystem?: EnemySystem): Promise<DirectorAction> {
-        const config = this.difficultyConfigs.get(this.currentDifficulty)!;
         const model = this.models.get(this.currentDifficulty);
 
         // Update strategy
@@ -397,7 +393,7 @@ export class AIDirector {
         
         // Sample batch from buffer (random sampling to break correlations)
         const batchSize = Math.min(this.batchSize, this.replayBuffer.length);
-        const batch = [];
+        const batch: Array<{state: GameState, action: DirectorAction, reward: number}> = [];
         const indices = new Set<number>();
         while(batch.length < batchSize) {
             const idx = Math.floor(Math.random() * this.replayBuffer.length);
@@ -515,7 +511,7 @@ export class AIDirector {
         return tf.tensor2d([arr.slice(0, 16)]);
     }
 
-    public calculateReward(prevState: GameState, currState: GameState): number {
+    public calculateReward(_prevState: GameState, currState: GameState): number {
         // Bandit Reward Function
         // We want to maximize "Fun/Flow".
         // Flow is defined as: Challenging but not impossible.
@@ -648,7 +644,7 @@ export class AIDirector {
         ];
     }
 
-    private selectStrategicAction(state: GameState, enemySystem: EnemySystem): DirectorAction | null {
+    private selectStrategicAction(state: GameState, _enemySystem: EnemySystem): DirectorAction | null {
         const validObjectives = this.strategicObjectives
             .filter(o => o.conditions(state))
             .sort((a,b) => b.priority - a.priority);
@@ -675,12 +671,14 @@ export class AIDirector {
         else this.adaptiveStrategy = 'balanced';
     }
     
+    /*
     private detectPlayerPattern(state: GameState): boolean {
          const movementKey = `${Math.floor(state.playerPositionX * 40)}_${Math.floor(state.playerPositionY * 40)}`;
          const currentCount = this.playerBehaviorPattern.get(movementKey) || 0;
          this.playerBehaviorPattern.set(movementKey, currentCount + 1);
          return currentCount > 10; // Camping check
     }
+    */
     
     private shouldUseEmergencyBudget(enemySystem: EnemySystem): boolean {
         return enemySystem.getEnemyCount() < 3 && this.currentBudget < 50 && this.emergencyBudgetMultiplier === 1.0;
@@ -693,7 +691,7 @@ export class AIDirector {
         setTimeout(() => this.emergencyBudgetMultiplier = 1.0, 15000);
     }
 
-    private calculateOptimalSpawns(action: DirectorAction, enemySystem: EnemySystem) {
+    private calculateOptimalSpawns(action: DirectorAction, _enemySystem: EnemySystem) {
         // Simplified costs for brevity
         const costs = { skeletonViking: 50, archer: 30, gnoll: 20, ogre: 100 };
         
@@ -791,10 +789,4 @@ export class AIDirector {
             return true;
         } catch (e) { return false; }
     }
-    
-    // Legacy/Compatibility Getters
-    public getPlayerPerformanceMetrics(): any { return this.playerPerformanceMetrics; }
-    public getThreatAssessmentHistory(): any[] { return this.threatAssessmentHistory; }
-    public getBudgetHistory(): any[] { return this.budgetHistory; }
-    public getStrategicObjectivesStatus(): string { return `${this.strategicObjectives.length} objectives active`; }
 }

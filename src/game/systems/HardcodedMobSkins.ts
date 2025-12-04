@@ -9,7 +9,7 @@
  * Any attempt to change these values at runtime will violate the hardcoded skin requirements.
  */
 
-import { EnemyType } from '../game/types/EnemyTypes';
+import { EnemyType } from '../types/EnemyTypes';
 
 /**
  * Immutable hardcoded skin configuration for each enemy type.

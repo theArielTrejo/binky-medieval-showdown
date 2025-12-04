@@ -6,7 +6,7 @@
  * and ensure full compliance with mob spawner UI specifications.
  */
 
-import { getHardcodedMobSkin } from '../../systems/HardcodedMobSkins';
+import { getHardcodedMobSkin } from '../systems/HardcodedMobSkins';
 
 // Character Animation Mappings
 export interface CharacterAnimationSet {
@@ -324,26 +324,6 @@ export const ENEMY_TYPE_TO_MOB_CLASS: { [key: string]: string } = {
   'berserker': 'skeletonpirate'
 };
 
-// Legacy mappings for backward compatibility (will be removed after refactor)
-export const MOB_TYPE_TO_VARIANT: { [key: string]: string[] } = {
-  'skeleton': ['Skeleton_Pirate_Captain_1', 'Skeleton_Pirate_Captain_2', 'Skeleton_Pirate_Captain_3'],
-  'warrior': ['Skeleton_Warrior_1', 'Skeleton_Warrior_2', 'Skeleton_Warrior_3'],
-  'goblin': ['Goblin_1', 'Goblin_2', 'Goblin_3'],
-  'orc': ['Orc_1', 'Orc_2', 'Orc_3']
-};
-
-// Legacy enemy type to mob type mapping (will be removed after refactor)
-export const ENEMY_TYPE_TO_MOB_TYPE: { [key: string]: string } = {
-  'tank': 'skeleton',
-  'projectile': 'warrior',
-  'speedster': 'goblin',
-  'boss': 'orc',
-  'elite_tank': 'skeleton',
-  'sniper': 'warrior',
-  'swarm': 'goblin',
-  'berserker': 'orc'
-};
-
 // Fallback animations if specific variants are not available
 export const FALLBACK_ANIMATIONS = {
   character: {
@@ -411,8 +391,6 @@ export class AnimationMapper {
     return variant;
   }
 
-  // Random mob selection methods removed - all mob assignments now use hardcoded system
-
   /**
    * Get hardcoded mob variant for enemy type (REPLACES RANDOM SELECTION)
    * This method now uses predetermined hardcoded skin assignments to ensure
@@ -430,8 +408,6 @@ export class AnimationMapper {
       throw error; // Fail fast to prevent dynamic fallbacks
     }
   }
-
-  // Legacy methods removed - use getHardcodedMobForEnemyType for all mob skin assignments
 
   /**
    * Get all available character variants

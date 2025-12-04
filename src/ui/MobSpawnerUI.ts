@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { EnemyType } from '../game/EnemySystem';
+import { EnemyType } from '../game/systems/EnemySystem';
 
 /**
  * Enhanced UI for spawning mobs with improved visual design and user experience

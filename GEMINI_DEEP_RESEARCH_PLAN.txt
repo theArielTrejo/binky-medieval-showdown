@@ -1,0 +1,288 @@
+# GEMINI DEEP RESEARCH: TECHNICAL DESIGN DOCUMENT (TDD)
+## PROJECT: BINKY MEDIEVAL SHOWDOWN - COMBAT & PROGRESSION OVERHAUL
+
+**Version:** 2.0
+**Date:** 2025-05-20
+**Author:** Gemini CLI Agent
+**Status:** APPROVED FOR IMPLEMENTATION
+
+---
+
+### 1. EXECUTIVE SUMMARY
+
+This document serves as the authoritative technical reference for the upcoming major refactor of "Binky Medieval Showdown". The project's goal is to transition the game from a basic prototype to a polished "Game Loop" with distinct character identities and a deep progression system.
+
+**Primary Objectives:**
+1.  **Combat Depth:** Replace the generic "click-to-attack" system with a class-specific "Action System" involving active skills, cooldowns, and tactical positioning.
+2.  **Visual Fidelity:** Unify the animation pipeline under the new `AtlasManager` and `AnimationMappings`, ensuring every action has "Juice" (screen shake, particles, sound).
+3.  **Progression:** Rebuild the Skill Tree from a static overlay into an immersive "Book of Ascension" featuring infinite panning, zooming, and rich tooltip feedback.
+
+---
+
+### 2. ARCHITECTURE ANALYSIS
+
+#### 2.1 Current System State
+*   **Input:** handled by `InputManager.ts` (Keyboard/Mouse) -> Polled by `Player.ts`.
+*   **Player State:** Simple FSM in `Player.ts` (`IDLE`, `WALK`, `ATTACK`).
+*   **Attacks:** Mixed implementation. Basic attacks are instant. Skills use a `PlayerSkillSystem` factory.
+*   **Enemies:** Robust "Attack Object" pattern used by Ogres and Bosses (independent hitboxes with lifecycles).
+*   **Animation:** Hybrid legacy (`SpriteSheetManager`) and modern (`AtlasManager`).
+
+#### 2.2 Target Architecture
+We will adopt a **Component-Based "Skill Object" Pattern** for all combat interactions.
+
+*   **The "Action" (Player.ts):** Triggers the animation and spawns the Skill Object.
+*   **The "Object" (SkillObject.ts):** A self-contained entity responsible for:
+    *   **Lifecycle:** Delay (Windup) -> Active (Hitbox) -> Lingering (VFX) -> Destruction.
+    *   **Physics:** Overlap checks, movement (projectiles).
+    *   **Visuals:** Particle emission, sprite management.
+
+---
+
+### 3. CORE SUBSYSTEMS DEEP DIVE
+
+#### 3.1 Input & Player Controller (`src/game/Player.ts` & `InputManager.ts`)
+
+**Current Analysis:**
+`InputManager` correctly maps keys to `PlayerAction` enums. However, `Player.ts` currently treats attacks largely as "flags" (`isAttacking`) rather than distinct states with locking mechanisms.
+
+**Refactor Plan:**
+The `Player` class will be refactored to a strict **State Machine** where distinct actions lock the player into specific states.
+
+**New State Definitions:**
+```typescript
+enum PlayerState {
+    IDLE,
+    WALKING,
+    ATTACKING_PRIMARY,   // Locked movement, basic combo
+    ATTACKING_SECONDARY, // Locked movement, special animation
+    CASTING,             // Stationary, channeling (Whirlwind)
+    DASHING,             // Invulnerable, high velocity, no input
+    STUNNED              // No input, plays hurt anim
+}
+```
+
+**Input Flow:**
+1.  `InputManager` detects `JustDown(SHIFT)`.
+2.  `Player` update loop reads action.
+3.  **Check:** `canPerformAction()` (Cooldowns && !isStunned && !isDashing).
+4.  **Transition:** `this.state = PlayerState.ATTACKING_SECONDARY`.
+5.  **Execute:** `this.skillSystem.activateSkill('shield_bash')`.
+
+#### 3.2 The Skill Object System (`src/game/skills/`)
+
+We will standardize `src/game/skills/SkillObject.ts` as the abstract base class for all player moves.
+
+**Class Structure:**
+```typescript
+abstract class SkillObject extends Phaser.Physics.Arcade.Sprite {
+    protected damage: number;
+    protected duration: number;
+    protected windupTime: number; // Delay before hitbox activates
+    protected hasHit: boolean = false;
+    
+    constructor(scene, x, y, texture) {
+        super(scene, x, y, texture);
+        scene.add.existing(this);
+        // Physics added only when active
+    }
+
+    // Called by Player when animation reaches "Impact Frame"
+    public abstract activate(): void; 
+    
+    // Called every frame
+    public update(dt: number): void {
+        // Handle lifetime, movement, rotation
+    }
+}
+```
+
+**Integration with Enemies:**
+The `Enemy` class must be updated to handle `takeDamage` from these generic `SkillObjects` rather than specific checks in the Player's update loop. This inverts control: The *Skill* checks for overlaps, not the *Player*.
+
+#### 3.3 The Animation Pipeline (`src/game/systems/`)
+
+**The "Atlas Strategy":**
+All main characters (Knight, Magician, Ninja) now use high-quality Atlases managed by `AtlasManager.ts`. We must ensure "Event-Driven Animation".
+
+**Event Hooks:**
+Instead of hardcoding timers (e.g., `setTimeout(300ms)`), we will use Phaser's Animation Events to sync logic.
+
+```typescript
+// Player.ts
+this.sprite.on('animationupdate', (anim, frame) => {
+    if (anim.key === 'Knight_1_Attack' && frame.index === 4) {
+        // The frame where the sword hits
+        this.currentSkill.activateHitbox(); 
+    }
+});
+```
+*Note: If frame data is unreliable, we fall back to the "Timer Pattern" used in `MeleeAttack.ts` (delayBeforeActive).*
+
+---
+
+### 4. FEATURE SPECIFICATION: ADVANCED COMBAT
+
+#### 4.1 Knight Archetype: "The Iron Wall"
+
+**Secondary Ability: Shield Bash**
+*   **Input:** Right Click / Shift
+*   **Animation:** `Knight_1_AttackRun` (Re-purposed). The "Running with shield" frames look like a bash.
+*   **Logic:**
+    1.  Spawn `ShieldBashHitbox` (Invisible Cone) attached to Player.
+    2.  Wait 0.2s (Windup).
+    3.  Enable Physics Body (Cone/Sector).
+    4.  On Overlap -> Enemy: Apply `Damage` + `Stun(1.5s)` + `Knockback(200)`.
+    5.  VFX: Play `bone-slam` animation at impact point.
+
+**Special Ability: Whirlwind**
+*   **Input:** Q
+*   **Animation:** Loop `Knight_1_Attack` at 2x speed OR rotate the sprite 360 degrees repeatedly.
+*   **Logic:**
+    1.  State: `CASTING`.
+    2.  Spawn `WhirlwindNova` (Circle) attached to Player.
+    3.  Duration: 3.0s.
+    4.  Tick Rate: Damage every 0.25s.
+    5.  Player Move Speed: Reduced to 50%.
+
+#### 4.2 Ninja Archetype: "The Shadow Walker"
+
+**Secondary Ability: Shadow Dash**
+*   **Input:** Right Click / Shift
+*   **Animation:** `Ninja_1_Run` (Blurred).
+*   **Logic:**
+    1.  State: `DASHING`.
+    2.  Invulnerability: `true`.
+    3.  Math: Calculate vector to Mouse Cursor. Clamp distance to 300px.
+    4.  Action: Tween Player (x,y) over 150ms.
+    5.  Trail: Spawn "Ghost" sprites every 20ms that fade out.
+    6.  Damage: Create a `Line` hitbox between Start and End. Any enemy touching line takes damage.
+
+**Special Ability: Shuriken Fan**
+*   **Input:** Q
+*   **Animation:** `Ninja_1_Attack`.
+*   **Logic:**
+    1.  Spawn 3 `Projectile` objects.
+    2.  Angles: `[Target - 15deg, Target, Target + 15deg]`.
+    3.  Properties: Pierce = 0 (Destroy on impact). High velocity.
+
+---
+
+### 5. FEATURE SPECIFICATION: SKILL TREE 2.0
+
+#### 5.1 UI Architecture
+The current static container in `SkillTreeUI.ts` will be replaced with a "Virtual Camera" system within the UI Container.
+
+**Visual Components:**
+1.  **Background Layer:** Parallax Starfield (already exists, needs depth).
+2.  **Connection Layer:** `Phaser.GameObjects.Graphics` drawing lines (Bezier curves preferred over straight lines for polish).
+3.  **Node Layer:** Interactive breakdown.
+    *   `SkillNode` class (extends Container).
+    *   Contains: Icon (Sprite), Border (Graphics), LevelIndicator (Text).
+4.  **Foreground Layer:** UI Chrome (Title, Skill Points, Close Button) - *Static, does not zoom*.
+
+#### 5.2 The "Infinite Canvas" Algorithm
+To implement Pan/Zoom without moving the actual Phaser Camera (which would ruin the Game World view), we manipulate the `Container` transform.
+
+```typescript
+// SkillTreeUI.ts
+private zoomLevel: number = 1;
+private dragOrigin: Vector2;
+
+// Zoom
+scene.input.on('wheel', (pointer, over, deltaX, deltaY, deltaZ) => {
+    this.zoomLevel -= deltaY * 0.001;
+    this.zoomLevel = Phaser.Math.Clamp(this.zoomLevel, 0.5, 2.0);
+    this.skillTreeContainer.setScale(this.zoomLevel);
+});
+
+// Pan
+scene.input.on('pointermove', (pointer) => {
+    if (pointer.isDown) {
+        this.skillTreeContainer.x += (pointer.x - this.lastPointer.x);
+        this.skillTreeContainer.y += (pointer.y - this.lastPointer.y);
+    }
+});
+```
+
+#### 5.3 Data Driven Nodes (`SkillTreeData.ts`)
+The `Skill` interface needs expanding to support the UI:
+
+```typescript
+interface Skill {
+    id: string;
+    name: string;
+    description: string;
+    icon: string; // Texture key
+    position: { x: number, y: number }; // Relative to tree center
+    cost: number;
+    prerequisites: string[]; // IDs of required skills
+    stats: Partial<PlayerStats>; // { damage: +5, speed: +10 }
+    onUnlock?: (player: Player) => void; // Callback for unlocking active skills
+}
+```
+
+---
+
+### 6. IMPLEMENTATION ROADMAP
+
+#### Phase 1: Foundation (The "Backstage" Work)
+*   [ ] **Step 1:** Create `src/game/skills/SkillObject.ts` (Abstract Base).
+*   [ ] **Step 2:** Refactor `Player.ts` input handling to use a strict `PlayerState` switch statement.
+*   [ ] **Step 3:** Update `Enemy.ts` to expose a clean `takeDamage(amount, source)` method that handles death logic.
+
+#### Phase 2: The Knight's Arsenal
+*   [ ] **Step 4:** Implement `ShieldBashSkill.ts` extending `SkillObject`.
+*   [ ] **Step 5:** Wire `Player.ts` Right-Click to Shield Bash.
+*   [ ] **Step 6:** Implement `WhirlwindSkill.ts` (Persistent Hitbox).
+*   [ ] **Step 7:** Wire `Player.ts` 'Q' key to Whirlwind.
+
+#### Phase 3: The Ninja's Toolkit
+*   [ ] **Step 8:** Implement `ShadowDashSkill.ts` (Tween-based movement).
+*   [ ] **Step 9:** Update `Projectile.ts` to support "Fan" spread pattern.
+*   [ ] **Step 10:** Wire Ninja inputs.
+
+#### Phase 4: Skill Tree Overhaul
+*   [ ] **Step 11:** Refactor `SkillTreeUI.ts` to separate `Static Layer` (UI) from `Dynamic Layer` (Tree).
+*   [ ] **Step 12:** Implement Pan/Zoom logic on the Dynamic Layer.
+*   [ ] **Step 13:** Rewrite `SkillTreeData.ts` with coordinates for visual layout.
+*   [ ] **Step 14:** Implement Bezier curve connections.
+
+---
+
+### 7. DATA DICTIONARY
+
+#### 7.1 Asset Keys (Updated)
+*   `knight_idle`, `knight_walk`, `knight_attack` (Atlas: `knight_1`)
+*   `ninja_idle`, `ninja_walk`, `ninja_attack` (Atlas: `ninja_1`)
+*   `vfx_slam`: "Bone Slam" effect (from Ogre).
+*   `vfx_smoke`: Smoke puff for dash.
+
+#### 7.2 Physics Groups
+*   `playerGroup`: The Player sprite.
+*   `enemyGroup`: All active Enemies.
+*   `playerSkillGroup`: All active `SkillObjects` (Shield Bash, Projectiles).
+*   `enemyAttackGroup`: All active Enemy attacks.
+
+---
+
+### 8. RISK REGISTER & MITIGATION
+
+| Risk ID | Description | Impact | Mitigation Strategy |
+| :--- | :--- | :--- | :--- |
+| **R-01** | **Animation Sync** | High | Animations might desync from hitboxes (e.g., damage happens before sword swing). | **Fix:** Use "Delay" timers in `SkillObject` tuned to specific frame counts (e.g., 0.3s for Knight swing). |
+| **R-02** | **Physics Performance** | Medium | Whirlwind creates many overlap checks per frame. | **Fix:** Use `scene.time.addEvent` to check damage only every 250ms, not every frame. |
+| **R-03** | **Input Locking** | Medium | Player gets stuck in "Attack" state if animation event fails. | **Fix:** Add a "Safety Timeout" to `Player.ts` that forces state back to `IDLE` after 1.0s. |
+| **R-04** | **Scope Creep** | High | Infinite Skill Tree becomes too complex to draw. | **Fix:** Start with a bounded 2000x2000 container. Only add "Infinite" logic if bounds are reached. |
+
+---
+
+### 9. TESTING PROTOCOLS
+
+1.  **The "Wall" Test:** Dash into a wall. Player should stop at wall, but Dash animation should finish.
+2.  **The "Stunlock" Test:** Shield Bash 5 enemies. All 5 should stop moving for 1.5s.
+3.  **The "Respec" Test:** unlock skills, gain stats, reset tree. Stats must return to baseline.
+4.  **The "Zoom" Test:** Zoom in fully on a node. Text should remain crisp (using BitmapText or high-res fonts).
+
+---
+**End of Document**

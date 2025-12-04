@@ -1,5 +1,5 @@
 // AI Metrics Dashboard for visualizing training progress and performance
-import { AIDirector } from '../game/AIDirector';
+import { AIDirector } from '../game/systems/AIDirector';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
 
 export interface DashboardConfig {
@@ -229,7 +229,7 @@ export class AIMetricsDashboard {
         // Update text metrics
         const metricsValues = [
             trainingStatus,
-            trainingMetrics.totalEpisodes.toString(),
+            trainingMetrics.totalSteps.toString(),
             trainingMetrics.averageReward.toFixed(3),
             `${(trainingMetrics.explorationRate * 100).toFixed(1)}%`,
             `${currentBudget}/${maxBudget} (${budgetPercent}%)`,

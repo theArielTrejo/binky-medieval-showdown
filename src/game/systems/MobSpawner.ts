@@ -6,8 +6,8 @@
 
 import { Scene } from 'phaser';
 import { EnemyType } from '../types/EnemyTypes';
+import { getHardcodedMobSkin, validateNoRandomSelection, getTextureKeyForMobVariant } from './HardcodedMobSkins';
 import { AnimationMapper } from '../config/AnimationMappings';
-import { getHardcodedMobSkin, validateNoRandomSelection, getTextureKeyForMobVariant } from '../../systems/HardcodedMobSkins';
 
 export class MobSpawner {
   private scene: Scene;

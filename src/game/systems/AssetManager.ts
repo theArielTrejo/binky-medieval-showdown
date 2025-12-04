@@ -60,7 +60,7 @@ export class AssetManager {
     this.scene.registry.set(REGISTRY_KEYS.ASSET_LOADING_STATE, 'loading');
 
     // Setup listener for individual file progress (mainly for spritesheets)
-    const onFileComplete = (key: string, type: string, data: any) => {
+    const onFileComplete = (key: string, _type: string, _data: any) => {
        // Check if this file corresponds to a tracked asset in the registry
        const registryKey = `${REGISTRY_KEYS.ASSET_INFO_PREFIX}${key}`;
        const assetInfo = this.scene.registry.get(registryKey);
@@ -95,7 +95,6 @@ export class AssetManager {
         failedAssets: 0,
         errors: [],
         duration: 0,
-        mobResults: [],
         tilemapResults: [],
         spritesheetResults: []
       };
@@ -122,7 +121,6 @@ export class AssetManager {
         }
       }
       finalResults.tilemapResults = tilemapResults;
-      finalResults.mobResults = []; // Deprecated
 
       // Cleanup listeners
       this.scene.load.off(Phaser.Loader.Events.FILE_COMPLETE, onFileComplete);

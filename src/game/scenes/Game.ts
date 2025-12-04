@@ -1,13 +1,12 @@
 import { Scene } from 'phaser';
-import AnimatedTiles from 'phaser-animated-tiles'; // to play animations, npm install phaser-animated-tiles
 import { Player } from '../Player';
-import { EnemySystem } from '../EnemySystem';
+import { EnemySystem } from '../systems/EnemySystem';
 import { EnemyType } from '../types/EnemyTypes';
-import { AIDirector } from '../AIDirector';
-import { PlayerArchetypeType } from '../PlayerArchetype';
+import { AIDirector } from '../systems/AIDirector';
+import { PlayerArchetypeType } from '../objects/PlayerArchetype';
 import { ClassSelectionUI } from '../../ui/ClassSelectionUI';
 import { MobSpawnerUI } from '../../ui/MobSpawnerUI';
-import { XPOrbSystem } from '../XPOrbSystem';
+import { XPOrbSystem } from '../systems/XPOrbSystem';
 import { SpriteSheetManager } from '../systems/SpriteSheetManager';
 import { TilemapManager } from '../systems/TilemapManager';
 import { TilemapConfig } from '../types/TilemapTypes';
@@ -259,9 +258,14 @@ export class Game extends Scene {
         // Set up animated tiles , Defer AnimatedTiles until after the scene fully booted
         this.time.delayedCall(0, () => {
             try {
-                const animatedTiles = new AnimatedTiles(this);
-                animatedTiles.init(this.tilemap);
-                console.log('Animated tiles initialized successfully.');
+                // Plugin is injected as 'animatedTiles' via config in main.ts
+                const plugin = (this as any).animatedTiles;
+                if (plugin) {
+                    plugin.init(this.tilemap);
+                    console.log('Animated tiles initialized successfully.');
+                } else {
+                    console.warn('AnimatedTiles plugin not injected.');
+                }
             } catch (err) {
                 console.error('Failed to init animated tiles:', err);
             }
@@ -282,6 +286,19 @@ export class Game extends Scene {
             console.warn('WARNING: No door tiles found! The Dark Forest gate will not function visually. Ensure tiles in Tiled have custom property "type" set to "door".');
         }
         console.log('Door tile indices:', this.doorTiles.map(t => t.index));
+
+        // --- FIX: Disable animation for the "closed" door state to prevent cycling ---
+        // We remove the animation metadata from the tileset for these specific GIDs
+        // so the AnimatedTiles plugin sees them as static tiles.
+        this.doorTiles.forEach(tile => {
+            if (tile.tileset) {
+                const tileData = tile.tileset.getTileData(tile.index) as any;
+                if (tileData && tileData.animation) {
+                    console.log(`Stopping initial animation for closed door tile GID: ${tile.index}`);
+                    delete tileData.animation; 
+                }
+            }
+        });
 
 
 

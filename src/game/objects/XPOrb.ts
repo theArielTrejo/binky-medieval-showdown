@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
-import { XP_CONSTANTS } from './constants/XPConstants';
-import { EffectManager } from './effects/EffectManager';
+import { XP_CONSTANTS } from '../constants/XPConstants';
+import { EffectManager } from '../effects/EffectManager';
 
 // The class now extends Sprite, making it a true GameObject
 export class XPOrb extends Phaser.Physics.Arcade.Sprite {

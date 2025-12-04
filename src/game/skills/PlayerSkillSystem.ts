@@ -1,7 +1,13 @@
 import { Scene } from 'phaser';
-import { EnemySystem } from '../EnemySystem';
+import { EnemySystem } from '../systems/EnemySystem';
 import { PlayerProjectile, PlayerCleave, PlayerNova, ProjectileOptions, CleaveOptions, NovaOptions } from './SkillObjects';
+import { SkillObject } from './SkillObject';
+import { ShieldBashSkill } from './ShieldBashSkill';
+import { ShadowDashSkill } from './ShadowDashSkill';
+import { ShurikenFanSkill } from './ShurikenFanSkill';
+import { Shuriken } from '../objects/Shuriken';
 import { Player } from '../Player';
+import { WhirlwindSkill } from './WhirlwindSkill';
 
 export class PlayerSkillSystem {
     private scene: Scene;
@@ -12,11 +18,16 @@ export class PlayerSkillSystem {
     private projectiles: PlayerProjectile[] = [];
     private cleaves: PlayerCleave[] = [];
     private novas: PlayerNova[] = [];
+    
+    // New Generic Skill Objects List (Phase 1 Refactor)
+    private skillObjects: SkillObject[] = [];
 
     // Physics Groups
     private projectileGroup: Phaser.Physics.Arcade.Group;
     private cleaveGroup: Phaser.Physics.Arcade.Group;
     private novaGroup: Phaser.Physics.Arcade.Group;
+    public hitboxGroup: Phaser.Physics.Arcade.Group; // Unified group for new SkillObjects
+    public shurikenGroup: Phaser.Physics.Arcade.Group; // Pool for Shurikens
 
     constructor(scene: Scene, player: Player, enemySystem: EnemySystem) {
         this.scene = scene;
@@ -26,10 +37,26 @@ export class PlayerSkillSystem {
         this.projectileGroup = this.scene.physics.add.group();
         this.cleaveGroup = this.scene.physics.add.group();
         this.novaGroup = this.scene.physics.add.group();
+        this.hitboxGroup = this.scene.physics.add.group();
+        
+        this.shurikenGroup = this.scene.physics.add.group({
+            classType: Shuriken,
+            maxSize: 50,
+            runChildUpdate: true
+        });
     }
 
     public update(deltaTime: number): void {
         const enemies = this.enemySystem.getEnemies();
+
+        // Update Generic Skill Objects
+        for (let i = this.skillObjects.length - 1; i >= 0; i--) {
+            const skill = this.skillObjects[i];
+            skill.update(deltaTime);
+            if (skill.isFinished()) {
+                this.skillObjects.splice(i, 1);
+            }
+        }
 
         // Update Projectiles
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -98,9 +125,69 @@ export class PlayerSkillSystem {
         this.scene.physics.overlap(this.projectileGroup, this.enemySystem.enemiesGroup, this.handleProjectileHit, undefined, this);
         this.scene.physics.overlap(this.cleaveGroup, this.enemySystem.enemiesGroup, this.handleCleaveHit, undefined, this);
         this.scene.physics.overlap(this.novaGroup, this.enemySystem.enemiesGroup, this.handleNovaHit, undefined, this);
+        
+        // Unified Skill Collision
+        this.scene.physics.overlap(this.hitboxGroup, this.enemySystem.enemiesGroup, this.handleSkillHit, undefined, this);
+        
+        // Shuriken Collision
+        this.scene.physics.overlap(this.shurikenGroup, this.enemySystem.enemiesGroup, this.handleShurikenHit, undefined, this);
     }
 
-    private handleProjectileHit(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): void {
+    private handleShurikenHit(obj1: any, obj2: any): void {
+        const shuriken = obj1 as Shuriken;
+        const enemySprite = obj2 as Phaser.GameObjects.Sprite;
+        const enemy = enemySprite.getData('enemy') as any;
+
+        if (!shuriken.active || !enemy || !enemy.sprite.active) return;
+
+        const enemyId = enemySprite.getData('enemyId');
+        if (!enemyId) return;
+
+        if (shuriken.hitEnemies.has(enemyId)) return;
+
+        shuriken.hitEnemies.add(enemyId);
+        enemy.takeDamage(shuriken.getDamage());
+        
+        // Impact FX
+        // Could spawn small sparks here
+
+        // Destroy shuriken (piercing logic could go here if implemented)
+        shuriken.disableBody(true, true);
+    }
+
+    private handleSkillHit(obj1: any, obj2: any): void {
+        const hitbox = obj1 as Phaser.GameObjects.GameObject;
+        const enemySprite = obj2 as Phaser.GameObjects.Sprite;
+
+        // Find which skill owns this hitbox
+        const skill = this.skillObjects.find(s => s.hitBox === hitbox);
+        const enemy = enemySprite.getData('enemy') as any;
+
+        if (!skill || !enemy || !enemy.sprite.active) return;
+
+        const enemyId = enemySprite.getData('enemyId');
+        if (!enemyId) return;
+
+        // Note: Whirlwind handles its own "hitEnemies" reset/tick logic in applyHit
+        // But standard skills might use the set check here.
+        // We delegate validation to the skill.
+
+        if (skill instanceof ShieldBashSkill) {
+            if (skill.hitEnemies.has(enemyId)) return;
+            if (!skill.isValidHit(enemy.sprite.x, enemy.sprite.y)) return;
+            skill.applyHit(enemy);
+            skill.hitEnemies.add(enemyId);
+        } else if (skill instanceof ShadowDashSkill) {
+            if (skill.hitEnemies.has(enemyId)) return;
+            skill.applyHit(enemy);
+            skill.hitEnemies.add(enemyId);
+        } else if (skill instanceof WhirlwindSkill) {
+            // Whirlwind allows repeated hits based on internal timer
+            skill.applyHit(enemy); 
+        }
+    }
+
+    private handleProjectileHit(obj1: any, obj2: any): void {
         const projSprite = obj1 as Phaser.GameObjects.Graphics | Phaser.GameObjects.Sprite;
         const enemySprite = obj2 as Phaser.GameObjects.Sprite;
 
@@ -165,7 +252,7 @@ export class PlayerSkillSystem {
         }
     }
 
-    private handleCleaveHit(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): void {
+    private handleCleaveHit(obj1: any, obj2: any): void {
         const cleaveSprite = obj1 as Phaser.GameObjects.Graphics;
         const enemySprite = obj2 as Phaser.GameObjects.Sprite;
 
@@ -201,7 +288,7 @@ export class PlayerSkillSystem {
         }
     }
 
-    private handleNovaHit(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): void {
+    private handleNovaHit(obj1: any, obj2: any): void {
         const novaSprite = obj1 as Phaser.GameObjects.Graphics;
         const enemySprite = obj2 as Phaser.GameObjects.Sprite;
 
@@ -261,16 +348,51 @@ export class PlayerSkillSystem {
         this.novaGroup.add(n.sprite);
     }
 
+    public castShieldBash(x: number, y: number, facingVector: Phaser.Math.Vector2): void {
+        const skill = new ShieldBashSkill(this.scene, x, y, facingVector);
+        this.addSkill(skill);
+    }
+
+    public castShadowDash(playerSprite: Phaser.Physics.Arcade.Sprite, targetX: number, targetY: number): void {
+        const skill = new ShadowDashSkill(this.scene, playerSprite, targetX, targetY);
+        this.addSkill(skill);
+    }
+
+    public castShurikenFan(x: number, y: number, targetX: number, targetY: number): void {
+        const skill = new ShurikenFanSkill(this.scene, x, y, targetX, targetY, this.shurikenGroup);
+        this.addSkill(skill);
+    }
+
+    public castWhirlwind(playerSprite: Phaser.Physics.Arcade.Sprite): void {
+        const skill = new WhirlwindSkill(this.scene, playerSprite, 10); // Base damage 10 per tick
+        this.addSkill(skill);
+    }
+
+    public addSkill(skill: SkillObject): void {
+        this.skillObjects.push(skill);
+        if (skill.hitBox) {
+            // If hitbox is physics-enabled, add to group. 
+            // Note: SkillObject needs to ensure hitbox is created and physics-enabled before adding.
+            this.hitboxGroup.add(skill.hitBox);
+        }
+    }
+
     public clearAll(): void {
         this.projectiles.forEach(p => p.destroy());
         this.cleaves.forEach(c => c.destroy());
         this.novas.forEach(n => n.destroy());
+        this.skillObjects.forEach(s => s.destroy());
+        
         this.projectiles = [];
         this.cleaves = [];
         this.novas = [];
-        this.projectileGroup.clear();
-        this.cleaveGroup.clear();
-        this.novaGroup.clear();
+        this.skillObjects = [];
+        
+        if (this.projectileGroup?.children) this.projectileGroup.clear(true, true);
+        if (this.cleaveGroup?.children) this.cleaveGroup.clear(true, true);
+        if (this.novaGroup?.children) this.novaGroup.clear(true, true);
+        if (this.hitboxGroup?.children) this.hitboxGroup.clear(true, true);
+        if (this.shurikenGroup?.children) this.shurikenGroup.clear(true, true);
     }
 }
 
