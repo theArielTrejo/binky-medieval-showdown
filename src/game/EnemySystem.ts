@@ -4,6 +4,7 @@ import { validateNoRandomSelection, getHardcodedMobSkin } from '../systems/Hardc
 import { EnemyType } from './types/EnemyTypes';
 import { Shield } from './enemies/attacks/Shield';
 import { ConeAttack } from './enemies/attacks/ConeAttack';
+import { SpearAttack } from './enemies/attacks/SpearAttack';
 import { ExplosionAttack } from './enemies/attacks/ExplosionAttack';
 import { VortexAttack } from './enemies/attacks/VortexAttack';
 import { LightningStrikeAttack } from './enemies/attacks/LightningStrikeAttack';
@@ -40,7 +41,7 @@ export { EnemyType };
  * Interface for enemy attack results
  */
 export interface EnemyAttackResult {
-    type: 'projectile' | 'melee' | 'cone' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow';
+    type: 'projectile' | 'melee' | 'cone' | 'spear' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow';
     damage: number;
     position: { x: number; y: number };
     hitPlayer: boolean;
@@ -50,7 +51,7 @@ export interface EnemyAttackResult {
         knockback?: { x: number; y: number };
         blocked?: boolean;
     };
-    attackObject?: EnemyProjectile | MeleeAttack | ConeAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile;
+    attackObject?: EnemyProjectile | MeleeAttack | ConeAttack | SpearAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile;
 }
 
 // EnemyType enum moved to ./types/EnemyTypes.ts to avoid circular imports
@@ -95,9 +96,26 @@ export class Enemy {
     private isExploding: boolean = false; // Track if elemental spirit is in death/explosion sequence
     private deathAnimationDuration: number = 0.75; // Duration of death animation (15 frames at ~20fps)
     private deathTimer: number = 0; // Timer for death animation
+    
+    // Skeleton Viking spear throwing state
+    private isThrowingSpear: boolean = false; // Track if Viking is in throwing animation
+    private throwAnimationTimer: number = 0; // Timer for throwing animation
+    private throwAnimationDuration: number = 0.5; // Duration of throwing animation (12 frames at 24fps)
+    
+    // Skeleton Pirate slashing state
+    private isSlashing: boolean = false; // Track if Pirate is in slashing animation
+    private slashAnimationTimer: number = 0; // Timer for slashing animation
+    private slashAnimationDuration: number = 0.275; // Spawn vortex ~3 frames before animation ends (12 frames at 24fps = 0.5s)
+    private postAttackIdleTimer: number = 0; // Brief idle period after attacking to prevent animation jerk
     private lastAttackTime: number = 0;
     private attackCooldown: number = 1000;
     private facingLeft: boolean = false; // Track current facing direction
+    
+    // Gnoll-specific properties
+    private gnollIsThrowing: boolean = false; // Track if Gnoll is in throwing animation
+    private gnollThrowTimer: number = 0; // Timer for throwing animation
+    private gnollThrowDuration: number = 0.6; // Duration of throwing animation (12 frames at 20fps)
+    private gnollClawSpawned: boolean = false; // Track if claw attack has been spawned this cycle
     
     // Archer-specific properties
     private isChargingArrow: boolean = false; // Track if archer is drawing back arrow
@@ -105,6 +123,16 @@ export class Enemy {
     private arrowChargeDuration: number = 1.5; // How long to charge before releasing (seconds)
     private lockedArrowAngle: number = 0; // Locked direction for the arrow
     private activeArrowIndicator: ArrowIndicator | null = null; // Visual indicator for arrow path
+    private archerDrawAnimPlayed: boolean = false; // Track if draw animation has finished
+    private archerIsReleasing: boolean = false; // Track if playing release animation
+    private archerReleaseTimer: number = 0; // Timer for release animation
+    private arrowTipStar: Phaser.GameObjects.Graphics | null = null; // Visual star at arrow tip
+    
+    // Lightning Mage-specific properties
+    private lightningMageIsSlashing: boolean = false; // Track if Lightning Mage is in slashing animation
+    private lightningMageSlashTimer: number = 0; // Timer for slashing animation
+    private lightningMageSlashDuration: number = 0.75; // Duration of slashing animation (12 frames at 16fps)
+    private lightningMageStrikeSpawned: boolean = false; // Track if lightning strike has been spawned this cycle
 
     constructor(scene: Scene, x: number, y: number, type: EnemyType) {
         try {
@@ -220,7 +248,7 @@ export class Enemy {
                     size: 35,
                     xpValue: 18
                 };
-                specialAbilities = ['shield', 'cone_attack'];
+                specialAbilities = ['shield', 'spear_attack'];
                 break;
             case EnemyType.OGRE:
                 baseStats = {
@@ -468,25 +496,39 @@ export class Enemy {
             }
         }
         
-        // Track facing direction and flip sprite (only if not attacking)
-        // Only update flip when direction actually changes to prevent flickering
-        if (!this.isAttacking) {
-            const shouldFaceLeft = dx < 0;
-            if (shouldFaceLeft !== this.facingLeft) {
-                this.facingLeft = shouldFaceLeft;
-                this.sprite.setFlipX(this.facingLeft);
+        // Track facing direction and flip sprite (only if not in any attack/animation state)
+        // Use a deadzone to prevent rapid flipping when player is nearly centered
+        if (!this.isAttacking && !this.isSlashing && !this.isChargingArrow && !this.archerIsReleasing && !this.isThrowingSpear && !this.gnollIsThrowing && !this.lightningMageIsSlashing) {
+            const flipDeadzone = 20; // Don't flip if player is within 20px horizontally
+            if (Math.abs(dx) > flipDeadzone) {
+                const shouldFaceLeft = dx < 0;
+                if (shouldFaceLeft !== this.facingLeft) {
+                    this.facingLeft = shouldFaceLeft;
+                    this.sprite.setFlipX(this.facingLeft);
+                }
             }
         }
         
-        // Skeleton Viking behavior - shield at range, cone attack up close
+        // Skeleton Viking behavior - shield at range, spear attack up close
         if (this.type === EnemyType.SKELETON_VIKING) {
-            const closeRange = 100;
+            const closeRange = 80; // Matches spear damage range (~70 length)
             
-            if (this.isAttacking) {
-                this.playAnimation(this.mobAnimations.idle);
-                // Stop movement when attacking
+            // Check if in throwing animation first (highest priority)
+            if (this.isThrowingSpear) {
+                // Currently in throwing animation, wait for it to complete
+                this.throwAnimationTimer += deltaTime;
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(0, 0);
+                
+                if (this.throwAnimationTimer >= this.throwAnimationDuration) {
+                    // Throwing animation complete, spawn the spear
+                    this.isThrowingSpear = false;
+                    this.throwAnimationTimer = 0;
+                    this.isAttacking = false;
+                    const enemyRadius = this.getApproximateRadius();
+                    const spearAttack = new SpearAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
+                    return { type: 'spear', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: spearAttack };
+                }
             } else if (distance > closeRange) {
                 // Move towards player using physics velocity
                 const velocityX = (dx / distance) * this.stats.speed;
@@ -499,24 +541,29 @@ export class Enemy {
                 if (distance < 250 && this.shieldCooldown <= 0 && !this.activeShield) {
                     this.shieldCooldown = this.shieldInterval;
                     const enemyRadius = this.getApproximateRadius();
+                    // Pass player position for 360-degree shield orientation
                     const shield = new Shield(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, enemyRadius);
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_VIKING) creating SHIELD`);
                     return { type: 'shield', damage: 0, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: shield };
-            }
-        } else {
-                // Close range - cone attack
-                this.playAnimation(this.mobAnimations.idle);
+                }
+            } else {
+                // Close range - spear attack
                 // Stop movement when in close range
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(0, 0);
+                
                 if (this.coneAttackCooldown <= 0) {
+                    // Start throwing animation
                     this.coneAttackCooldown = this.coneAttackInterval;
                     this.isAttacking = true;
-                    this.attackTimer = 0.25;
-                    const enemyRadius = this.getApproximateRadius();
-                    const coneAttack = new ConeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_VIKING) creating CONE ATTACK`);
-                    return { type: 'cone', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: coneAttack };
+                    this.isThrowingSpear = true;
+                    this.throwAnimationTimer = 0;
+                    // Play the throwing animation
+                    if (this.scene.anims.exists('skeleton_viking_throwing')) {
+                        this.sprite.play('skeleton_viking_throwing', true);
+                    }
+                } else {
+                    // Not attacking, play idle
+                    this.playAnimation(this.mobAnimations.idle);
                 }
             }
         }
@@ -526,12 +573,25 @@ export class Enemy {
             const minRange = 150; // Minimum distance to maintain (kite away if closer)
             const inCameraView = this.isInCameraView();
             const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            const drawAnimDuration = 0.33; // 4 frames at 12fps
+            const releaseAnimDuration = 0.31; // 5 frames at 16fps
             
-            // If charging arrow, stay locked and update charge
-            if (this.isChargingArrow) {
-                // Lock position - no movement
+            // State 1: Playing release animation after arrow is shot
+            if (this.archerIsReleasing) {
                 if (body) body.setVelocity(0, 0);
-                this.playAnimation(this.mobAnimations.idle);
+                this.archerReleaseTimer += deltaTime;
+                
+                if (this.archerReleaseTimer >= releaseAnimDuration) {
+                    // Release animation done, go back to normal
+                    this.archerIsReleasing = false;
+                    this.archerReleaseTimer = 0;
+                }
+                return null;
+            }
+            
+            // State 2: Charging arrow (drawing bow)
+            if (this.isChargingArrow) {
+                if (body) body.setVelocity(0, 0);
                 
                 // Update arrow indicator
                 if (this.activeArrowIndicator) {
@@ -541,6 +601,66 @@ export class Enemy {
                 // Update charge time
                 this.arrowChargeTime += deltaTime;
                 
+                // Play draw animation at start, then hold at frame 003
+                if (!this.archerDrawAnimPlayed) {
+                    if (this.arrowChargeTime < drawAnimDuration) {
+                        // Still in draw animation
+                        if (this.currentAnimation !== 'skeleton_archer_shooting_draw') {
+                            this.sprite.play('skeleton_archer_shooting_draw', true);
+                            this.currentAnimation = 'skeleton_archer_shooting_draw';
+                        }
+                    } else {
+                        // Draw animation done, hold at frame 003
+                        this.archerDrawAnimPlayed = true;
+                        this.sprite.stop();
+                        this.sprite.setTexture('skeleton_archer_shooting_003');
+                    }
+                }
+                
+                // Update star effect position and appearance - only show when almost ready to fire
+                const chargeProgress = (this.arrowChargeTime - drawAnimDuration) / (this.arrowChargeDuration - drawAnimDuration);
+                const showStar = chargeProgress >= 0.60; // Only show star in last 40% of charge
+                
+                if (this.archerDrawAnimPlayed && showStar) {
+                    // Create star if it doesn't exist
+                    if (!this.arrowTipStar) {
+                        this.arrowTipStar = this.scene.add.graphics();
+                        this.arrowTipStar.setDepth(20);
+                    }
+                    
+                    const starDistance = 18; // Distance from sprite center to bow side
+                    // Star appears to the left or right based on facing direction
+                    const starX = this.sprite.x + (this.facingLeft ? -starDistance : starDistance);
+                    const starY = this.sprite.y + 5; // Slightly below center where bow is held
+                    
+                    // Clear and redraw star with pulsing effect
+                    this.arrowTipStar.clear();
+                    const pulse = 0.7 + Math.sin(this.arrowChargeTime * 20) * 0.3; // Fast pulsing
+                    const starSize = 6; // Fixed size
+                    const alpha = 0.9; // Bright
+                    
+                    // Draw 4-pointed star
+                    this.arrowTipStar.fillStyle(0xffffff, alpha * pulse);
+                    this.arrowTipStar.beginPath();
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i * Math.PI / 4) - Math.PI / 8;
+                        const radius = i % 2 === 0 ? starSize : starSize * 0.4;
+                        const px = starX + Math.cos(angle) * radius;
+                        const py = starY + Math.sin(angle) * radius;
+                        if (i === 0) {
+                            this.arrowTipStar.moveTo(px, py);
+                        } else {
+                            this.arrowTipStar.lineTo(px, py);
+                        }
+                    }
+                    this.arrowTipStar.closePath();
+                    this.arrowTipStar.fillPath();
+                    
+                    // Add glow effect
+                    this.arrowTipStar.fillStyle(0xffffff, alpha * pulse * 0.3);
+                    this.arrowTipStar.fillCircle(starX, starY, starSize * 1.5);
+                }
+                
                 // Release arrow when charge is complete
                 if (this.arrowChargeTime >= this.arrowChargeDuration) {
                     // Destroy the indicator
@@ -548,6 +668,18 @@ export class Enemy {
                         this.activeArrowIndicator.destroy();
                         this.activeArrowIndicator = null;
                     }
+                    
+                    // Destroy the star effect
+                    if (this.arrowTipStar) {
+                        this.arrowTipStar.destroy();
+                        this.arrowTipStar = null;
+                    }
+                    
+                    // Play release animation
+                    this.sprite.play('skeleton_archer_shooting_release', true);
+                    this.currentAnimation = 'skeleton_archer_shooting_release';
+                    this.archerIsReleasing = true;
+                    this.archerReleaseTimer = 0;
                     
                     // Get collision layers from scene
                     const collisionLayers = this.getCollisionLayersFromScene();
@@ -566,56 +698,62 @@ export class Enemy {
                     // Reset charging state
                     this.isChargingArrow = false;
                     this.arrowChargeTime = 0;
+                    this.archerDrawAnimPlayed = false;
                     this.shootCooldown = this.shootInterval;
                     
                     return { type: 'arrow', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, attackObject: arrow };
                 }
+                return null;
             }
-            // Not charging - handle movement and positioning (same pattern as skeleton pirate)
-            else {
-                // Movement logic - try to maintain optimal range and stay in camera view
-                if (!inCameraView || distance > optimalRange) {
-                    // Not in camera view or too far - move towards player
-                    const velocityX = (dx / distance) * this.stats.speed;
-                    const velocityY = (dy / distance) * this.stats.speed;
-                    if (body) body.setVelocity(velocityX, velocityY);
-                    this.playAnimation(this.mobAnimations.walk);
-                } else if (distance < minRange) {
-                    // Too close - kite away
-                    const velocityX = -(dx / distance) * this.stats.speed;
-                    const velocityY = -(dy / distance) * this.stats.speed;
-                    if (body) body.setVelocity(velocityX, velocityY);
-                    this.playAnimation(this.mobAnimations.walk);
-                } else {
-                    // In optimal range (150-300 pixels) - stop and idle
-                    if (body) body.setVelocity(0, 0);
-                    this.playAnimation(this.mobAnimations.idle);
-                }
+            
+            // State 3: Not charging - handle movement and positioning
+            // Movement logic - try to maintain optimal range and stay in camera view
+            if (!inCameraView || distance > optimalRange) {
+                // Not in camera view or too far - move towards player
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+            } else if (distance < minRange) {
+                // Too close - kite away
+                const velocityX = -(dx / distance) * this.stats.speed;
+                const velocityY = -(dy / distance) * this.stats.speed;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+            } else {
+                // In optimal range (150-300 pixels) - stop and idle
+                if (body) body.setVelocity(0, 0);
+                this.playAnimation(this.mobAnimations.idle);
+            }
+            
+            // Attack logic - can start charging arrow when in camera view and cooldown ready
+            if (inCameraView && this.shootCooldown <= 0) {
+                this.isChargingArrow = true;
+                this.arrowChargeTime = 0;
+                this.archerDrawAnimPlayed = false;
                 
-                // Attack logic - can start charging arrow when in camera view and cooldown ready
-                if (inCameraView && this.shootCooldown <= 0) {
-                    this.isChargingArrow = true;
-                    this.arrowChargeTime = 0;
-                    
-                    // Lock the arrow direction
-                    this.lockedArrowAngle = Math.atan2(dy, dx);
-                    
-                    // Calculate endpoint for indicator (raycast to find wall or max distance)
-                    const { endX, endY } = this.calculateArrowEndpoint(
-                        this.sprite.x,
-                        this.sprite.y,
-                        this.lockedArrowAngle
-                    );
-                    
-                        // Create visual indicator
-                        this.activeArrowIndicator = new ArrowIndicator(
-                            this.scene,
-                            this.sprite.x,
-                            this.sprite.y,
-                            endX,
-                            endY
-                        );
-                }
+                // Lock the arrow direction
+                this.lockedArrowAngle = Math.atan2(dy, dx);
+                
+                // Play draw animation
+                this.sprite.play('skeleton_archer_shooting_draw', true);
+                this.currentAnimation = 'skeleton_archer_shooting_draw';
+                
+                // Calculate endpoint for indicator (raycast to find wall or max distance)
+                const { endX, endY } = this.calculateArrowEndpoint(
+                    this.sprite.x,
+                    this.sprite.y,
+                    this.lockedArrowAngle
+                );
+                
+                // Create visual indicator
+                this.activeArrowIndicator = new ArrowIndicator(
+                    this.scene,
+                    this.sprite.x,
+                    this.sprite.y,
+                    endX,
+                    endY
+                );
             }
         }
         // Ogre behavior - walk up and melee attack
@@ -654,48 +792,78 @@ export class Enemy {
         }
         // Skeleton Pirate behavior - vortex attacks at range
         else if (this.type === EnemyType.SKELETON_PIRATE) {
-            const optimalRange = 600; // Preferred casting distance (far away for easier dodging)
-            const minRange = 300; // Minimum distance to maintain (stay far from player)
+            const minRange = 150; // Back away if player gets closer than this
             const inCameraView = this.isInCameraView();
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             
-            // Movement logic - try to maintain optimal range and stay in camera view
-            if (this.isAttacking) {
-                // Stop movement while casting
-                this.playAnimation(this.mobAnimations.idle);
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(0, 0);
-            } else if (!inCameraView || distance > optimalRange) {
-                // Not in camera view or too far - move towards player using physics velocity
-                const velocityX = (dx / distance) * this.stats.speed;
-                const velocityY = (dy / distance) * this.stats.speed;
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(velocityX, velocityY);
-                this.playAnimation(this.mobAnimations.walk);
-            } else if (distance < minRange) {
-                // Too close - back away slightly using physics velocity
-                const velocityX = -(dx / distance) * (this.stats.speed * 0.5);
-                const velocityY = -(dy / distance) * (this.stats.speed * 0.5);
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(velocityX, velocityY);
-                this.playAnimation(this.mobAnimations.walk);
-            } else {
-                // In optimal range - idle
-                this.playAnimation(this.mobAnimations.idle);
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(0, 0);
+            // Always stop movement first, then decide what to do
+            if (body) body.setVelocity(0, 0);
+            
+            // State 1: Currently in slashing animation
+            if (this.isSlashing) {
+                this.slashAnimationTimer += deltaTime;
+                
+                if (this.slashAnimationTimer >= this.slashAnimationDuration) {
+                    // Animation complete - spawn vortex and reset
+                    this.isSlashing = false;
+                    this.slashAnimationTimer = 0;
+                    this.isAttacking = false;
+                    this.postAttackIdleTimer = 0.5;
+                    
+                    const enemyRadius = this.getApproximateRadius();
+                    const vortexAttack = new VortexAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
+                    
+                    // Force switch to idle
+                    this.sprite.play(this.mobAnimations.idle, true);
+                    this.currentAnimation = this.mobAnimations.idle;
+                    
+                    return { type: 'vortex', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, 
+                        specialEffects: { slowEffect: vortexAttack.slowEffect, slowDuration: vortexAttack.slowDuration }, attackObject: vortexAttack };
+                }
+                // Stay frozen during slash animation
+                return null;
             }
             
-            // Attack logic - can attack from any distance when in camera view
-            if (inCameraView && !this.isAttacking && this.vortexAttackCooldown <= 0) {
+            // State 2: Post-attack cooldown (brief pause)
+            if (this.postAttackIdleTimer > 0) {
+                this.postAttackIdleTimer -= deltaTime;
+                // Stay still, don't change animation
+                return null;
+            }
+            
+            // State 3: Ready to attack (in view and cooldown ready)
+            if (inCameraView && this.vortexAttackCooldown <= 0) {
                 this.vortexAttackCooldown = this.vortexAttackInterval;
                 this.isAttacking = true;
-                this.attackTimer = 0.5; // Brief casting animation lock
-                const enemyRadius = this.getApproximateRadius();
-                const vortexAttack = new VortexAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
-                console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_PIRATE) creating VORTEX ATTACK at distance ${distance.toFixed(0)}`);
-                return { type: 'vortex', damage: this.stats.damage, position: { x: this.sprite.x, y: this.sprite.y }, hitPlayer: false, 
-                    specialEffects: { slowEffect: vortexAttack.slowEffect, slowDuration: vortexAttack.slowDuration }, attackObject: vortexAttack };
+                this.isSlashing = true;
+                this.slashAnimationTimer = 0;
+                
+                // Play slash animation
+                this.sprite.play('skeleton_pirate_slashing', true);
+                this.currentAnimation = 'skeleton_pirate_slashing';
+                return null;
             }
+            
+            // State 4: Need to get into camera view
+            if (!inCameraView) {
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+                return null;
+            }
+            
+            // State 5: Player too close - back away
+            if (distance < minRange) {
+                const velocityX = -(dx / distance) * (this.stats.speed * 0.4);
+                const velocityY = -(dy / distance) * (this.stats.speed * 0.4);
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+                return null;
+            }
+            
+            // State 6: Default - idle and wait for cooldown
+            this.playAnimation(this.mobAnimations.idle);
         }
         // Elemental Spirit behavior - suicide bomber
         else if (this.type === EnemyType.ELEMENTAL_SPIRIT) {
@@ -710,7 +878,6 @@ export class Enemy {
                 
                 if (this.deathTimer >= this.deathAnimationDuration) {
                     // Death animation complete, trigger explosion
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (ELEMENTAL_SPIRIT) creating EXPLOSION`);
                     const explosion = new ExplosionAttack(this.scene, this.sprite.x, this.sprite.y, this.stats.damage);
                     
                     // Destroy the sprite immediately after creating explosion
@@ -725,8 +892,8 @@ export class Enemy {
                 // Stop movement when triggering explosion
                 const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(0, 0);
-                this.playAnimation(this.mobAnimations.idle); // Use idle as death animation fallback
-                console.log(`Enemy #${this.sprite.getData('enemyId')} (ELEMENTAL_SPIRIT) triggered death sequence`);
+                // Play the dying animation - explosion happens after it finishes
+                this.sprite.play('elemental_spirit_dying');
             } else {
                 // Rush towards player with high speed using physics velocity
                 const velocityX = (dx / distance) * this.stats.speed;
@@ -742,6 +909,10 @@ export class Enemy {
             const minRange = 180; // Minimum distance to maintain
             const lightningCooldown = 'lightningCooldown';
             const lightningInterval = 3.0; // Cast every 3 seconds
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            
+            // Always stop velocity at the start of the update, then apply if needed
+            if (body) body.setVelocity(0, 0);
             
             // Initialize cooldown if not exists
             if (!this.sprite.getData(lightningCooldown)) {
@@ -757,78 +928,124 @@ export class Enemy {
             // Check if in camera view
             const inCameraView = this.isInCameraView();
             
-            // Movement logic - try to maintain optimal range and stay in camera view
-            if (this.isAttacking) {
-                // Immobilized while casting
-                this.playAnimation(this.mobAnimations.idle);
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(0, 0);
-            } else if (!inCameraView || distance > optimalRange) {
-                // Not in camera view or too far - move closer
-                const velocityX = (dx / distance) * this.stats.speed;
-                const velocityY = (dy / distance) * this.stats.speed;
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(velocityX, velocityY);
-                this.playAnimation(this.mobAnimations.walk);
-            } else if (distance < minRange) {
-                // Too close - back away
-                const velocityX = -(dx / distance) * (this.stats.speed * 0.7);
-                const velocityY = -(dy / distance) * (this.stats.speed * 0.7);
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(velocityX, velocityY);
-                this.playAnimation(this.mobAnimations.walk);
-            } else {
-                // In optimal range - idle
-                this.playAnimation(this.mobAnimations.idle);
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-                if (body) body.setVelocity(0, 0);
+            // State 1: Currently in slashing animation (highest priority)
+            if (this.lightningMageIsSlashing) {
+                this.lightningMageSlashTimer += deltaTime;
+                
+                // Spawn lightning strike partway through animation (around 50%)
+                if (!this.lightningMageStrikeSpawned && this.lightningMageSlashTimer >= this.lightningMageSlashDuration * 0.5) {
+                    this.lightningMageStrikeSpawned = true;
+                    const lightningStrike = new LightningStrikeAttack(this.scene, playerX, playerY, this.stats.damage);
+                    return { 
+                        type: 'lightning', 
+                        damage: this.stats.damage, 
+                        position: { x: playerX, y: playerY }, 
+                        hitPlayer: false, 
+                        attackObject: lightningStrike 
+                    };
+                }
+                
+                // Wait for full animation to complete before allowing other actions
+                if (this.lightningMageSlashTimer >= this.lightningMageSlashDuration) {
+                    this.lightningMageIsSlashing = false;
+                    this.lightningMageSlashTimer = 0;
+                    this.isAttacking = false;
+                    this.lightningMageStrikeSpawned = false;
+                    // Force transition to idle
+                    if (this.scene.anims.exists(this.mobAnimations.idle)) {
+                        this.sprite.play(this.mobAnimations.idle, true);
+                        this.currentAnimation = this.mobAnimations.idle;
+                    }
+                }
+                return null; // Don't do anything else while slashing
             }
             
-            // Attack logic - can only attack when in camera view
-            if (inCameraView && !this.isAttacking && currentCooldown <= 0) {
-                // Cast lightning strike at player's position
+            // State 2: Attack if in camera view and cooldown ready
+            if (inCameraView && currentCooldown <= 0) {
                 this.sprite.setData(lightningCooldown, lightningInterval);
                 this.isAttacking = true;
-                this.attackTimer = 1.5; // Immobilized for warning duration
-                
-                const lightningStrike = new LightningStrikeAttack(this.scene, playerX, playerY, this.stats.damage);
-                console.log(`Enemy #${this.sprite.getData('enemyId')} (LIGHTNING_MAGE) creating LIGHTNING STRIKE at distance ${distance.toFixed(0)}`);
-                return { 
-                    type: 'lightning', 
-                    damage: this.stats.damage, 
-                    position: { x: playerX, y: playerY }, 
-                    hitPlayer: false, 
-                    attackObject: lightningStrike 
-                };
+                this.lightningMageIsSlashing = true;
+                this.lightningMageSlashTimer = 0;
+                this.lightningMageStrikeSpawned = false;
+                // Play the slashing animation
+                if (this.scene.anims.exists('lightning_mage_slashing')) {
+                    this.sprite.play('lightning_mage_slashing', true);
+                    this.currentAnimation = 'lightning_mage_slashing';
+                }
+                return null; // Attack initiated, return
             }
+            
+            // State 3: Movement - Approach if not in camera view or too far
+            if (!inCameraView || distance > optimalRange) {
+                const velocityX = (dx / distance) * this.stats.speed;
+                const velocityY = (dy / distance) * this.stats.speed;
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+                return null;
+            }
+            
+            // State 4: Movement - Back away if player is too close
+            if (distance < minRange) {
+                const velocityX = -(dx / distance) * (this.stats.speed * 0.7);
+                const velocityY = -(dy / distance) * (this.stats.speed * 0.7);
+                if (body) body.setVelocity(velocityX, velocityY);
+                this.playAnimation(this.mobAnimations.walk);
+                return null;
+            }
+            
+            // State 5: Default - In camera view, good range, waiting for cooldown - stay idle
+            this.playAnimation(this.mobAnimations.idle);
+            return null;
         }
         // Gnoll behavior - fast melee with claw attacks
         else {
-            if (this.isAttacking) {
-                this.playAnimation(this.mobAnimations.idle);
-                // Stop movement when attacking
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            
+            // State 1: Playing throwing animation
+            if (this.gnollIsThrowing) {
                 if (body) body.setVelocity(0, 0);
-            } else if (distance > this.attackRange) {
-                // Move towards player using physics velocity
+                this.gnollThrowTimer += deltaTime;
+                
+                // Spawn claw attack partway through animation (around 50%) - only once!
+                if (this.gnollThrowTimer >= this.gnollThrowDuration * 0.5 && !this.gnollClawSpawned) {
+                    this.gnollClawSpawned = true;
+                    // Spawn at player's current position
+                    const clawAttack = new ClawAttack(this.scene, playerX, playerY, this.stats.damage);
+                    return { type: 'claw', damage: this.stats.damage, position: { x: playerX, y: playerY }, hitPlayer: false, attackObject: clawAttack };
+                }
+                
+                // Check if animation is complete
+                if (this.gnollThrowTimer >= this.gnollThrowDuration) {
+                    this.gnollIsThrowing = false;
+                    this.gnollThrowTimer = 0;
+                    this.gnollClawSpawned = false;
+                    this.isAttacking = false;
+                }
+                return null;
+            }
+            
+            // State 2: Moving towards player
+            if (distance > this.attackRange) {
                 const velocityX = (dx / distance) * this.stats.speed;
                 const velocityY = (dy / distance) * this.stats.speed;
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
                 if (body) body.setVelocity(velocityX, velocityY);
                 this.playAnimation(this.mobAnimations.walk);
             } else {
-                this.playAnimation(this.mobAnimations.idle);
-                // Stop movement when in attack range
-                const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+                // State 3: In attack range
                 if (body) body.setVelocity(0, 0);
+                
                 if (this.meleeAttackCooldown <= 0) {
+                    // Start throwing animation
                     this.meleeAttackCooldown = this.meleeAttackInterval;
+                    this.gnollIsThrowing = true;
+                    this.gnollThrowTimer = 0;
+                    this.gnollClawSpawned = false;
                     this.isAttacking = true;
-                    this.attackTimer = this.attackDuration;
-                    // Create claw attack at player position
-                    const clawAttack = new ClawAttack(this.scene, playerX, playerY, this.stats.damage);
-                    console.log(`Enemy #${this.sprite.getData('enemyId')} (GNOLL) creating CLAW ATTACK at player position`);
-                    return { type: 'claw', damage: this.stats.damage, position: { x: playerX, y: playerY }, hitPlayer: false, attackObject: clawAttack };
+                    this.sprite.play('gnoll_throwing', true);
+                    this.currentAnimation = 'gnoll_throwing';
+                } else {
+                    // Waiting for cooldown
+                    this.playAnimation(this.mobAnimations.idle);
                 }
             }
         }
@@ -844,6 +1061,11 @@ export class Enemy {
         if (this.activeArrowIndicator) {
             this.activeArrowIndicator.destroy();
             this.activeArrowIndicator = null;
+        }
+        // Clean up arrow tip star effect
+        if (this.arrowTipStar) {
+            this.arrowTipStar.destroy();
+            this.arrowTipStar = null;
         }
         this.sprite.destroy();
     }
@@ -1035,9 +1257,10 @@ export class Enemy {
     }
 
     /**
-     * Creates a shield
+     * Creates a shield facing the player (360-degree orientation)
      */
     private createShieldAttack(playerX: number, playerY: number): EnemyAttackResult {
+        // Pass player position for 360-degree shield orientation
         const shield = new Shield(
             this.scene,
             this.sprite.x,
@@ -1066,6 +1289,7 @@ export class EnemySystem {
     private meleeAttacks: MeleeAttack[] = [];
     private shields: Shield[] = [];
     private coneAttacks: ConeAttack[] = [];
+    private spearAttacks: SpearAttack[] = [];
     private vortexAttacks: VortexAttack[] = [];
     private explosionAttacks: ExplosionAttack[] = [];
     private lightningStrikes: LightningStrikeAttack[] = [];
@@ -1321,6 +1545,9 @@ export class EnemySystem {
                     case 'cone':
                         this.coneAttacks.push(attackResult.attackObject as ConeAttack);
                         break;
+                    case 'spear':
+                        this.spearAttacks.push(attackResult.attackObject as SpearAttack);
+                        break;
                     case 'vortex':
                         this.vortexAttacks.push(attackResult.attackObject as VortexAttack);
                         break;
@@ -1348,7 +1575,6 @@ export class EnemySystem {
             for (const shield of this.shields) {
                 if (shield.isActive() && shield.blocksProjectile(projectile.sprite.x, projectile.sprite.y)) {
                     projectile.destroy();
-                    console.log('Shield blocked projectile!');
                     break; // Projectile is blocked, no need to check other shields
                 }
             }
@@ -1372,6 +1598,11 @@ export class EnemySystem {
         
         // Update all cone attacks
         this.coneAttacks.forEach(attack => {
+            attack.update(deltaTime);
+        });
+        
+        // Update all spear attacks
+        this.spearAttacks.forEach(attack => {
             attack.update(deltaTime);
         });
         
@@ -1417,6 +1648,7 @@ export class EnemySystem {
         this.meleeAttacks = this.meleeAttacks.filter(attack => attack.isActive());
         this.shields = this.shields.filter(shield => shield.isActive());
         this.coneAttacks = this.coneAttacks.filter(attack => attack.isActive());
+        this.spearAttacks = this.spearAttacks.filter(attack => attack.isActive());
         this.vortexAttacks = this.vortexAttacks.filter(attack => attack.isActive());
         this.explosionAttacks = this.explosionAttacks.filter(attack => attack.isActive());
         this.lightningStrikes = this.lightningStrikes.filter(attack => attack.isActive());
@@ -1660,6 +1892,14 @@ export class EnemySystem {
      */
     public getConeAttacks(): ConeAttack[] {
         return this.coneAttacks;
+    }
+
+    /**
+     * Gets all active spear attacks
+     * @returns Array of all active spear attacks
+     */
+    public getSpearAttacks(): SpearAttack[] {
+        return this.spearAttacks;
     }
 
     /**

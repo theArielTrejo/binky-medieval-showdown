@@ -4,6 +4,7 @@ import { Enemy } from './EnemySystem';
 import { EnemyProjectile } from './enemies/attacks/EnemyProjectile';
 import { MeleeAttack } from './enemies/attacks/MeleeAttack';
 import { ConeAttack } from './enemies/attacks/ConeAttack';
+import { SpearAttack } from './enemies/attacks/SpearAttack';
 import { Shield } from './enemies/attacks/Shield';
 import { VortexAttack } from './enemies/attacks/VortexAttack';
 import { ExplosionAttack } from './enemies/attacks/ExplosionAttack';
@@ -669,6 +670,24 @@ export class Player {
             }
         });
     }
+
+    public checkCollisionWithSpearAttacks(spearAttacks: SpearAttack[]): void {
+        spearAttacks.forEach(attack => {
+            if (!attack.isActive()) return;
+            
+            // Use the spear's built-in point-in-spear check
+            if (attack.isPointInSpear(this.sprite.x, this.sprite.y)) {
+                const currentTime = this.scene.time.now;
+                if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+                    this.takeDamage(attack.damage);
+                    this.lastDamageTime = currentTime;
+                    this.isInvulnerable = true;
+                    attack.markDamageDealt();
+                }
+            }
+        });
+    }
+
      public checkCollisionWithVortexAttacks(vortexAttacks: VortexAttack[]): void {
         vortexAttacks.forEach(attack => {
             if (!attack.isActive()) return;

@@ -36,7 +36,7 @@ export const HARDCODED_MOB_SKINS = Object.freeze({
     [EnemyType.GNOLL]: 'Gnoll_3',                             // Fast gnoll warrior - uses mob-texture-316
     [EnemyType.SKELETON_PIRATE]: 'Skeleton_Pirate_Captain_1', // Skeleton pirate with vortex attacks - uses mob-texture-196
     [EnemyType.ELEMENTAL_SPIRIT]: 'Elemental_Spirits_2',      // Elemental spirit suicide bomber - uses mob-texture-205 (idle) + 204 (running)
-    [EnemyType.LIGHTNING_MAGE]: 'Skeleton_Death_Knight_1'     // Lightning mage - AOE lightning strikes from distance - uses mob-texture-131
+    [EnemyType.LIGHTNING_MAGE]: 'Cursed_Alchemist_1'          // Lightning mage - AOE lightning strikes from distance - uses custom animations
 } as const);
 
 /**
@@ -244,6 +244,7 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
     const texture316Variants = ['Gnoll_3'];  // Gnoll idle/walk frames present
     const texture205Variants = ['Elemental_Spirits_2']; // Elemental spirits (idle frames in 205, running in 204)
     const texture131Variants = ['Skeleton_Death_Knight_1', 'Skeleton_Death_Knight_2', 'Skeleton_Death_Knight_3']; // Death Knight idle/walk frames
+    const cursedAlchemistVariants = ['Cursed_Alchemist_1', 'Cursed_Alchemist_2', 'Cursed_Alchemist_3']; // Lightning mage custom animations
     const ogreVariants = ['Ogre_1']; // Ogre uses custom walking animation
 
     if (texture196Variants.includes(mobVariant)) {
@@ -258,6 +259,8 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
         return 'mob-texture-205';
     } else if (texture131Variants.includes(mobVariant)) {
         return 'mob-texture-131';
+    } else if (cursedAlchemistVariants.includes(mobVariant)) {
+        return 'lightning_mage_running_000'; // Uses custom animation frames
     } else if (ogreVariants.includes(mobVariant)) {
         return 'ogre-walk-0';
     } else {

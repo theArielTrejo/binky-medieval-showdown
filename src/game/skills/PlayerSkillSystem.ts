@@ -35,6 +35,23 @@ export class PlayerSkillSystem {
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const p = this.projectiles[i];
             
+            // Check if any shield blocks this projectile
+            if (p.isActive()) {
+                const shields = this.enemySystem.getShields();
+                let blocked = false;
+                for (const shield of shields) {
+                    if (shield.isActive() && shield.blocksProjectile(p.sprite.x, p.sprite.y)) {
+                        p.destroy();
+                        blocked = true;
+                        break;
+                    }
+                }
+                if (blocked) {
+                    this.projectiles.splice(i, 1);
+                    continue;
+                }
+            }
+            
             // Homing Logic
             if (p.options.homing && p.isActive()) {
                 let closestDist = 300; // Detection range for homing
@@ -113,6 +130,15 @@ export class PlayerSkillSystem {
         if (!enemyId) {
             console.warn("Enemy missing ID during collision");
             return;
+        }
+
+        // Check if any shield blocks this projectile BEFORE it can hit the enemy
+        const shields = this.enemySystem.getShields();
+        for (const shield of shields) {
+            if (shield.isActive() && shield.blocksProjectile(proj.sprite.x, proj.sprite.y)) {
+                proj.destroy();
+                return; // Projectile is blocked, don't damage the enemy
+            }
         }
 
         if (!proj.hitEnemies.has(enemyId)) {

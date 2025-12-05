@@ -113,21 +113,21 @@ export const CHARACTER_ANIMATIONS: { [key: string]: CharacterAnimationSet } = {
 
 // Hardcoded Mob Variants and their animations
 export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
-  // Skeleton Pirates - Skeleton_Pirate_Captain_1 uses mob-texture-196, others fallback to mob-texture-264
+  // Skeleton Pirates - all use the same custom animations
   'Skeleton_Pirate_Captain_1': {
-    idle: 'Skeleton_Pirate_Captain_1_idle',
-    walk: 'Skeleton_Pirate_Captain_1_walk',
-    texture: 'mob-texture-196'
+    idle: 'skeleton_pirate_idle',
+    walk: 'skeleton_pirate_running',
+    texture: 'skeleton_pirate_idle_000'
   },
   'Skeleton_Pirate_Captain_2': {
-    idle: 'Skeleton_Pirate_Captain_2_idle',
-    walk: 'Skeleton_Pirate_Captain_2_walk',
-    texture: 'mob-texture-264'
+    idle: 'skeleton_pirate_idle',
+    walk: 'skeleton_pirate_running',
+    texture: 'skeleton_pirate_idle_000'
   },
   'Skeleton_Pirate_Captain_3': {
-    idle: 'Skeleton_Pirate_Captain_3_idle',
-    walk: 'Skeleton_Pirate_Captain_3_walk',
-    texture: 'mob-texture-316'
+    idle: 'skeleton_pirate_idle',
+    walk: 'skeleton_pirate_running',
+    texture: 'skeleton_pirate_idle_000'
   },
 
   // Skeleton Warriors - all use mob-texture-264
@@ -198,72 +198,72 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     texture: 'ogre-walk-0'
   },
 
-  // Skeleton Viking variants
+  // Skeleton Viking variants - all use the same custom animations
   'Skeleton_Viking_1': {
-    idle: 'Skeleton_Viking_1_idle',
-    walk: 'Skeleton_Viking_1_walk',
-    texture: 'mob-texture-281'
+    idle: 'skeleton_viking_idle',
+    walk: 'skeleton_viking_running',
+    texture: 'skeleton_viking_idle_000'
   },
   'Skeleton_Viking_2': {
-    idle: 'Skeleton_Viking_2_idle',
-    walk: 'Skeleton_Viking_2_walk',
-    texture: 'mob-texture-254'
+    idle: 'skeleton_viking_idle',
+    walk: 'skeleton_viking_running',
+    texture: 'skeleton_viking_idle_000'
   },
   'Skeleton_Viking_3': {
-    idle: 'Skeleton_Viking_3_idle',
-    walk: 'Skeleton_Viking_3_walk',
-    texture: 'mob-texture-254'
+    idle: 'skeleton_viking_idle',
+    walk: 'skeleton_viking_running',
+    texture: 'skeleton_viking_idle_000'
   },
 
-  // Archer variants
+  // Archer variants - all use the same custom animations
   'Archer_1': {
-    idle: 'Archer_1_idle',
-    walk: 'Archer_1_walk',
-    texture: 'mob-texture-254'
+    idle: 'skeleton_archer_idle',
+    walk: 'skeleton_archer_running',
+    texture: 'skeleton_archer_idle_000'
   },
   'Archer_2': {
-    idle: 'Archer_2_idle',
-    walk: 'Archer_2_walk',
-    texture: 'mob-texture-254'
+    idle: 'skeleton_archer_idle',
+    walk: 'skeleton_archer_running',
+    texture: 'skeleton_archer_idle_000'
   },
   'Archer_3': {
-    idle: 'Archer_3_idle',
-    walk: 'Archer_3_walk',
-    texture: 'mob-texture-254'
+    idle: 'skeleton_archer_idle',
+    walk: 'skeleton_archer_running',
+    texture: 'skeleton_archer_idle_000'
   },
 
-  // Gnoll variants
+  // Gnoll variants - all use the same custom animations
   'Gnoll_1': {
-    idle: 'Gnoll_1_idle',
-    walk: 'Gnoll_1_walk',
-    texture: 'mob-texture-316'
+    idle: 'gnoll_idle',
+    walk: 'gnoll_running',
+    texture: 'gnoll_idle_000'
   },
   'Gnoll_2': {
-    idle: 'Gnoll_2_idle',
-    walk: 'Gnoll_2_walk',
-    texture: 'mob-texture-316'
+    idle: 'gnoll_idle',
+    walk: 'gnoll_running',
+    texture: 'gnoll_idle_000'
   },
   'Gnoll_3': {
-    idle: 'Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Throwing in The Air/0_Gnoll_Throwing in The Air_011.png',
-    walk: 'Mobs/Gnoll/Gnoll_3/PNG/PNG Sequences/Running/0_Gnoll_Running_010.png',
-    texture: 'mob-texture-316'
+    idle: 'gnoll_idle',
+    walk: 'gnoll_running',
+    texture: 'gnoll_idle_000'
   },
 
-  // Elemental Spirits
+  // Elemental Spirits - all use the same custom animations
   'Elemental_Spirits_1': {
-    idle: 'Elemental_Spirits_1_idle',
-    walk: 'Elemental_Spirits_1_walk',
-    texture: 'mob-texture-280'
+    idle: 'elemental_spirit_idle',
+    walk: 'elemental_spirit_running',
+    texture: 'elemental_spirit_idle_000'
   },
   'Elemental_Spirits_2': {
-    idle: 'Elemental_Spirits_2_idle',
-    walk: 'Elemental_Spirits_2_walk',
-    texture: 'mob-texture-205'
+    idle: 'elemental_spirit_idle',
+    walk: 'elemental_spirit_running',
+    texture: 'elemental_spirit_idle_000'
   },
   'Elemental_Spirits_3': {
-    idle: 'Elemental_Spirits_3_idle',
-    walk: 'Elemental_Spirits_3_walk',
-    texture: 'mob-texture-240'
+    idle: 'elemental_spirit_idle',
+    walk: 'elemental_spirit_running',
+    texture: 'elemental_spirit_idle_000'
   },
 
   // Skeleton Death Knights (Lightning Mage)
@@ -281,6 +281,23 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     idle: 'Skeleton_Death_Knight_3_idle',
     walk: 'Skeleton_Death_Knight_3_walk',
     texture: 'mob-texture-131'
+  },
+
+  // Cursed Alchemists (Lightning Mage) - all use the same custom animations
+  'Cursed_Alchemist_1': {
+    idle: 'lightning_mage_idle',
+    walk: 'lightning_mage_running',
+    texture: 'lightning_mage_running_000'
+  },
+  'Cursed_Alchemist_2': {
+    idle: 'lightning_mage_idle',
+    walk: 'lightning_mage_running',
+    texture: 'lightning_mage_running_000'
+  },
+  'Cursed_Alchemist_3': {
+    idle: 'lightning_mage_idle',
+    walk: 'lightning_mage_running',
+    texture: 'lightning_mage_running_000'
   }
 };
 

@@ -136,6 +136,112 @@ export class Game extends Scene {
         // Load whirlpool effect for skeleton pirate
         this.load.image('whirlpool', 'Effects/Whirlpool.png');
 
+        // Load bone shield for skeleton Viking
+        this.load.image('bone-shield', 'Effects/Bone shield.png');
+
+        // Load spear animation frames for skeleton Viking attack (4 separate images)
+        this.load.image('spear-1', 'Effects/Spear/spear_1.png');
+        this.load.image('spear-2', 'Effects/Spear/spear_2.png');
+        this.load.image('spear-3', 'Effects/Spear/spear_3.png');
+        this.load.image('spear-4', 'Effects/Spear/spear_4.png');
+
+        // Load skeleton viking animation frames
+        // Idle: 18 frames (000-017)
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_viking_idle_${frameNum}`, `mobs/skeleton-viking/Idle/0_Skeleton_Viking_Idle_${frameNum}.png`);
+        }
+        // Running: 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_viking_running_${frameNum}`, `mobs/skeleton-viking/Running/0_Skeleton_Viking_Running_${frameNum}.png`);
+        }
+        // Throwing (attack): 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_viking_throwing_${frameNum}`, `mobs/skeleton-viking/Throwing/0_Skeleton_Viking_Throwing_${frameNum}.png`);
+        }
+
+        // Load skeleton pirate animation frames
+        // Idle: 18 frames (000-017)
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_pirate_idle_${frameNum}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Idle_${frameNum}.png`);
+        }
+        // Running: 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_pirate_running_${frameNum}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Running_${frameNum}.png`);
+        }
+        // Slashing (attack): 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_pirate_slashing_${frameNum}`, `mobs/skeleton-pirate/Slashing/0_Skeleton_Pirate_Captain_Slashing_${frameNum}.png`);
+        }
+
+        // Load lightning mage animation frames
+        // Running: 12 frames (000-011) - also used for idle (first frame)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`lightning_mage_running_${frameNum}`, `mobs/lightning-mage/Running/0_Cursed_Alchemist_Running_${frameNum}.png`);
+        }
+        // Slashing (attack): 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`lightning_mage_slashing_${frameNum}`, `mobs/lightning-mage/Slashing/0_Cursed_Alchemist_Slashing_${frameNum}.png`);
+        }
+
+        // Load gnoll animation frames
+        // Idle: 18 frames (000-017)
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`gnoll_idle_${frameNum}`, `mobs/gnoll/Idle/0_Gnoll_Idle_${frameNum}.png`);
+        }
+        // Running: 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`gnoll_running_${frameNum}`, `mobs/gnoll/Running/0_Gnoll_Running_${frameNum}.png`);
+        }
+        // Throwing (attack): 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`gnoll_throwing_${frameNum}`, `mobs/gnoll/Throwing/0_Gnoll_Throwing_${frameNum}.png`);
+        }
+
+        // Load skeleton archer animation frames
+        // Idle: 18 frames (000-017)
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_archer_idle_${frameNum}`, `mobs/skeleton-archer/Idle/0_Archer_Idle_${frameNum}.png`);
+        }
+        // Running: 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_archer_running_${frameNum}`, `mobs/skeleton-archer/Running/0_Archer_Running_${frameNum}.png`);
+        }
+        // Shooting: 9 frames (000-008) - split into draw and release
+        for (let i = 0; i <= 8; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`skeleton_archer_shooting_${frameNum}`, `mobs/skeleton-archer/Shooting/0_Archer_Shooting_${frameNum}.png`);
+        }
+
+        // Load elemental spirit animation frames
+        // Idle: 18 frames (000-017)
+        for (let i = 0; i <= 17; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`elemental_spirit_idle_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Idle_${frameNum}.png`);
+        }
+        // Running (used for walk): 12 frames (000-011)
+        for (let i = 0; i <= 11; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`elemental_spirit_running_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Running_${frameNum}.png`);
+        }
+        // Dying: 15 frames (000-014)
+        for (let i = 0; i <= 14; i++) {
+            const frameNum = i.toString().padStart(3, '0');
+            this.load.image(`elemental_spirit_dying_${frameNum}`, `mobs/elemental-spirit/0_Elemental_Spirits_Dying_${frameNum}.png`);
+        }
+
         // Load ogre walking animation frames
         for (let i = 0; i <= 17; i++) {
             const frameNum = i.toString().padStart(3, '0');
@@ -340,6 +446,110 @@ export class Game extends Scene {
             frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_pirate_running_${String(i).padStart(3, '0')}` })),
             frameRate: 12,
             repeat: -1
+        });
+
+        this.anims.create({
+            key: 'skeleton_pirate_slashing',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_pirate_slashing_${String(i).padStart(3, '0')}` })),
+            frameRate: 24, // Fast attack animation
+            repeat: 0 // Play once for attack
+        });
+
+        // Lightning Mage animations
+        this.anims.create({
+            key: 'lightning_mage_idle',
+            frames: [{ key: 'lightning_mage_running_000' }], // Static idle using first running frame
+            frameRate: 1,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'lightning_mage_running',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `lightning_mage_running_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'lightning_mage_slashing',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `lightning_mage_slashing_${String(i).padStart(3, '0')}` })),
+            frameRate: 16, // Attack animation
+            repeat: 0
+        });
+
+        // Gnoll animations
+        this.anims.create({
+            key: 'gnoll_idle',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `gnoll_idle_${String(i).padStart(3, '0')}` })),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'gnoll_running',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `gnoll_running_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'gnoll_throwing',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `gnoll_throwing_${String(i).padStart(3, '0')}` })),
+            frameRate: 20, // Fast attack animation
+            repeat: 0
+        });
+
+        // Skeleton Archer animations
+        this.anims.create({
+            key: 'skeleton_archer_idle',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `skeleton_archer_idle_${String(i).padStart(3, '0')}` })),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'skeleton_archer_running',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_archer_running_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
+
+        // Shooting draw animation - frames 000-003 (drawing the bow)
+        this.anims.create({
+            key: 'skeleton_archer_shooting_draw',
+            frames: Array.from({ length: 4 }, (_, i) => ({ key: `skeleton_archer_shooting_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: 0 // Play once then hold
+        });
+
+        // Shooting release animation - frames 004-008 (releasing the bow)
+        this.anims.create({
+            key: 'skeleton_archer_shooting_release',
+            frames: Array.from({ length: 5 }, (_, i) => ({ key: `skeleton_archer_shooting_${String(i + 4).padStart(3, '0')}` })),
+            frameRate: 16, // Faster release
+            repeat: 0
+        });
+
+        // Skeleton Viking animations
+        this.anims.create({
+            key: 'skeleton_viking_idle',
+            frames: Array.from({ length: 18 }, (_, i) => ({ key: `skeleton_viking_idle_${String(i).padStart(3, '0')}` })),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'skeleton_viking_running',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_viking_running_${String(i).padStart(3, '0')}` })),
+            frameRate: 12,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'skeleton_viking_throwing',
+            frames: Array.from({ length: 12 }, (_, i) => ({ key: `skeleton_viking_throwing_${String(i).padStart(3, '0')}` })),
+            frameRate: 24, // Faster attack animation
+            repeat: 0 // Play once for attack
         });
 
         // Elemental Spirit animations
@@ -1250,6 +1460,7 @@ export class Game extends Scene {
             this.player.checkCollisionWithProjectiles(this.enemySystem.getProjectiles());
             this.player.checkCollisionWithMeleeAttacks(this.enemySystem.getMeleeAttacks());
             this.player.checkCollisionWithConeAttacks(this.enemySystem.getConeAttacks());
+            this.player.checkCollisionWithSpearAttacks(this.enemySystem.getSpearAttacks());
             this.player.checkCollisionWithVortexAttacks(this.enemySystem.getVortexAttacks());
             this.player.checkCollisionWithExplosionAttacks(this.enemySystem.getExplosionAttacks());
             this.player.checkCollisionWithLightningStrikes(this.enemySystem.getLightningStrikes());
