@@ -103,6 +103,13 @@ export class Game extends Scene {
         this.load.image('grassclippings2', 'tilemaps/grassclippings2.png');
         this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
         this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
+        this.load.image('forrestground', 'tilemaps/forrestground.png');
+        this.load.image('forrestobjects', 'tilemaps/forrestobjects.png');
+        this.load.image('spots_lianas', 'tilemaps/spots_lianas.png');
+        this.load.image('Water_coasts', 'tilemaps/Water_coasts.png');
+        this.load.image('water_detilazation', 'tilemaps/water_detilazation.png');
+        this.load.image('water_detilazation_v2', 'tilemaps/water_detilazation_v2.png');
+        this.load.image('Water_lilis', 'tilemaps/Water_lilis.png');
 
 
         // Load XP orb (use existing green orb)
@@ -337,7 +344,14 @@ export class Game extends Scene {
                 { name: 'Portcullis', imageKey: 'Portcullis', imagePath: 'assets/tilemaps/Portcullis.png' },
                 { name: 'grassclippings2', imageKey: 'grassclippings2', imagePath: 'assets/tilemaps/grassclippings2.png' },
                 { name: 'objectbrickstools', imageKey: 'objectbrickstools', imagePath: 'assets/tilemaps/objectbrickstools.png' },
-                { name: 'FieldsTileset', imageKey: 'FieldsTileset', imagePath: 'assets/tilemaps/FieldsTileset.png' }
+                { name: 'FieldsTileset', imageKey: 'FieldsTileset', imagePath: 'assets/tilemaps/FieldsTileset.png' },
+                { name: 'forrestground', imageKey: 'forrestground', imagePath: 'assets/tilemaps/forrestground.png'},
+                { name: 'forrestobjects', imageKey: 'forrestobjects', imagePath: 'assets/tilemaps/forrestobjects.png'},
+                { name: 'spots_lianas', imageKey: 'spots_lianas', imagePath: 'assets/tilemaps/spots_lianas.png'},
+                { name: 'Water_coasts', imageKey: 'Water_coasts', imagePath: 'assets/tilemaps/Water_coasts.png'},
+                { name: 'water_detilazation', imageKey: 'water_detilazation', imagePath: 'assets/tilemaps/water_detilazation.png'},
+                { name: 'water_detilazation_v2', imageKey: 'water_detilazation_v2', imagePath: 'assets/tilemaps/water_detilazation_v2.png'},
+                { name: 'Water_lilis', imageKey: 'Water_lilis', imagePath: 'assets/tilemaps/Water_lilis.png'},
             ],
             layers: [
                 { name: 'background', tilesets: [], depth: 0, visible: true, collides: false },
