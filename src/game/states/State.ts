@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { Player } from '../Player';
 import { StateMachine } from './StateMachine';
 import { IState } from './IState';
+import { ICommand } from '../input/Command';
 
 export abstract class State implements IState {
     protected player: Player;
@@ -17,4 +18,7 @@ export abstract class State implements IState {
     abstract enter(data?: any): void;
     abstract execute(time: number, delta: number): void;
     abstract exit(): void;
+    
+    // Default implementation (optional)
+    public handleInput(_command: ICommand): void {}
 }

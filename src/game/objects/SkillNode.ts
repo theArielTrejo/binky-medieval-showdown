@@ -73,15 +73,15 @@ export class SkillNode extends GameObjects.Container {
         }
 
         this.background.fillStyle(bgColor, 1);
-        this.background.fillRoundedRect(-size/2, -size/2, size, size, 12);
+        this.background.fillRoundedRect(-size/2, -size/2, size, size, 8);
         
         this.background.lineStyle(2, borderColor, 1);
-        this.background.strokeRoundedRect(-size/2, -size/2, size, size, 12);
+        this.background.strokeRoundedRect(-size/2, -size/2, size, size, 8);
 
         // Inner highlight for unlocked
         if (this.isUnlocked) {
             this.background.lineStyle(1, parseInt(EnhancedDesignSystem.colors.accentLight.replace('#', '0x')), 0.5);
-            this.background.strokeRoundedRect(-size/2 + 2, -size/2 + 2, size - 4, size - 4, 10);
+            this.background.strokeRoundedRect(-size/2 + 2, -size/2 + 2, size - 4, size - 4, 6);
         }
     }
 

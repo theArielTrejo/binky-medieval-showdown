@@ -1,14 +1,24 @@
 import { Scene } from 'phaser';
 import { PlayerAction } from '../types/InputTypes';
+import { InputBuffer } from '../input/InputBuffer';
+import { 
+    ActionType, 
+    MoveCommand, 
+    DashCommand, 
+    SkillCommand, 
+    ToggleSkillTreeCommand
+} from '../input/Command';
 
 export class InputManager {
     private scene: Scene;
     private keys: Map<PlayerAction, Phaser.Input.Keyboard.Key[]> = new Map();
     private actionTimestamps: Map<PlayerAction, number> = new Map();
     private readonly BUFFER_WINDOW: number = 150; // ms
+    private inputBuffer?: InputBuffer;
 
-    constructor(scene: Scene) {
+    constructor(scene: Scene, buffer?: InputBuffer) {
         this.scene = scene;
+        this.inputBuffer = buffer;
         this.setupKeys();
         this.setupMouse();
     }
@@ -39,6 +49,9 @@ export class InputManager {
         addKey(PlayerAction.SPECIAL_1, [KeyCodes.Q]);
         addKey(PlayerAction.SPECIAL_2, [KeyCodes.E]);
         
+        // Dash (Space)
+        addKey(PlayerAction.DASH, [KeyCodes.SPACE]);
+
         // UI
         addKey(PlayerAction.TOGGLE_SKILL_TREE, [KeyCodes.T]);
     }
@@ -49,21 +62,63 @@ export class InputManager {
         this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             if (pointer.leftButtonDown()) {
                 this.recordActionPress(PlayerAction.ATTACK_PRIMARY);
+                if (this.inputBuffer) {
+                    this.inputBuffer.add(new SkillCommand(ActionType.ATTACK_PRIMARY));
+                }
             } else if (pointer.rightButtonDown()) {
                 this.recordActionPress(PlayerAction.ATTACK_SECONDARY);
+                if (this.inputBuffer) {
+                    this.inputBuffer.add(new SkillCommand(ActionType.ATTACK_SECONDARY));
+                }
             }
         });
     }
 
     public update(): void {
-        // Poll for keyboard JustDown for buffering
         const time = this.scene.time.now;
         
+        // Poll for keyboard JustDown for buffering & Commands
         this.keys.forEach((keyObjects, action) => {
             if (keyObjects.some(k => Phaser.Input.Keyboard.JustDown(k))) {
                 this.actionTimestamps.set(action, time);
+                
+                // Emit Command if Buffer exists
+                if (this.inputBuffer) {
+                    this.emitCommand(action);
+                }
             }
         });
+
+        // Continuous Move Command
+        if (this.inputBuffer) {
+            const moveVector = this.getMovementVector();
+            if (moveVector.lengthSq() > 0) {
+                this.inputBuffer.add(new MoveCommand(moveVector));
+            }
+        }
+    }
+
+    private emitCommand(action: PlayerAction): void {
+        if (!this.inputBuffer) return;
+
+        switch (action) {
+            case PlayerAction.DASH:
+                this.inputBuffer.add(new DashCommand());
+                break;
+            case PlayerAction.ATTACK_SECONDARY:
+                // Note: ATTACK_SECONDARY is also mapped to Shift, so this handles keyboard trigger
+                this.inputBuffer.add(new SkillCommand(ActionType.ATTACK_SECONDARY));
+                break;
+            case PlayerAction.TOGGLE_SKILL_TREE:
+                this.inputBuffer.add(new ToggleSkillTreeCommand());
+                break;
+            case PlayerAction.SPECIAL_1:
+                this.inputBuffer.add(new SkillCommand(ActionType.SPECIAL_1));
+                break;
+            // ATTACK_PRIMARY is mouse-only usually, but if mapped to key...
+            // SPECIAL_1/2 are not in ActionType yet, maybe add them if needed?
+            // For now ignoring SPECIAL_1/2 as per PDF plan which focuses on Primary/Secondary.
+        }
     }
 
     private recordActionPress(action: PlayerAction): void {
@@ -124,6 +179,10 @@ export class InputManager {
     public getPointerWorldPosition(): Phaser.Math.Vector2 {
         const pointer = this.scene.input.activePointer;
         return this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    }
+    
+    public reset(): void {
+        this.actionTimestamps.clear();
     }
     
     public destroy(): void {

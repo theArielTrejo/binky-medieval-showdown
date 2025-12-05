@@ -6,44 +6,6 @@ export class Menu extends Scene {
         super('Menu');
     }
 
-    preload(): void {
-        console.log('Menu: preload started');
-        this.load.setPath('assets');
-
-        // Load tilemap and all tilesets for background rendering
-        this.load.tilemapTiledJSON('menuMap', 'tilemaps/binkymap1.json');
-
-        // Load all tileset images
-        this.load.image('floor1', 'tilemaps/floor1.png');
-        this.load.image('GraveyardTileset', 'tilemaps/GraveyardTileset.png');
-        this.load.image('tiledwallandfloor', 'tilemaps/tiledwallandfloor.png');
-        this.load.image('gatedoorandflags', 'tilemaps/gatedoorandflags.png');
-        this.load.image('castlewall', 'tilemaps/castlewall.png');
-        this.load.image('objecthouserocksstatues', 'tilemaps/objecthouserocksstatues.png');
-        this.load.image('houses1', 'tilemaps/houses1.png');
-        this.load.image('treesandplants', 'tilemaps/treesandplants.png');
-        this.load.image('objectlogs', 'tilemaps/objectlogs.png');
-        this.load.image('objectskeletonstatues', 'tilemaps/objectskeletonstatues.png');
-        this.load.image('grassclippings1', 'tilemaps/grassclippings1.png');
-        this.load.image('waggonsandmore', 'tilemaps/waggonsandmore.png');
-        this.load.image('brokenspikedfence', 'tilemaps/brokenspikedfence.png');
-        this.load.image('tents', 'tilemaps/tents.png');
-        this.load.image('farmhouses', 'tilemaps/farmhouses.png');
-        this.load.image('farmgrass', 'tilemaps/farmgrass.png');
-        this.load.image('farmobjects', 'tilemaps/farmobjects.png');
-        this.load.image('D_CastleGate', 'tilemaps/D_CastleGate.png');
-        this.load.image('Portcullis', 'tilemaps/Portcullis.png');
-        this.load.image('grassclippings2', 'tilemaps/grassclippings2.png');
-        this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
-        this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
-
-        // Knight atlases (for background ambient animation)
-        this.load.atlas('knight_walking', 'atlases/knight/knight_walking.png', 'atlases/knight/knight_walking.json');
-        this.load.atlas('knight_idle', 'atlases/knight/knight_idle.png', 'atlases/knight/knight_idle.json');
-
-        console.log('Menu: preload finished');
-    }
-
     create(): void {
         console.log('Menu: create started');
 
@@ -304,7 +266,7 @@ export class Menu extends Scene {
         // Play Button
         createButton(buttonY, '▶ PLAY', () => {
             console.log('Play clicked');
-            this.scene.start('Game');
+            this.scene.start('ClassSelectionScene');
         });
 
         // Settings Button

@@ -7,5 +7,6 @@ export enum PlayerAction {
     ATTACK_SECONDARY = 'ATTACK_SECONDARY', // Right Click / Shift
     SPECIAL_1 = 'SPECIAL_1',               // Q
     SPECIAL_2 = 'SPECIAL_2',               // E
+    DASH = 'DASH',                         // Space
     TOGGLE_SKILL_TREE = 'TOGGLE_SKILL_TREE' // T
 }

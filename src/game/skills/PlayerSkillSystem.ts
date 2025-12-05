@@ -2,32 +2,32 @@ import { Scene } from 'phaser';
 import { EnemySystem } from '../systems/EnemySystem';
 import { PlayerProjectile, PlayerCleave, PlayerNova, ProjectileOptions, CleaveOptions, NovaOptions } from './SkillObjects';
 import { SkillObject } from './SkillObject';
-import { ShieldBashSkill } from './ShieldBashSkill';
-import { ShadowDashSkill } from './ShadowDashSkill';
-import { ShurikenFanSkill } from './ShurikenFanSkill';
+import { ShieldBashObject } from './objects/ShieldBashObject';
+import { ShadowDashObject } from './objects/ShadowDashObject';
+import { ShurikenFanObject } from './objects/ShurikenFanObject';
+import { WhirlwindObject } from './objects/WhirlwindObject';
 import { Shuriken } from '../objects/Shuriken';
 import { Player } from '../Player';
-import { WhirlwindSkill } from './WhirlwindSkill';
 
 export class PlayerSkillSystem {
     private scene: Scene;
     private enemySystem: EnemySystem;
-    private player: Player; // Keep reference for Lifesteal/Heal
+    private player: Player; 
     
     // Active skill objects
     private projectiles: PlayerProjectile[] = [];
     private cleaves: PlayerCleave[] = [];
     private novas: PlayerNova[] = [];
     
-    // New Generic Skill Objects List (Phase 1 Refactor)
+    // Generic Skill Objects List
     private skillObjects: SkillObject[] = [];
 
     // Physics Groups
     private projectileGroup: Phaser.Physics.Arcade.Group;
     private cleaveGroup: Phaser.Physics.Arcade.Group;
     private novaGroup: Phaser.Physics.Arcade.Group;
-    public hitboxGroup: Phaser.Physics.Arcade.Group; // Unified group for new SkillObjects
-    public shurikenGroup: Phaser.Physics.Arcade.Group; // Pool for Shurikens
+    public hitboxGroup: Phaser.Physics.Arcade.Group; 
+    public shurikenGroup: Phaser.Physics.Arcade.Group; 
 
     constructor(scene: Scene, player: Player, enemySystem: EnemySystem) {
         this.scene = scene;
@@ -53,7 +53,9 @@ export class PlayerSkillSystem {
         for (let i = this.skillObjects.length - 1; i >= 0; i--) {
             const skill = this.skillObjects[i];
             skill.update(deltaTime);
-            if (skill.isFinished()) {
+            // Container destroy sets active=false.
+            // We check active.
+            if (!skill.active) {
                 this.skillObjects.splice(i, 1);
             }
         }
@@ -64,7 +66,7 @@ export class PlayerSkillSystem {
             
             // Homing Logic
             if (p.options.homing && p.isActive()) {
-                let closestDist = 300; // Detection range for homing
+                let closestDist = 300; 
                 let targetEnemy = null;
                 
                 for (const enemy of enemies) {
@@ -83,7 +85,7 @@ export class PlayerSkillSystem {
                 if (targetEnemy) {
                     const angleToEnemy = Phaser.Math.Angle.Between(p.sprite.x, p.sprite.y, targetEnemy.sprite.x, targetEnemy.sprite.y);
                     const currentAngle = Math.atan2(p.velocityY, p.velocityX);
-                    const newAngle = Phaser.Math.Angle.RotateTo(currentAngle, angleToEnemy, 2 * deltaTime); // Turn speed
+                    const newAngle = Phaser.Math.Angle.RotateTo(currentAngle, angleToEnemy, 2 * deltaTime);
                     
                     const speed = Math.sqrt(p.velocityX * p.velocityX + p.velocityY * p.velocityY);
                     p.velocityX = Math.cos(newAngle) * speed;
@@ -147,11 +149,6 @@ export class PlayerSkillSystem {
 
         shuriken.hitEnemies.add(enemyId);
         enemy.takeDamage(shuriken.getDamage());
-        
-        // Impact FX
-        // Could spawn small sparks here
-
-        // Destroy shuriken (piercing logic could go here if implemented)
         shuriken.disableBody(true, true);
     }
 
@@ -159,8 +156,8 @@ export class PlayerSkillSystem {
         const hitbox = obj1 as Phaser.GameObjects.GameObject;
         const enemySprite = obj2 as Phaser.GameObjects.Sprite;
 
-        // Find which skill owns this hitbox
-        const skill = this.skillObjects.find(s => s.hitBox === hitbox);
+        // Find which skill owns this hitbox (The hitbox IS the skill object)
+        const skill = this.skillObjects.find(s => s === hitbox);
         const enemy = enemySprite.getData('enemy') as any;
 
         if (!skill || !enemy || !enemy.sprite.active) return;
@@ -168,22 +165,23 @@ export class PlayerSkillSystem {
         const enemyId = enemySprite.getData('enemyId');
         if (!enemyId) return;
 
-        // Note: Whirlwind handles its own "hitEnemies" reset/tick logic in applyHit
-        // But standard skills might use the set check here.
-        // We delegate validation to the skill.
-
-        if (skill instanceof ShieldBashSkill) {
+        if (skill instanceof ShieldBashObject) {
             if (skill.hitEnemies.has(enemyId)) return;
-            if (!skill.isValidHit(enemy.sprite.x, enemy.sprite.y)) return;
-            skill.applyHit(enemy);
+            if (skill.onHit) skill.onHit(enemy); // Helper in ShieldBashObject
+            // Or manually:
+            // if (!skill.isValidHit(enemy.sprite.x, enemy.sprite.y)) return;
+            // skill.applyHit(enemy);
+            
+            // ShieldBashObject.onHit handles isValidHit check
             skill.hitEnemies.add(enemyId);
-        } else if (skill instanceof ShadowDashSkill) {
+            
+        } else if (skill instanceof ShadowDashObject) {
             if (skill.hitEnemies.has(enemyId)) return;
-            skill.applyHit(enemy);
+            if (skill.onHit) skill.onHit(enemy);
             skill.hitEnemies.add(enemyId);
-        } else if (skill instanceof WhirlwindSkill) {
-            // Whirlwind allows repeated hits based on internal timer
-            skill.applyHit(enemy); 
+            
+        } else if (skill instanceof WhirlwindObject) {
+            if (skill.onHit) skill.onHit(enemy); 
         }
     }
 
@@ -192,23 +190,17 @@ export class PlayerSkillSystem {
         const enemySprite = obj2 as Phaser.GameObjects.Sprite;
 
         const proj = projSprite.getData('wrapper') as PlayerProjectile;
-        const enemy = enemySprite.getData('enemy') as any; // Type as any to avoid circular import issues if Enemy type is strictly checked
+        const enemy = enemySprite.getData('enemy') as any;
 
         if (!proj || !proj.isActive() || !enemy || !enemy.sprite.active) return;
 
         const enemyId = enemySprite.getData('enemyId');
-        if (!enemyId) {
-            console.warn("Enemy missing ID during collision");
-            return;
-        }
+        if (!enemyId) return;
 
         if (!proj.hitEnemies.has(enemyId)) {
             proj.hitEnemies.add(enemyId);
-            
-            // Apply Damage
             enemy.takeDamage(proj.damage);
             
-            // Apply Effects
             if (proj.options.freeze) {
                 enemy.sprite.setTint(0x00ffff);
             }
@@ -217,9 +209,7 @@ export class PlayerSkillSystem {
                 this.castNova(proj.sprite.x, proj.sprite.y, proj.damage * 0.25, 80);
             }
             
-            // Handle Ricochet (Chain)
             if (proj.options.ricochet && !proj.options.homing) { 
-                 // Find next target
                  const enemies = this.enemySystem.getEnemies();
                  let closestNext = 400;
                  let nextTarget = null;
@@ -239,13 +229,11 @@ export class PlayerSkillSystem {
                      proj.velocityX = Math.cos(angle) * speed;
                      proj.velocityY = Math.sin(angle) * speed;
                      proj.sprite.rotation = angle;
-                     
                      proj.options.ricochet = false;
                      return; 
                  }
             }
 
-            // Handle Piercing
             if (proj.hitEnemies.size > proj.pierceCount) {
                 proj.destroy();
             }
@@ -266,12 +254,10 @@ export class PlayerSkillSystem {
 
         if (cleave.hitEnemies.has(enemyId)) return;
 
-        // Cone Check
         if (cleave.isPointInCone(enemy.sprite.x, enemy.sprite.y)) {
             let dmg = cleave.damage;
             if (cleave.options.execution && enemy.currentHealth < enemy.stats.health * 0.25) {
                 dmg *= 2;
-                console.log('EXECUTION triggered!');
             }
 
             enemy.takeDamage(dmg);
@@ -302,8 +288,6 @@ export class PlayerSkillSystem {
         
         if (nova.hitEnemies.has(enemyId)) return;
 
-        // Nova is a circle, physics overlap is sufficient, but redundant check doesn't hurt if strictness needed
-        // Physics body is already circular.
         enemy.takeDamage(nova.damage);
         nova.hitEnemies.add(enemyId);
 
@@ -322,8 +306,6 @@ export class PlayerSkillSystem {
         }
     }
 
-    // --- Public API to spawn skills ---
-
     public castProjectile(x: number, y: number, targetX: number, targetY: number, damage: number, pierce: number = 0, options: ProjectileOptions = {}): void {
         const p = new PlayerProjectile(this.scene, x, y, targetX, targetY, damage, 400, undefined, options);
         p.pierceCount = pierce;
@@ -333,7 +315,6 @@ export class PlayerSkillSystem {
     }
 
     public castCleave(x: number, y: number, targetX: number, targetY: number, damage: number, radius: number = 150, options: CleaveOptions = {}): void {
-        // Default narrow angle (stab) if not wide
         const angle = options.isWide ? Math.PI / 2 : Math.PI / 6; 
         const c = new PlayerCleave(this.scene, x, y, targetX, targetY, damage, radius, angle, options);
         c.sprite.setData('wrapper', c);
@@ -349,32 +330,28 @@ export class PlayerSkillSystem {
     }
 
     public castShieldBash(x: number, y: number, facingVector: Phaser.Math.Vector2): void {
-        const skill = new ShieldBashSkill(this.scene, x, y, facingVector);
+        const skill = new ShieldBashObject(this.scene, x, y, facingVector);
         this.addSkill(skill);
     }
 
     public castShadowDash(playerSprite: Phaser.Physics.Arcade.Sprite, targetX: number, targetY: number): void {
-        const skill = new ShadowDashSkill(this.scene, playerSprite, targetX, targetY);
+        const skill = new ShadowDashObject(this.scene, playerSprite.x, playerSprite.y, playerSprite, targetX, targetY);
         this.addSkill(skill);
     }
 
     public castShurikenFan(x: number, y: number, targetX: number, targetY: number): void {
-        const skill = new ShurikenFanSkill(this.scene, x, y, targetX, targetY, this.shurikenGroup);
+        const skill = new ShurikenFanObject(this.scene, x, y, targetX, targetY, this.shurikenGroup);
         this.addSkill(skill);
     }
 
     public castWhirlwind(playerSprite: Phaser.Physics.Arcade.Sprite): void {
-        const skill = new WhirlwindSkill(this.scene, playerSprite, 10); // Base damage 10 per tick
+        const skill = new WhirlwindObject(this.scene, playerSprite, 10); 
         this.addSkill(skill);
     }
 
     public addSkill(skill: SkillObject): void {
         this.skillObjects.push(skill);
-        if (skill.hitBox) {
-            // If hitbox is physics-enabled, add to group. 
-            // Note: SkillObject needs to ensure hitbox is created and physics-enabled before adding.
-            this.hitboxGroup.add(skill.hitBox);
-        }
+        this.hitboxGroup.add(skill);
     }
 
     public clearAll(): void {
@@ -395,4 +372,3 @@ export class PlayerSkillSystem {
         if (this.shurikenGroup?.children) this.shurikenGroup.clear(true, true);
     }
 }
-

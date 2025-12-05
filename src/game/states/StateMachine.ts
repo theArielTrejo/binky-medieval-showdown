@@ -42,6 +42,12 @@ export class StateMachine {
             this.currentState.execute(time, delta);
         }
     }
+
+    public handleInput(command: any): void {
+        if (this.currentState) {
+             this.currentState.handleInput(command);
+        }
+    }
     
     public getCurrentState(): IState | null {
         return this.currentState;

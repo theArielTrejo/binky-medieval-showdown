@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { EnemyType, EnemyAttackResult } from '../types/EnemyTypes';
-import { Enemy } from '../enemies/Enemy';
+import { BaseEnemy } from '../enemies/BaseEnemy';
+import { EnemyFactory } from '../enemies/EnemyFactory';
 import { XPOrbSystem } from './XPOrbSystem';
 
 import { Shield } from '../enemies/attacks/Shield';
@@ -15,11 +16,11 @@ import { ClawAttack } from '../enemies/attacks/ClawAttack';
 
 // Re-export EnemyType for backward compatibility
 export { EnemyType };
-export { Enemy };
+export { BaseEnemy as Enemy }; // Alias BaseEnemy as Enemy for compatibility
 
 export class EnemySystem {
     private scene: Scene;
-    private enemies: Enemy[] = [];
+    private enemies: BaseEnemy[] = [];
     private projectiles: EnemyProjectile[] = [];
     private meleeAttacks: MeleeAttack[] = [];
     private shields: Shield[] = [];
@@ -35,7 +36,7 @@ export class EnemySystem {
     private player: any;
     private xpOrbSystem: XPOrbSystem | undefined;
     private spawnTimer: Phaser.Time.TimerEvent | null = null;
-    private onEnemySpawnedCallback: ((enemy: Enemy) => void) | null = null;
+    private onEnemySpawnedCallback: ((enemy: BaseEnemy) => void) | null = null;
     
     // Attack object management
     private activeProjectiles: EnemyProjectile[] = [];
@@ -59,7 +60,7 @@ export class EnemySystem {
      * Sets a callback to be called whenever a new enemy is spawned
      * @param callback - Function to call with the newly spawned enemy
      */
-    public setEnemySpawnedCallback(callback: (enemy: Enemy) => void): void {
+    public setEnemySpawnedCallback(callback: (enemy: BaseEnemy) => void): void {
         this.onEnemySpawnedCallback = callback;
     }
 
@@ -74,8 +75,6 @@ export class EnemySystem {
             callbackScope: this,
             loop: true
         });
-        
-        // console.log('Enemy spawning started');
     }
 
     /**
@@ -115,13 +114,13 @@ export class EnemySystem {
      * @param y - Y coordinate to spawn at
      * @returns The spawned enemy or null if max enemies reached
      */
-    public spawnEnemy(enemyType: EnemyType, x: number, y: number): Enemy | null {
+    public spawnEnemy(enemyType: EnemyType, x: number, y: number): BaseEnemy | null {
         if (this.enemies.length >= this.maxEnemies) {
             console.warn('Max enemies reached, cannot spawn more');
             return null;
         }
 
-        const enemy = new Enemy(this.scene, x, y, enemyType);
+        const enemy = EnemyFactory.create(this.scene, x, y, enemyType);
         this.enemies.push(enemy);
         this.enemiesGroup.add(enemy.sprite);
         return enemy;
@@ -136,18 +135,18 @@ export class EnemySystem {
      * @param playerY - Player's Y coordinate for positioning
      * @returns Array of spawned enemies
      */
-    public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384): Enemy[] {
+    public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384): BaseEnemy[] {
         if (this.enemies.length >= this.maxEnemies) {
             return []; // Don't spawn if max is reached
         }
 
         const remainingCapacity = this.maxEnemies - this.enemies.length;
         const spawnCount = Math.min(count, remainingCapacity);
-        const spawnedEnemies: Enemy[] = [];
+        const spawnedEnemies: BaseEnemy[] = [];
 
         for (let i = 0; i < spawnCount; i++) {
             const spawnPos = this.getSpawnPosition(location, playerX, playerY);
-            const enemy = new Enemy(this.scene, spawnPos.x, spawnPos.y, enemyType);
+            const enemy = EnemyFactory.create(this.scene, spawnPos.x, spawnPos.y, enemyType);
             this.enemies.push(enemy);
             this.enemiesGroup.add(enemy.sprite);
             spawnedEnemies.push(enemy);
@@ -165,12 +164,12 @@ export class EnemySystem {
      * Spawn a single enemy at a specific position
      * @returns The spawned enemy, or null if max enemies reached
      */
-    public spawnEnemyAt(enemyType: EnemyType, x: number, y: number): Enemy | null {
+    public spawnEnemyAt(enemyType: EnemyType, x: number, y: number): BaseEnemy | null {
         if (this.enemies.length >= this.maxEnemies) {
             return null; // Don't spawn if max is reached
         }
 
-        const enemy = new Enemy(this.scene, x, y, enemyType);
+        const enemy = EnemyFactory.create(this.scene, x, y, enemyType);
         this.enemies.push(enemy);
         this.enemiesGroup.add(enemy.sprite);
         return enemy;
@@ -584,7 +583,7 @@ export class EnemySystem {
      * Gets the array of all active enemies
      * @returns Array of enemy objects
      */
-    public getEnemies(): Enemy[] {
+    public getEnemies(): BaseEnemy[] {
         return this.enemies;
     }
 
@@ -657,6 +656,24 @@ export class EnemySystem {
      */
     public getArrowProjectiles(): ArrowProjectile[] {
         return this.arrowProjectiles;
+    }
+
+    /**
+     * Returns a unified array of all active hostile attacks.
+     * Includes projectiles and AOE attacks (melee, cone, vortex, etc.).
+     * Excludes shields as they are defensive.
+     */
+    public getUnifiedAttacks(): any[] {
+        return [
+            ...this.projectiles,
+            ...this.arrowProjectiles,
+            ...this.meleeAttacks,
+            ...this.coneAttacks,
+            ...this.vortexAttacks,
+            ...this.explosionAttacks,
+            ...this.lightningStrikes,
+            ...this.clawAttacks
+        ];
     }
 
     /**

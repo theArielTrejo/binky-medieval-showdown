@@ -23,6 +23,7 @@ export class ClassSelectionUI {
     private scene: Scene;
     private config: ClassSelectionConfig;
     private container: Phaser.GameObjects.Container;
+    private starLayers: { sprite: Phaser.GameObjects.TileSprite, speedX: number, speedY: number }[] = [];
     private overlay!: Phaser.GameObjects.Rectangle;
     private selectedClass: PlayerArchetypeType | null = null;
     private classCards: Map<PlayerArchetypeType, Phaser.GameObjects.Container> = new Map();
@@ -68,7 +69,7 @@ export class ClassSelectionUI {
         this.scene = scene;
         this.config = {
             position: { x: scene.scale.width / 2, y: scene.scale.height / 2 },
-            visible: true,
+            visible: false, // Default to false, controlled by show()
             ...config
         };
         
@@ -81,9 +82,12 @@ export class ClassSelectionUI {
         this.container.setDepth(1000);
         this.container.setScrollFactor(0); // Make UI fixed to camera/screen
 
-        // Background overlay
-        this.overlay = this.scene.add.rectangle(0, 0, this.scene.scale.width, this.scene.scale.height, 0x0a0a0a, 0.95);
+        // Background overlay - Solid black to hide map
+        this.overlay = this.scene.add.rectangle(0, 0, this.scene.scale.width, this.scene.scale.height, 0x000000, 1.0);
         this.container.add(this.overlay);
+
+        // Create Multi-Layered Starry Background
+        this.createParallaxBackground();
 
         // Title
         const title = this.scene.add.text(0, -300, 'Choose Thy Path', {
@@ -126,8 +130,72 @@ export class ClassSelectionUI {
             if (this.overlay && (this.overlay as any).active !== false) {
                 this.overlay.setSize(width, height);
             }
+            this.resizeBackground(width, height);
         };
         this.scene.scale.on('resize', this.resizeHandler);
+
+        // Hook into scene update for smooth animation
+        this.scene.events.on('update', this.update, this);
+    }
+
+    private createParallaxBackground(): void {
+        const width = this.scene.scale.width;
+        const height = this.scene.scale.height;
+
+        // Define layers: [textureKey, starCount, starSize, alpha, scrollSpeedX, scrollSpeedY]
+        const layers = [
+            { key: 'stars_far', count: 800, size: 1, alpha: 0.4, speedX: 0.05, speedY: 0.01 },
+            { key: 'stars_mid', count: 200, size: 2, alpha: 0.7, speedX: 0.1, speedY: 0.03 },
+            { key: 'stars_near', count: 50, size: 3, alpha: 1.0, speedX: 0.2, speedY: 0.05 }
+        ];
+
+        layers.forEach(layer => {
+            // Generate texture if missing
+            if (!this.scene.textures.exists(layer.key)) {
+                const graphics = this.scene.make.graphics({ x: 0, y: 0 });
+                graphics.fillStyle(0xffffff, 1);
+                
+                for (let i = 0; i < layer.count; i++) {
+                    const x = Math.random() * 1024;
+                    const y = Math.random() * 1024;
+                    const alpha = Math.random() * layer.alpha; // Vary alpha slightly
+                    graphics.fillStyle(0xffffff, alpha);
+                    graphics.fillCircle(x, y, Math.random() * layer.size);
+                }
+                graphics.generateTexture(layer.key, 1024, 1024);
+                graphics.destroy();
+            }
+
+            // Create TileSprite
+            const sprite = this.scene.add.tileSprite(0, 0, width, height, layer.key);
+            sprite.setOrigin(0.5);
+            sprite.setScrollFactor(0);
+            
+            // Add to container and tracking array
+            this.container.add(sprite);
+            this.starLayers.push({ 
+                sprite, 
+                speedX: layer.speedX, 
+                speedY: layer.speedY 
+            });
+        });
+    }
+
+    private resizeBackground(width: number, height: number): void {
+        this.starLayers.forEach(layer => {
+            layer.sprite.setSize(width, height);
+        });
+    }
+
+    private update(_time: number, delta: number): void {
+        // Smooth continuous scrolling based on delta time (ms)
+        // 60 FPS approx 16ms delta. 
+        // Speed 0.1 * 16 = 1.6 pixels per frame.
+        
+        this.starLayers.forEach(layer => {
+            layer.sprite.tilePositionX += layer.speedX * (delta / 16);
+            layer.sprite.tilePositionY += layer.speedY * (delta / 16);
+        });
     }
 
     private createClassCards(): void {
@@ -504,13 +572,7 @@ export class ClassSelectionUI {
 
     public show(): void {
         this.container.setVisible(true);
-        this.container.setAlpha(0);
-        this.scene.tweens.add({
-            targets: this.container,
-            alpha: 1,
-            duration: 500,
-            ease: 'Power2'
-        });
+        this.container.setAlpha(1);
     }
 
     public hide(): void {
@@ -530,6 +592,10 @@ export class ClassSelectionUI {
             this.scene.scale.off('resize', this.resizeHandler);
             this.resizeHandler = undefined;
         }
+        
+        // Unhook scene update
+        this.scene.events.off('update', this.update, this);
+
         // Clean up timeouts and tweens
         if (this.hoverTimeout) {
             clearTimeout(this.hoverTimeout);

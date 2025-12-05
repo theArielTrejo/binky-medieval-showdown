@@ -1,64 +1,88 @@
-import { Scene } from 'phaser';
-import { SkillObject } from './SkillObject';
+import { Skill } from './Skill';
+import { Player } from '../Player';
 import { Shuriken } from '../objects/Shuriken';
+import { Game } from '../scenes/Game';
+import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
 
-export class ShurikenFanSkill extends SkillObject {
-    private casterX: number;
-    private casterY: number;
-    private targetX: number;
-    private targetY: number;
-    private shurikenGroup: Phaser.Physics.Arcade.Group; // Reference to pool
-    private count: number = 3;
-    private spread: number = Math.PI / 6; // 30 degrees
+export class ShurikenFanSkill extends Skill {
+    private static shurikenGroup: Phaser.Physics.Arcade.Group;
 
-    constructor(scene: Scene, x: number, y: number, targetX: number, targetY: number, shurikenGroup: Phaser.Physics.Arcade.Group) {
-        super(scene, 15); // Damage 15 per shuriken
-        this.casterX = x;
-        this.casterY = y;
-        this.targetX = targetX;
-        this.targetY = targetY;
-        this.shurikenGroup = shurikenGroup;
-
-        this.anticipationDuration = 50; // Very fast
-        this.activeDuration = 100; // Instant launch
-        this.recoveryDuration = 200;
+    constructor() {
+        super(1000); 
     }
 
-    protected onActiveStart(): void {
-        const baseAngle = Phaser.Math.Angle.Between(this.casterX, this.casterY, this.targetX, this.targetY);
-        const startAngle = baseAngle - this.spread / 2;
-        const step = this.spread / (this.count - 1);
+    activate(player: Player): void {
+        // Initialize static group if needed
+        if (!ShurikenFanSkill.shurikenGroup || !ShurikenFanSkill.shurikenGroup.scene) {
+            ShurikenFanSkill.shurikenGroup = player.scene.physics.add.group({
+                classType: Shuriken,
+                maxSize: 50,
+                runChildUpdate: true
+            });
+        }
 
-        for (let i = 0; i < this.count; i++) {
+        const targetPos = player.inputManager.getPointerWorldPosition();
+        const x = player.sprite.x;
+        const y = player.sprite.y;
+        const damage = player.archetype.stats.damage;
+
+        const count = 3;
+        const spread = Math.PI / 6;
+        const baseAngle = Phaser.Math.Angle.Between(x, y, targetPos.x, targetPos.y);
+        const startAngle = baseAngle - spread / 2;
+        const step = spread / (count - 1);
+
+        // Register Collision (Once per group usually, but safe to call multiple times as Phaser handles it?)
+        // Better to register once in Game.ts or here efficiently.
+        // Since we don't have a persistent manager, we'll check if collider exists?
+        // Or just add it. Adding duplicate colliders is bad.
+        // Hack: We'll add it every time but Phaser is robust. 
+        // CORRECT APPROACH: The group is static. We should ensure collision is set up.
+        // But the SCENE changes on restart.
+        // So we must re-create group on scene start?
+        // Actually, since Player is recreated, we can just use a local group reference or Scene registry.
+        // Let's just use the group we created.
+        
+        const gameScene = player.scene as Game;
+        const enemySystem = gameScene.getEnemySystem();
+
+        // Setup collision for this group if not already set (Checking Scene data or similar?)
+        // We can use a unique key on the scene to check if collision is active?
+        if (enemySystem && !player.scene.data.get('shurikenCollisionActive')) {
+             player.scene.physics.add.overlap(
+                ShurikenFanSkill.shurikenGroup,
+                enemySystem.enemiesGroup,
+                (obj1, obj2) => {
+                    const shuriken = obj1 as Shuriken;
+                    const enemySprite = obj2 as Phaser.GameObjects.Sprite;
+                    const enemy = enemySprite.getData('enemy') as Enemy;
+                    const enemyId = enemySprite.getData('enemyId');
+
+                    if (shuriken && enemy && enemyId) {
+                        if (shuriken.hitEnemies.has(enemyId)) return;
+                        
+                        enemy.takeDamage(shuriken.getDamage());
+                        shuriken.hitEnemies.add(enemyId);
+                        shuriken.disableBody(true, true);
+                    }
+                }
+             );
+             player.scene.data.set('shurikenCollisionActive', true);
+        }
+
+        for (let i = 0; i < count; i++) {
             const angle = startAngle + step * i;
-            
-            // Get from pool
-            let shuriken = this.shurikenGroup.get() as Shuriken;
-            
-            if (!shuriken) {
-                 // Pool empty or max size reached, force create or ignore
-                 // If group runChildUpdate is true, get() creates if maxSize not hit
-                 return;
-            }
-
-            // If newly created by get(), it might not be fully init if we didn't use a custom class in factory
-            // But we passed classType: Shuriken to group config in PlayerSkillSystem hopefully.
-            
+            const shuriken = ShurikenFanSkill.shurikenGroup.get() as Shuriken;
             if (shuriken) {
-                shuriken.fire(this.casterX, this.casterY, angle, 600, this.damage);
+                shuriken.setActive(true).setVisible(true);
+                // Shuriken.fire expects angle in radians? No, velocityFromRotation takes radians.
+                // But Shuriken.ts uses `angle` argument. 
+                // Let's check Shuriken.ts... `velocityFromRotation(angle, ...)` -> radians.
+                shuriken.fire(x, y, angle, 600, damage);
             }
         }
-    }
-
-    protected onRecoveryStart(): void {
-        // Nothing to cleanup, shurikens handle themselves
-    }
-
-    public update(_deltaTime: number): void {
-        super.update(_deltaTime);
-    }
-
-    public destroy(): void {
-        // Shurikens are managed by pool, we just destroy this logic controller
+        
+        const cd = this.cooldown / player.archetype.stats.attackSpeed;
+        player.cooldownManager.startCooldown('PRIMARY_SKILL', cd);
     }
 }

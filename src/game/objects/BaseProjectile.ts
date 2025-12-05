@@ -6,6 +6,7 @@ export abstract class BaseProjectile {
     public damage: number;
     public velocityX: number = 0;
     public velocityY: number = 0;
+    public isProjectile: boolean = true;
     protected active: boolean = true;
 
     constructor(scene: Scene, damage: number) {
