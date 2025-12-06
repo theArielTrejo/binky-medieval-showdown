@@ -99,6 +99,70 @@ export class Preloader extends Scene {
         this.load.image('grassclippings2', 'tilemaps/grassclippings2.png');
         this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
         this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
+        this.load.image('forrestground', 'tilemaps/forrestground.png');
+        this.load.image('forrestobjects', 'tilemaps/forrestobjects.png');
+        this.load.image('spots_lianas', 'tilemaps/spots_lianas.png');
+        this.load.image('Water_coasts', 'tilemaps/Water_coasts.png');
+        this.load.image('water_detilazation', 'tilemaps/water_detilazation.png');
+        this.load.image('water_detilazation_v2', 'tilemaps/water_detilazation_v2.png');
+        this.load.image('Water_lilis', 'tilemaps/Water_lilis.png');
+
+        // --- FX & Mobs (Teammate Expansion) ---
+        this.load.image('green_orb', 'images/green_orb.png');
+        this.load.image('sparkle', 'images/green_orb.png');
+        this.load.spritesheet('lightning-bolt', 'Effects/Lightning-bolt.png', { frameWidth: 72, frameHeight: 72 });
+        this.load.spritesheet('explosion', 'Effects/Explosion.png', { frameWidth: 72, frameHeight: 72 });
+        this.load.image('arrow', 'Effects/Arrow.png');
+        this.load.image('whirlpool', 'Effects/Whirlpool.png');
+        this.load.image('bone-shield', 'Effects/Bone shield.png');
+
+        // Gnoll Claw
+        for (let i = 1; i <= 12; i++) {
+            const frameNum = i.toString().padStart(5, '0');
+            this.load.image(`gnoll-claw-${i}`, `Effects/Gnoll Claw/slash4_${frameNum}.png`);
+        }
+
+        // Spear Attack
+        this.load.image('spear-1', 'Effects/Spear/spear_1.png');
+        this.load.image('spear-2', 'Effects/Spear/spear_2.png');
+        this.load.image('spear-3', 'Effects/Spear/spear_3.png');
+        this.load.image('spear-4', 'Effects/Spear/spear_4.png');
+
+        // Mobs (Skeleton Viking, Pirate, Mage, Gnoll, Archer, Spirit, Ogre)
+        // Skeleton Viking
+        for (let i = 0; i <= 17; i++) this.load.image(`skeleton_viking_idle_${String(i).padStart(3, '0')}`, `mobs/skeleton-viking/Idle/0_Skeleton_Viking_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`skeleton_viking_running_${String(i).padStart(3, '0')}`, `mobs/skeleton-viking/Running/0_Skeleton_Viking_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`skeleton_viking_throwing_${String(i).padStart(3, '0')}`, `mobs/skeleton-viking/Throwing/0_Skeleton_Viking_Throwing_${String(i).padStart(3, '0')}.png`);
+
+        // Skeleton Pirate
+        for (let i = 0; i <= 17; i++) this.load.image(`skeleton_pirate_idle_${String(i).padStart(3, '0')}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`skeleton_pirate_running_${String(i).padStart(3, '0')}`, `mobs/skeleton-pirate/0_Skeleton_Pirate_Captain_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`skeleton_pirate_slashing_${String(i).padStart(3, '0')}`, `mobs/skeleton-pirate/Slashing/0_Skeleton_Pirate_Captain_Slashing_${String(i).padStart(3, '0')}.png`);
+
+        // Lightning Mage
+        for (let i = 0; i <= 11; i++) this.load.image(`lightning_mage_running_${String(i).padStart(3, '0')}`, `mobs/lightning-mage/Running/0_Cursed_Alchemist_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`lightning_mage_slashing_${String(i).padStart(3, '0')}`, `mobs/lightning-mage/Slashing/0_Cursed_Alchemist_Slashing_${String(i).padStart(3, '0')}.png`);
+
+        // Gnoll
+        for (let i = 0; i <= 17; i++) this.load.image(`gnoll_idle_${String(i).padStart(3, '0')}`, `mobs/gnoll/Idle/0_Gnoll_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`gnoll_running_${String(i).padStart(3, '0')}`, `mobs/gnoll/Running/0_Gnoll_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`gnoll_throwing_${String(i).padStart(3, '0')}`, `mobs/gnoll/Throwing/0_Gnoll_Throwing_${String(i).padStart(3, '0')}.png`);
+
+        // Skeleton Archer
+        for (let i = 0; i <= 17; i++) this.load.image(`skeleton_archer_idle_${String(i).padStart(3, '0')}`, `mobs/skeleton-archer/Idle/0_Archer_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`skeleton_archer_running_${String(i).padStart(3, '0')}`, `mobs/skeleton-archer/Running/0_Archer_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 8; i++) this.load.image(`skeleton_archer_shooting_${String(i).padStart(3, '0')}`, `mobs/skeleton-archer/Shooting/0_Archer_Shooting_${String(i).padStart(3, '0')}.png`);
+
+        // Elemental Spirit
+        for (let i = 0; i <= 17; i++) this.load.image(`elemental_spirit_idle_${String(i).padStart(3, '0')}`, `mobs/elemental-spirit/0_Elemental_Spirits_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`elemental_spirit_running_${String(i).padStart(3, '0')}`, `mobs/elemental-spirit/0_Elemental_Spirits_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 14; i++) this.load.image(`elemental_spirit_dying_${String(i).padStart(3, '0')}`, `mobs/elemental-spirit/0_Elemental_Spirits_Dying_${String(i).padStart(3, '0')}.png`);
+
+        // Ogre
+        for (let i = 0; i <= 17; i++) this.load.image(`ogre-walk-${i}`, `mobs/ogre/Walking_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`ogre-attack-${i}`, `mobs/ogre/Attacking_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 2; i++) this.load.image(`bone-slam-${i}`, `Effects/Bone_Slam/Frame_${String(i).padStart(2, '0')}.png`);
+        this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
 
         // UI and misc
         this.load.image('logo', 'logo.png');
