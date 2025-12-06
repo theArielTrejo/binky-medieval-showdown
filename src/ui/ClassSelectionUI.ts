@@ -34,7 +34,7 @@ export class ClassSelectionUI {
     private isShowingDetails: boolean = false;
     private clickZones: Phaser.GameObjects.Zone[] = []; // Store zones for cleanup
     private resizeHandler?: (gameSize: Phaser.Structs.Size) => void;
-    
+
     private classData: ClassData[] = [
         {
             name: 'Knight',
@@ -72,7 +72,7 @@ export class ClassSelectionUI {
             visible: false, // Default to false, controlled by show()
             ...config
         };
-        
+
         this.createUI();
     }
 
@@ -96,7 +96,7 @@ export class ClassSelectionUI {
             fontFamily: 'Cinzel, "Old English Text MT", serif',
             fontStyle: 'bold'
         }).setOrigin(0.5);
-        
+
         // Add glow effect to title
         title.setStroke('#000000', 4);
         title.setShadow(0, 0, '#d4af37', 10, true, true);
@@ -110,9 +110,9 @@ export class ClassSelectionUI {
 
         // Create select button
         this.createSelectButton();
-        
-        // Create scene-level interactive zones as a fallback
-        this.createSceneLevelInteractiveZones();
+
+        // Create select button
+        this.createSelectButton();
 
         // Ensure all child elements have proper scroll factor for screen-relative positioning
         this.setChildScrollFactors();
@@ -127,7 +127,7 @@ export class ClassSelectionUI {
             if (this.container) {
                 this.container.setPosition(width / 2, height / 2);
             }
-            if (this.overlay && (this.overlay as any).active !== false) {
+            if (this.overlay && this.overlay.active) {
                 this.overlay.setSize(width, height);
             }
             this.resizeBackground(width, height);
@@ -154,7 +154,7 @@ export class ClassSelectionUI {
             if (!this.scene.textures.exists(layer.key)) {
                 const graphics = this.scene.make.graphics({ x: 0, y: 0 });
                 graphics.fillStyle(0xffffff, 1);
-                
+
                 for (let i = 0; i < layer.count; i++) {
                     const x = Math.random() * 1024;
                     const y = Math.random() * 1024;
@@ -170,13 +170,13 @@ export class ClassSelectionUI {
             const sprite = this.scene.add.tileSprite(0, 0, width, height, layer.key);
             sprite.setOrigin(0.5);
             sprite.setScrollFactor(0);
-            
+
             // Add to container and tracking array
             this.container.add(sprite);
-            this.starLayers.push({ 
-                sprite, 
-                speedX: layer.speedX, 
-                speedY: layer.speedY 
+            this.starLayers.push({
+                sprite,
+                speedX: layer.speedX,
+                speedY: layer.speedY
             });
         });
     }
@@ -191,7 +191,7 @@ export class ClassSelectionUI {
         // Smooth continuous scrolling based on delta time (ms)
         // 60 FPS approx 16ms delta. 
         // Speed 0.1 * 16 = 1.6 pixels per frame.
-        
+
         this.starLayers.forEach(layer => {
             layer.sprite.tilePositionX += layer.speedX * (delta / 16);
             layer.sprite.tilePositionY += layer.speedY * (delta / 16);
@@ -220,7 +220,7 @@ export class ClassSelectionUI {
             width: 180,
             height: 120
         });
-        
+
         // Make the background itself interactive
         bg.setInteractive(new Phaser.Geom.Rectangle(-90, -60, 180, 120), Phaser.Geom.Rectangle.Contains);
         bg.setScrollFactor(0); // Ensure it's screen-relative
@@ -234,9 +234,9 @@ export class ClassSelectionUI {
 
         // Class name with standardized styling
         const name = this.scene.add.text(
-            0, 
-            25, 
-            classInfo.name, 
+            0,
+            25,
+            classInfo.name,
             EnhancedStyleHelpers.createTextStyle({
                 size: 'lg',
                 color: EnhancedDesignSystem.colors.text,
@@ -280,13 +280,13 @@ export class ClassSelectionUI {
 
     private onCardHover(card: Phaser.GameObjects.Container, classInfo: ClassData, isHover: boolean): void {
         const bg = card.getAt(0) as Phaser.GameObjects.Graphics;
-        
+
         // Clear any existing hover timeout
         if (this.hoverTimeout) {
             clearTimeout(this.hoverTimeout);
             this.hoverTimeout = null;
         }
-        
+
         if (isHover) {
             // Debounce hover events to prevent rapid firing
             this.hoverTimeout = setTimeout(() => {
@@ -299,9 +299,9 @@ export class ClassSelectionUI {
                         scale: 1.05
                     }
                 });
-                
+
                 card.setScale(1.05);
-                
+
                 // Show details with proper state management
                 this.showClassDetails(classInfo);
             }, 50); // 50ms debounce delay
@@ -311,9 +311,9 @@ export class ClassSelectionUI {
                 width: 180,
                 height: 120
             });
-            
+
             card.setScale(1);
-            
+
             // Hide details if not selected
             if (this.selectedClass !== classInfo.archetype) {
                 this.hideClassDetails();
@@ -323,7 +323,7 @@ export class ClassSelectionUI {
 
     private selectClass(archetype: PlayerArchetypeType): void {
         console.log('selectClass called with:', archetype);
-        
+
         // Deselect previous
         if (this.selectedClass) {
             const prevCard = this.classCards.get(this.selectedClass);
@@ -347,7 +347,7 @@ export class ClassSelectionUI {
             bg.lineStyle(2, 0x00ffff, 1);
             bg.fillRoundedRect(-90, -60, 180, 120, 10);
             bg.strokeRoundedRect(-90, -60, 180, 120, 10);
-            
+
             // Add glow effect
             bg.lineStyle(4, 0x00ffff, 0.5);
             bg.strokeRoundedRect(-94, -64, 188, 128, 12);
@@ -361,7 +361,7 @@ export class ClassSelectionUI {
 
         // Enable select button
         this.updateSelectButton();
-        
+
         // Auto-start the game after a short delay to allow visual feedback
         this.scene.time.delayedCall(500, () => {
             console.log('Auto-starting game with archetype:', archetype);
@@ -371,7 +371,7 @@ export class ClassSelectionUI {
 
     private createDetailsPanel(): void {
         this.detailsPanel = this.scene.add.container(0, 120);
-        
+
         // Panel background with standardized styling
         const bg = this.scene.add.graphics();
         EnhancedStyleHelpers.createBackground(bg, {
@@ -392,23 +392,23 @@ export class ClassSelectionUI {
         if (this.isShowingDetails) {
             return;
         }
-        
+
         this.isShowingDetails = true;
-        
+
         // Stop any existing tween to prevent conflicts
         if (this.currentDetailsTween) {
             this.currentDetailsTween.stop();
             this.currentDetailsTween = null;
         }
-        
+
         // Clear existing details safely
         this.clearDetailsContent();
 
         // Class name with standardized styling
         const title = this.scene.add.text(
-            0, 
-            -40, 
-            classInfo.name, 
+            0,
+            -40,
+            classInfo.name,
             EnhancedStyleHelpers.createTextStyle({
                 size: 'xl',
                 color: EnhancedDesignSystem.colors.accent,
@@ -420,9 +420,9 @@ export class ClassSelectionUI {
 
         // Description with standardized styling
         const description = this.scene.add.text(
-            0, 
-            -15, 
-            classInfo.description, 
+            0,
+            -15,
+            classInfo.description,
             {
                 ...EnhancedStyleHelpers.bodyStyle(),
                 align: 'center',
@@ -433,9 +433,9 @@ export class ClassSelectionUI {
 
         // Strengths with standardized styling
         const strengths = this.scene.add.text(
-            -150, 
-            15, 
-            `Strengths: ${classInfo.strengths}`, 
+            -150,
+            15,
+            `Strengths: ${classInfo.strengths}`,
             EnhancedStyleHelpers.createTextStyle({
                 size: 'xs',
                 color: EnhancedDesignSystem.colors.success,
@@ -446,9 +446,9 @@ export class ClassSelectionUI {
 
         // Weaknesses with standardized styling
         const weaknesses = this.scene.add.text(
-            -150, 
-            35, 
-            `Weaknesses: ${classInfo.weaknesses}`, 
+            -150,
+            35,
+            `Weaknesses: ${classInfo.weaknesses}`,
             EnhancedStyleHelpers.createTextStyle({
                 size: 'xs',
                 color: EnhancedDesignSystem.colors.error,
@@ -474,14 +474,14 @@ export class ClassSelectionUI {
             }
         });
     }
-    
+
     private hideClassDetails(): void {
         // Stop any existing tween
         if (this.currentDetailsTween) {
             this.currentDetailsTween.stop();
             this.currentDetailsTween = null;
         }
-        
+
         // Fade out
         this.currentDetailsTween = this.scene.tweens.add({
             targets: this.detailsPanel,
@@ -499,7 +499,7 @@ export class ClassSelectionUI {
             }
         });
     }
-    
+
     private clearDetailsContent(): void {
         // Safely clear existing details, keeping the background
         while (this.detailsPanel.length > 1) {
@@ -536,32 +536,32 @@ export class ClassSelectionUI {
     private updateSelectButton(): void {
         const bg = this.selectButton.getAt(0) as Phaser.GameObjects.Graphics;
         const text = this.selectButton.getAt(1) as Phaser.GameObjects.Text;
-        
+
         if (this.selectedClass) {
             // Enable button with medieval styling
             bg.clear();
             EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, false);
-            
+
             text.setColor(EnhancedDesignSystem.colors.textDark);
             this.selectButton.setAlpha(1);
-            
+
             // Make interactive
             const hitArea = this.scene.add.rectangle(0, 0, 160, 50, 0x000000, 0);
             hitArea.setInteractive();
             this.selectButton.add(hitArea);
-            
+
             hitArea.on('pointerover', () => {
                 this.selectButton.setScale(1.05);
                 bg.clear();
                 EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, true);
             });
-            
+
             hitArea.on('pointerout', () => {
                 this.selectButton.setScale(1);
                 bg.clear();
                 EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, false);
             });
-            
+
             hitArea.on('pointerdown', () => {
                 if (this.selectedClass) {
                     this.config.onClassSelected(this.selectedClass);
@@ -592,7 +592,7 @@ export class ClassSelectionUI {
             this.scene.scale.off('resize', this.resizeHandler);
             this.resizeHandler = undefined;
         }
-        
+
         // Unhook scene update
         this.scene.events.off('update', this.update, this);
 
@@ -601,23 +601,23 @@ export class ClassSelectionUI {
             clearTimeout(this.hoverTimeout);
             this.hoverTimeout = null;
         }
-        
+
         if (this.currentDetailsTween) {
             this.currentDetailsTween.stop();
             this.currentDetailsTween = null;
         }
-        
+
         // Destroy all click zones
         this.clickZones.forEach(zone => {
             zone.removeAllListeners();
             zone.destroy();
         });
         this.clickZones = [];
-        
+
         // Clear state
         this.isShowingDetails = false;
         this.classCards.clear();
-        
+
         // Destroy container and all children
         if (this.container) {
             this.container.destroy();
@@ -630,65 +630,33 @@ export class ClassSelectionUI {
 
     private setChildScrollFactors(): void {
         // Recursively set scroll factor for all child elements to ensure screen-relative positioning
-        const setScrollFactorRecursive = (obj: any) => {
-            if (obj && typeof obj.setScrollFactor === 'function') {
-                obj.setScrollFactor(0, 0);
+        const setScrollFactorRecursive = (obj: Phaser.GameObjects.GameObject | Phaser.GameObjects.Container) => {
+            if (obj && typeof (obj as any).setScrollFactor === 'function') {
+                (obj as any).setScrollFactor(0, 0);
             }
             // Handle containers
-            if (obj && obj.list && Array.isArray(obj.list)) {
-                obj.list.forEach((child: any) => setScrollFactorRecursive(child));
-            }
-            // Handle groups
-            if (obj && obj.children && obj.children.entries) {
-                obj.children.entries.forEach((child: any) => setScrollFactorRecursive(child));
+            if (obj instanceof Phaser.GameObjects.Container) {
+                obj.list.forEach((child) => setScrollFactorRecursive(child));
             }
         };
-        
+
         // Set scroll factor for the main container and all its children
         this.container.setScrollFactor(0, 0);
         setScrollFactorRecursive(this.container);
-         
-         // Explicitly set scroll factor for known interactive elements
-         this.classCards.forEach(card => {
-             setScrollFactorRecursive(card);
-         });
-         
-         if (this.detailsPanel) {
-             setScrollFactorRecursive(this.detailsPanel);
-         }
-         
-         if (this.selectButton) {
-             setScrollFactorRecursive(this.selectButton);
-         }
-     }
-     
-     private createSceneLevelInteractiveZones(): void {
-         // Create direct scene-level interactive zones as a fallback
-         const cx = this.scene.scale.width / 2;
-         const cy = this.scene.scale.height / 2 - 50;
-         const cardPositions = [
-             { x: cx - 200, y: cy, archetype: PlayerArchetypeType.TANK, name: 'Knight' },
-             { x: cx, y: cy, archetype: PlayerArchetypeType.GLASS_CANNON, name: 'Mage' },
-             { x: cx + 200, y: cy, archetype: PlayerArchetypeType.EVASIVE, name: 'Rogue' }
-         ];
-         
-        cardPositions.forEach(pos => {
-            const zone = this.scene.add.zone(pos.x, pos.y, 180, 120);
-            zone.setInteractive();
-            zone.setScrollFactor(0);
-            zone.setDepth(2000); // Very high depth to ensure it's on top
-            
-            zone.on('pointerdown', () => {
-                console.log('Scene-level zone clicked:', pos.name, pos.archetype);
-                this.selectClass(pos.archetype);
-            });
-            
-            zone.on('pointerover', () => {
-                console.log('Scene-level zone hover:', pos.name);
-            });
-            
-            // Store zone for cleanup
-            this.clickZones.push(zone);
-         });
-     }
+
+        // Explicitly set scroll factor for known interactive elements
+        this.classCards.forEach(card => {
+            setScrollFactorRecursive(card);
+        });
+
+        if (this.detailsPanel) {
+            setScrollFactorRecursive(this.detailsPanel);
+        }
+
+        if (this.selectButton) {
+            setScrollFactorRecursive(this.selectButton);
+        }
+    }
 }
+
+

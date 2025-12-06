@@ -32,7 +32,7 @@ export class Game extends Scene {
     private gameStarted: boolean = false;
     private selectedArchetype: PlayerArchetypeType | null = null;
     private spriteSheetManager!: SpriteSheetManager;
-    
+
     private lightingSystem!: LightingSystem;
     private physicsSystem!: PhysicsSystem;
     private mapInteractionSystem!: MapInteractionSystem;
@@ -41,6 +41,7 @@ export class Game extends Scene {
     // Restart functionality properties
     private restartInstructionText: Phaser.GameObjects.Text | null = null;
     private gameOverText: Phaser.GameObjects.Text | null = null;
+    private gameOverRestartText: Phaser.GameObjects.Text | null = null;
     private isRestarting: boolean = false;
 
     constructor() {
@@ -61,107 +62,11 @@ export class Game extends Scene {
     }
 
     preload() {
+        // All assets are pre-loaded in Preloader.ts
+        // Just initialize managers here (they will find textures in cache)
         this.load.setPath('assets');
-        this.load.image('logo', 'logo.png');
-
-        // Load tilemap JSON
-        this.load.tilemapTiledJSON('map', 'tilemaps/binkymap1.json');
-
-        // Load ALL tileset images (complete set from tilemaps folder)
-        this.load.image('floor1', 'tilemaps/floor1.png');
-        this.load.image('GraveyardTileset', 'tilemaps/GraveyardTileset.png');
-        this.load.image('tiledwallandfloor', 'tilemaps/tiledwallandfloor.png');
-        this.load.image('gatedoorandflags', 'tilemaps/gatedoorandflags.png');
-        this.load.image('castlewall', 'tilemaps/castlewall.png');
-        this.load.image('objecthouserocksstatues', 'tilemaps/objecthouserocksstatues.png');
-        this.load.image('houses1', 'tilemaps/houses1.png');
-        this.load.image('treesandplants', 'tilemaps/treesandplants.png');
-        this.load.image('objectlogs', 'tilemaps/objectlogs.png');
-        this.load.image('objectskeletonstatues', 'tilemaps/objectskeletonstatues.png');
-        this.load.image('grassclippings1', 'tilemaps/grassclippings1.png');
-        this.load.image('waggonsandmore', 'tilemaps/waggonsandmore.png');
-        this.load.image('brokenspikedfence', 'tilemaps/brokenspikedfence.png');
-        this.load.image('tents', 'tilemaps/tents.png');
-        this.load.image('farmhouses', 'tilemaps/farmhouses.png');
-        this.load.image('farmgrass', 'tilemaps/farmgrass.png');
-        this.load.image('farmobjects', 'tilemaps/farmobjects.png');
-        this.load.image('collision', 'tilemaps/collision.png');
-        this.load.image('D_CastleGate', 'tilemaps/D_CastleGate.png');
-        this.load.image('Portcullis', 'tilemaps/Portcullis.png');
-        this.load.image('grassclippings2', 'tilemaps/grassclippings2.png');
-        this.load.image('objectbrickstools', 'tilemaps/objectbrickstools.png');
-        this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
-
-
-        // Load XP orb (use existing green orb)
-        // Load XP orb (match key used by XPOrb class)
-        this.load.image('green_orb', 'images/green_orb.png');
-        this.load.image('sparkle', 'images/green_orb.png');
-
-        // Load lightning bolt effect for lightning mage as a spritesheet
-        // 10 frames arranged horizontally (720x72 total, 72x72 per frame)
-        this.load.spritesheet('lightning-bolt', 'Effects/Lightning-bolt.png', {
-            frameWidth: 72,   // 720 / 10 frames = 72px per frame
-            frameHeight: 72   // Full height
-        });
-
-        // Load explosion effect for elemental spirit as a spritesheet
-        // 10 frames arranged horizontally (720x72 total, 72x72 per frame)
-        this.load.spritesheet('explosion', 'Effects/Explosion.png', {
-            frameWidth: 72,   // 720 / 10 frames = 72px per frame
-            frameHeight: 72   // Full height
-        });
-
-        // Load gnoll claw effect frames (12 separate images)
-        for (let i = 1; i <= 12; i++) {
-            const frameNum = i.toString().padStart(5, '0');
-            this.load.image(`gnoll-claw-${i}`, `Effects/Gnoll Claw/slash4_${frameNum}.png`);
-        }
-
-        // Load arrow projectile for skeleton archer
-        this.load.image('arrow', 'Effects/Arrow.png');
-
-        // Load whirlpool effect for skeleton pirate
-        this.load.image('whirlpool', 'Effects/Whirlpool.png');
-
-        // Load ogre walking animation frames
-        for (let i = 0; i <= 17; i++) {
-            const frameNum = i.toString().padStart(3, '0');
-            this.load.image(`ogre-walk-${i}`, `mobs/ogre/Walking_${frameNum}.png`);
-        }
-
-        // Load ogre attacking animation frames
-        for (let i = 0; i <= 11; i++) {
-            const frameNum = i.toString().padStart(3, '0');
-            this.load.image(`ogre-attack-${i}`, `mobs/ogre/Attacking_${frameNum}.png`);
-        }
-
-        // Load bone slam effect for ogre melee attacks
-        for (let i = 0; i <= 2; i++) {
-            const frameNum = i.toString().padStart(2, '0');
-            this.load.image(`bone-slam-${i}`, `Effects/Bone_Slam/Frame_${frameNum}.png`);
-        }
-
-        // Load player sprite (use first available character texture)
-
-        // Load essential spritesheets (characters and mobs) for animations
         this.spriteSheetManager = new SpriteSheetManager(this);
-        this.spriteSheetManager.loadEssentialSpritesheets();
-
-        // --- Load Selected Character Assets ---
-        if (this.selectedArchetype) {
-            const archetypeToCharacter: Record<string, string> = {
-                glass_cannon: 'magician',
-                tank: 'knight',
-                evasive: 'ninja'
-            };
-            const selected = this.selectedArchetype.toString().toLowerCase();
-            const characterBase = archetypeToCharacter[selected] || 'magician';
-            
-            console.log(`Game Preload: Loading atlas for ${characterBase}...`);
-            this.atlasManager = new AtlasManager(this);
-            this.atlasManager.loadAllForCharacter(characterBase);
-        }
+        this.atlasManager = new AtlasManager(this);
     }
 
     create() {
@@ -210,7 +115,7 @@ export class Game extends Scene {
 
         const selected = this.selectedArchetype?.toString().toLowerCase() || 'magician';
         const characterBase = archetypeToCharacter[selected] || 'magician';
-        
+
         console.log(`Initializing game for ${characterBase}...`);
 
         // Create animations for the selected character (textures already loaded in preload)
@@ -226,7 +131,7 @@ export class Game extends Scene {
 
     private createTilemap(): void {
         console.log('Creating tilemap with TilemapManager...');
-        
+
         // Initialize TilemapManager
         this.tilemapManager = new TilemapManager(this);
         this.physicsSystem = new PhysicsSystem(this);
@@ -291,16 +196,16 @@ export class Game extends Scene {
                     console.log('Animated tiles initialized successfully.');
                 } else {
                     console.warn('AnimatedTiles plugin not injected.');
-                                }
-                            } catch (err) {
-                                console.error('Failed to init animated tiles:', err);
-                            }
-                        });
-                
-                        // Initialize Map Interactions (Doors, etc.)
-                        this.mapInteractionSystem.initialize(this.tilemap);
-                
-                        // Set up collision system via PhysicsSystem
+                }
+            } catch (err) {
+                console.error('Failed to init animated tiles:', err);
+            }
+        });
+
+        // Initialize Map Interactions (Doors, etc.)
+        this.mapInteractionSystem.initialize(this.tilemap);
+
+        // Set up collision system via PhysicsSystem
         //this.tilemapManager.applyScaling('binkyMap', this.GAME_SCALE);
 
         // Set up collision system via PhysicsSystem
@@ -456,8 +361,16 @@ export class Game extends Scene {
     private hardRestartScene(): void {
         if (this.isRestarting) return;
         this.isRestarting = true;
-        console.log('Hard restart initiated');
-        this.scene.restart();
+        console.log('Hard restart initiated - returning to class selection');
+
+        // Clear skill tree unlocks
+        this.registry.set('unlockedSkills', new Map<string, boolean>());
+        this.registry.set('skillPoints', 0);
+        this.registry.set('playerLevel', 1);
+
+        // Stop this scene and go to class selection
+        this.scene.stop('Game');
+        this.scene.start('ClassSelectionScene');
     }
 
     private onShutdown(): void {
@@ -469,19 +382,19 @@ export class Game extends Scene {
             // Clean up player first
             if (this.player) {
                 this.player.destroy();
-                this.player = undefined as any;
+                // this.player = undefined; // Kept as specific type
             }
 
             if (this.enemySystem) {
                 this.enemySystem.stopSpawning();
                 this.enemySystem.clearAllAttacks();
                 this.enemySystem.clearAllEnemies();
-                this.enemySystem = undefined as any;
+                // this.enemySystem = undefined;
             }
 
             if (this.playerSkillSystem) {
                 this.playerSkillSystem.clearAll();
-                this.playerSkillSystem = undefined as any;
+                // this.playerSkillSystem = undefined;
             }
 
             const uiScene = this.scene.get('UIScene') as UIScene;
@@ -491,17 +404,17 @@ export class Game extends Scene {
 
             if (this.xpOrbSystem) {
                 this.xpOrbSystem.clearAllOrbs();
-                this.xpOrbSystem = undefined as any;
+                // this.xpOrbSystem = undefined;
             }
 
             if (this.mobSpawnerUI) {
                 this.mobSpawnerUI.destroy();
-                this.mobSpawnerUI = undefined as any;
+                // this.mobSpawnerUI = undefined;
             }
 
             if (this.roundManager) {
                 this.roundManager.destroy();
-                this.roundManager = undefined as any;
+                // this.roundManager = undefined;
             }
             if (this.gameOverText) {
                 this.gameOverText.destroy();
@@ -511,9 +424,9 @@ export class Game extends Scene {
                 this.restartInstructionText.destroy();
                 this.restartInstructionText = null;
             }
-            if ((this as any).gameOverRestartText) {
-                (this as any).gameOverRestartText.destroy();
-                (this as any).gameOverRestartText = null;
+            if (this.gameOverRestartText) {
+                this.gameOverRestartText.destroy();
+                this.gameOverRestartText = null;
             }
             // ObjectRects handled by PhysicsSystem
             // DoorColliders handled by PhysicsSystem
@@ -550,7 +463,7 @@ export class Game extends Scene {
         restartText.setScrollFactor(0).setDepth(20000); // Make UI fixed to screen
 
         // Store reference for cleanup during restart
-        (this as any).gameOverRestartText = restartText;
+        this.gameOverRestartText = restartText;
     }
 
     /**
@@ -617,7 +530,7 @@ export class Game extends Scene {
         if (this.player && this.enemySystem) {
             // Player vs Enemies (Physical body collision)
             this.player.combatComponent.checkCollisionWithEnemies(this.enemySystem.getEnemies(), this.enemySystem.getShields());
-            
+
             // Player vs All Attacks (Projectiles & AOE)
             this.player.combatComponent.checkAttacks(this.enemySystem.getUnifiedAttacks());
         }
@@ -637,7 +550,11 @@ export class Game extends Scene {
         // The door to the Dark Forest unlocks ONLY when Round 5 is reached.
         // Rounds 1-4: Door remains locked and impassable.
         if (this.roundManager && this.roundManager.getCurrentRound() >= 5) {
-             this.mapInteractionSystem.openDarkForestGate();
+            this.mapInteractionSystem.openDarkForestGate();
         }
+    }
+
+    public getPlayerSkillSystem(): PlayerSkillSystem {
+        return this.playerSkillSystem;
     }
 }

@@ -7,185 +7,173 @@ export interface SkillNodeConfig {
     skill: Skill;
     x: number;
     y: number;
+    layer: GameObjects.Layer;
     isUnlocked: boolean;
     isAvailable: boolean;
     onUnlock: (skill: Skill) => void;
 }
 
-export class SkillNode extends GameObjects.Container {
+/**
+ * Modern Skill Node - "Controller" Pattern
+ * Instead of extending Container (which causes matrix overhead), this class
+ * manages a set of Sprites that live on a Layer.
+ */
+export class SkillNode extends Phaser.Events.EventEmitter {
+    public x: number;
+    public y: number;
+
+
+    private scene: Scene;
     private skill: Skill;
-    private background: GameObjects.Graphics;
-    private icon: GameObjects.Text;
+    private layer: GameObjects.Layer;
+
+    // Visuals
+    private background: GameObjects.Sprite;
+    // private icon: GameObjects.Sprite; // REMOVED unused
+    // Note: If using Text temporarily, we can keep it as Text, but best practice is Sprite.
+    // For now we will use Text for icon to maintain compatibility with existing 'emoji' icons
+    private iconText: GameObjects.Text;
+
     private isUnlocked: boolean;
     private isAvailable: boolean;
-    private onUnlock: (skill: Skill) => void;
-    
-    // FX Controllers (kept as references if needed, though we primarily add/remove them)
-    // In Phaser 3.60+, FX are added to the Game Object
-    
+    private onUnlockCallback: (skill: Skill) => void;
+
     constructor(config: SkillNodeConfig) {
-        super(config.scene, config.x, config.y);
-        
+        super();
+
+        this.scene = config.scene;
         this.skill = config.skill;
+        this.x = config.x;
+        this.y = config.y;
+        this.layer = config.layer;
         this.isUnlocked = config.isUnlocked;
         this.isAvailable = config.isAvailable;
-        this.onUnlock = config.onUnlock;
+        this.onUnlockCallback = config.onUnlock;
 
-        // Create Visuals
         this.createVisuals();
-        
-        // Setup Interaction
         this.setupInteraction();
-        
-        // Initial State FX
         this.updateStateVisuals();
-        
-        // Add to scene (Config-First pattern often implies the factory adds it, 
-        // but since we are manually instantiating for now, we leave it to the scene or factory wrapper)
     }
 
     private createVisuals() {
-        // 1. Background (Card/Shape)
-        // We use Graphics for now, but in a full production pipeline this might be a NineSlice or Sprite from Atlas
-        this.background = this.scene.add.graphics();
-        this.add(this.background);
-        
-        // 2. Icon
-        // Using Text for now as placeholders are Emojis, but designed to be swappable for Sprites
-        this.icon = this.scene.add.text(0, 0, this.skill.icon, { fontSize: '32px' }).setOrigin(0.5);
-        this.add(this.icon);
+        // 1. Background Sprite
+        // We use a "generated" texture for the background frame.
+        // In the Scene PRELOAD, we should generate 'skill_node_bg'
+        this.background = this.scene.add.sprite(this.x, this.y, 'skill_node_bg');
+        this.layer.add(this.background);
 
-        this.drawBackground();
-    }
-
-    private drawBackground() {
-        const size = 64;
-        this.background.clear();
-        
-        let bgColor = 0x1a1a1a;
-        let borderColor = 0x444444;
-
-        if (this.isUnlocked) {
-            bgColor = 0x222222;
-            borderColor = parseInt(EnhancedDesignSystem.colors.accent.replace('#', '0x'));
-        } else if (this.isAvailable) {
-            borderColor = 0xaaaaaa;
-        }
-
-        this.background.fillStyle(bgColor, 1);
-        this.background.fillRoundedRect(-size/2, -size/2, size, size, 8);
-        
-        this.background.lineStyle(2, borderColor, 1);
-        this.background.strokeRoundedRect(-size/2, -size/2, size, size, 8);
-
-        // Inner highlight for unlocked
-        if (this.isUnlocked) {
-            this.background.lineStyle(1, parseInt(EnhancedDesignSystem.colors.accentLight.replace('#', '0x')), 0.5);
-            this.background.strokeRoundedRect(-size/2 + 2, -size/2 + 2, size - 4, size - 4, 6);
-        }
+        // 2. Icon (Text for now to match current data)
+        this.iconText = this.scene.add.text(this.x, this.y, this.skill.icon, { fontSize: '32px' }).setOrigin(0.5);
+        this.layer.add(this.iconText);
     }
 
     private setupInteraction() {
         const size = 64;
-        // Geometric Hit Testing (Circle) as recommended
-        // Even though visual is Rect, Circle hit area feels better for "Nodes" and prevents corner miss-clicks
         const radius = size / 2;
-        
-        this.setInteractive(new Phaser.Geom.Circle(0, 0, radius), Phaser.Geom.Circle.Contains);
-        
-        this.on('pointerdown', () => {
-            // Stop Propagation to prevent Camera Drag
-            // NOTE: Container event bubbling works differently, but we can handle it at Scene level checks 
-            // or by ensuring the event doesn't trickle if handled here.
-            // pointer.event.stopPropagation(); // DOM event
-            
-            // In Phaser, we can just handle logic. The Scene's background listener should check if an object was clicked.
+
+        // Interactive on the Background Sprite
+        this.background.setInteractive(new Phaser.Geom.Circle(32, 32, radius), Phaser.Geom.Circle.Contains);
+
+        this.background.on('pointerdown', () => {
+            // Stop propagation handled by logic, but we can prevent default if needed
+            // pointer.event.stopPropagation(); 
             this.attemptUnlock();
         });
 
-        this.on('pointerover', () => {
+        this.background.on('pointerover', () => {
+            this.emit('pointerover', this);
+
             this.scene.tweens.add({
-                targets: this,
+                targets: [this.background, this.iconText],
                 scale: 1.15,
                 duration: 100,
                 ease: 'Back.out'
             });
-            
-            // Shine FX on hover (if supported)
-            // this.postFX.addShine(); // Requires Phaser 3.60+ and WebGL
         });
 
-        this.on('pointerout', () => {
+        this.background.on('pointerout', () => {
+            this.emit('pointerout', this);
+
             this.scene.tweens.add({
-                targets: this,
+                targets: [this.background, this.iconText],
                 scale: 1.0,
                 duration: 100,
                 ease: 'Back.out'
             });
-            // Remove Shine?
-            // this.postFX.clear(); // Clears all, might need specific removal
         });
     }
 
     public updateState(isUnlocked: boolean, isAvailable: boolean) {
         if (this.isUnlocked === isUnlocked && this.isAvailable === isAvailable) return;
-        
+
         const wasLocked = !this.isUnlocked;
         this.isUnlocked = isUnlocked;
         this.isAvailable = isAvailable;
-        
-        this.drawBackground();
+
         this.updateStateVisuals();
 
         // Unlock Bloom Effect
         if (wasLocked && isUnlocked) {
-            // Trigger Bloom Burst
-             if (this.scene.renderer.type === Phaser.WEBGL) {
-                const bloom = this.postFX.addBloom(0xffffff, 1, 1, 2, 1.2);
-                this.scene.tweens.add({
-                    targets: bloom,
-                    strength: 0,
-                    duration: 500,
-                    onComplete: () => {
-                        this.postFX.remove(bloom);
-                    }
-                });
+            if (this.scene.renderer.type === Phaser.WEBGL) {
+                // Apply bloom to the background sprite
+                if ((this.background as any).postFX) {
+                    const bloom = (this.background as any).postFX.addBloom(0xffffff, 1, 1, 2, 1.2);
+                    this.scene.tweens.add({
+                        targets: bloom,
+                        strength: 0,
+                        duration: 500,
+                        onComplete: () => {
+                            (this.background as any).postFX.remove(bloom);
+                        }
+                    });
+                }
             }
         }
     }
 
     private updateStateVisuals() {
-        // Clear existing state FX
-        // Note: In a real implementation we would track specific FX instances to remove them
-        this.postFX.clear();
+        // Clear previous FX
+        if ((this.background as any).postFX) {
+            (this.background as any).postFX.clear();
+        }
 
         if (this.isUnlocked) {
-            // Normal State
+            // BOUGHT: Golden, full brightness
+            this.background.setTint(parseInt(EnhancedDesignSystem.colors.accent.replace('#', '0x')));
+            this.background.setAlpha(1);
+            this.iconText.setAlpha(1);
         } else if (this.isAvailable) {
-            // Glow - Pulsing
-             if (this.scene.renderer.type === Phaser.WEBGL) {
-                const glow = this.postFX.addGlow(0xffd700, 4, 0, false, 0.1, 10);
-                
+            // AVAILABLE (Ready to buy): Grey with colored glow/aura
+            this.background.setTint(0x666666); // Grey base
+            this.background.setAlpha(0.9);
+            this.iconText.setAlpha(0.7);
+
+            // Cyan/Blue pulsing glow to indicate "purchasable"
+            if (this.scene.renderer.type === Phaser.WEBGL && (this.background as any).postFX) {
+                const glow = (this.background as any).postFX.addGlow(0x00ccff, 3, 0, false, 0.15, 12);
                 this.scene.tweens.add({
                     targets: glow,
-                    outerStrength: 6,
+                    outerStrength: 5,
                     yoyo: true,
                     repeat: -1,
-                    duration: 1000
+                    duration: 1200
                 });
-             }
+            }
         } else {
-            // Locked - Grayscale
-             if (this.scene.renderer.type === Phaser.WEBGL) {
-                this.postFX.addColorMatrix().grayscale(1.0);
-                this.alpha = 0.8;
-             }
+            // LOCKED: Grey, no glow
+            this.background.setTint(0x444444);
+            this.background.setAlpha(0.6);
+            this.iconText.setAlpha(0.4);
+
+            if (this.scene.renderer.type === Phaser.WEBGL && (this.background as any).postFX) {
+                (this.background as any).postFX.addColorMatrix().grayscale(1.0);
+            }
         }
     }
 
     private attemptUnlock() {
         if (!this.isUnlocked && this.isAvailable) {
-            this.onUnlock(this.skill);
+            this.onUnlockCallback(this.skill);
         }
     }
 }

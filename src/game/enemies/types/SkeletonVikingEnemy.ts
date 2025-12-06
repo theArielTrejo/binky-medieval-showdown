@@ -9,8 +9,7 @@ export class SkeletonVikingEnemy extends BaseEnemy {
     private readonly shieldInterval: number = 8.0;
     private coneAttackCooldown: number = 0;
     private readonly coneAttackInterval: number = 2.0;
-    private activeShield: Shield | null = null;
-    
+
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, EnemyType.SKELETON_VIKING);
     }
@@ -24,7 +23,7 @@ export class SkeletonVikingEnemy extends BaseEnemy {
             xpValue: 18
         };
         const specialAbilities = ['shield', 'cone_attack'];
-        
+
         return {
             ...baseStats,
             cost: BaseEnemy.calculateEnemyCost(baseStats, specialAbilities),
@@ -37,14 +36,14 @@ export class SkeletonVikingEnemy extends BaseEnemy {
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         if (this.shieldCooldown > 0) this.shieldCooldown -= deltaTime;
         if (this.coneAttackCooldown > 0) this.coneAttackCooldown -= deltaTime;
 
         if (this.isAttacking) {
             this.attackTimer -= deltaTime;
             if (this.attackTimer <= 0) this.isAttacking = false;
-            
+
             const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             if (body) body.setVelocity(0, 0);
             this.playAnimation(this.mobAnimations.idle);
@@ -89,15 +88,15 @@ export class SkeletonVikingEnemy extends BaseEnemy {
         this.shieldCooldown = this.shieldInterval;
         const enemyRadius = this.getApproximateRadius();
         this.activeShield = new Shield(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, enemyRadius);
-        
+
         console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_VIKING) creating SHIELD`);
-        
-        return { 
-            type: 'shield', 
-            damage: 0, 
-            position: { x: this.sprite.x, y: this.sprite.y }, 
-            hitPlayer: false, 
-            attackObject: this.activeShield 
+
+        return {
+            type: 'shield',
+            damage: 0,
+            position: { x: this.sprite.x, y: this.sprite.y },
+            hitPlayer: false,
+            attackObject: this.activeShield
         };
     }
 
@@ -105,18 +104,18 @@ export class SkeletonVikingEnemy extends BaseEnemy {
         this.coneAttackCooldown = this.coneAttackInterval;
         this.isAttacking = true;
         this.attackTimer = 0.25;
-        
+
         const enemyRadius = this.getApproximateRadius();
         const coneAttack = new ConeAttack(this.scene, this.sprite.x, this.sprite.y, playerX, playerY, this.stats.damage, enemyRadius);
-        
+
         console.log(`Enemy #${this.sprite.getData('enemyId')} (SKELETON_VIKING) creating CONE ATTACK`);
-        
-        return { 
-            type: 'cone', 
-            damage: this.stats.damage, 
-            position: { x: this.sprite.x, y: this.sprite.y }, 
-            hitPlayer: false, 
-            attackObject: coneAttack 
+
+        return {
+            type: 'cone',
+            damage: this.stats.damage,
+            position: { x: this.sprite.x, y: this.sprite.y },
+            hitPlayer: false,
+            attackObject: coneAttack
         };
     }
 }

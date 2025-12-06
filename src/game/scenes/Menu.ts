@@ -10,7 +10,7 @@ export class Menu extends Scene {
         console.log('Menu: create started');
 
         // Create the tilemap
-        const map = this.make.tilemap({ key: 'menuMap' });
+        const map = this.make.tilemap({ key: 'map' });
         console.log('Tilemap created:', map.width, 'x', map.height);
 
         // Add all tilesets to the map

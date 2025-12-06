@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { EnemyType, EnemyStats, EnemyAttackResult } from '../types/EnemyTypes';
 import { AnimationMapper, MobAnimationSet } from '../config/AnimationMappings';
 import { validateNoRandomSelection, getHardcodedMobSkin } from '../systems/HardcodedMobSkins';
+import { Shield } from './attacks/Shield';
 
 export abstract class BaseEnemy {
     public sprite: Phaser.GameObjects.Sprite;
@@ -9,7 +10,8 @@ export abstract class BaseEnemy {
     public stats: EnemyStats;
     public currentHealth: number;
     public scene: Scene;
-    
+    public activeShield: Shield | null = null;
+
     protected currentAnimation: string = '';
     protected mobAnimations: MobAnimationSet;
     protected facingLeft: boolean = false;
@@ -23,7 +25,7 @@ export abstract class BaseEnemy {
         this.type = type;
         this.stats = this.getStats();
         this.currentHealth = this.stats.health;
-        
+
         this.initializeSprite(x, y);
     }
 
@@ -32,18 +34,18 @@ export abstract class BaseEnemy {
     protected initializeSprite(x: number, y: number): void {
         // Use hardcoded mob variant selection
         const mobVariant = AnimationMapper.getHardcodedMobForEnemyType(this.type);
-        
+
         // VALIDATION
         const expectedSkin = getHardcodedMobSkin(this.type);
         validateNoRandomSelection(mobVariant, expectedSkin, this.type);
-        
+
         this.mobAnimations = AnimationMapper.getMobAnimations(mobVariant);
-        
+
         const textureKey = this.mobAnimations.texture;
         if (!this.scene.textures.exists(textureKey)) {
             throw new Error(`Texture '${textureKey}' does not exist!`);
         }
-        
+
         this.sprite = this.scene.physics.add.sprite(x, y, textureKey) as Phaser.GameObjects.Sprite;
         this.sprite.setScale(this.getScale());
         this.sprite.setData('enemy', this);
@@ -51,12 +53,12 @@ export abstract class BaseEnemy {
         this.sprite.setOrigin(0.5, 0.5);
         this.sprite.setAngle(0);
         this.sprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-        
+
         const body = this.sprite.body as Phaser.Physics.Arcade.Body;
         if (body) {
             body.setCollideWorldBounds(true);
         }
-        
+
         const enemyId = Math.floor(Math.random() * 10000);
         this.sprite.setData('enemyId', enemyId);
 
@@ -93,7 +95,7 @@ export abstract class BaseEnemy {
     protected playAnimation(animationName: string): void {
         if (this.sprite.anims && this.currentAnimation !== animationName) {
             const currentlyPlaying = this.sprite.anims.currentAnim?.key;
-            
+
             if (currentlyPlaying !== animationName && this.scene.anims.exists(animationName)) {
                 const currentFlipX = this.sprite.flipX;
                 this.sprite.play(animationName);
@@ -107,7 +109,7 @@ export abstract class BaseEnemy {
         const camera = this.scene.cameras.main;
         const worldView = camera.worldView;
         const buffer = -100;
-        
+
         return (
             this.sprite.x >= worldView.x - buffer &&
             this.sprite.x <= worldView.x + worldView.width + buffer &&
@@ -115,7 +117,7 @@ export abstract class BaseEnemy {
             this.sprite.y <= worldView.y + worldView.height + buffer
         );
     }
-    
+
     protected getApproximateRadius(): number {
         const bounds = this.sprite.getBounds();
         const radius = Math.max(bounds.width, bounds.height) / 2;
@@ -124,10 +126,8 @@ export abstract class BaseEnemy {
 
     protected getCollisionLayersFromScene(): Phaser.Tilemaps.TilemapLayer[] {
         const collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
-        if ((this.scene as any).collisionLayers) {
-            return (this.scene as any).collisionLayers;
-        }
-        const tilemap = this.scene.children.getAll().find(child => child.type === 'TilemapLayer') as Phaser.Tilemaps.TilemapLayer;
+        // Helper to safely get collision layers from the scene
+        const tilemap = this.scene.children.getAll().find(child => child instanceof Phaser.Tilemaps.TilemapLayer) as Phaser.Tilemaps.TilemapLayer;
         if (tilemap) {
             collisionLayers.push(tilemap);
         }
@@ -137,25 +137,25 @@ export abstract class BaseEnemy {
     // Static helpers for Cost/Threat calculation (Moved from Enemy.ts)
     public static calculateEnemyCost(stats: Omit<EnemyStats, 'cost' | 'threatLevel' | 'specialAbilities'>, abilities: string[]): number {
         let baseCost = Math.round(
-            (stats.health * 0.1) + 
-            (stats.damage * 2) + 
-            (stats.speed * 0.5) + 
+            (stats.health * 0.1) +
+            (stats.damage * 2) +
+            (stats.speed * 0.5) +
             (stats.xpValue * 0.3)
         );
-        
+
         let abilityMultiplier = 1.0;
         // ... (Simplified for brevity, or copy full logic if critical)
         // For now, using a simplified multiplier logic to save tokens, as the exact values are less critical than the architecture
-        abilities.forEach(_ability => abilityMultiplier += 0.1); 
-        
+        abilities.forEach(_ability => abilityMultiplier += 0.1);
+
         return Math.max(1, Math.round(baseCost * abilityMultiplier));
     }
 
     public static calculateThreatLevel(stats: Omit<EnemyStats, 'cost' | 'threatLevel' | 'specialAbilities'>, _abilities: string[]): number {
         let baseThreat = Math.min(100, Math.round(
-            (stats.health * 0.15) + 
-            (stats.damage * 3) + 
-            (stats.speed * 0.8) + 
+            (stats.health * 0.15) +
+            (stats.damage * 3) +
+            (stats.speed * 0.8) +
             (stats.xpValue * 0.4)
         ));
         return Math.min(100, Math.max(1, baseThreat));

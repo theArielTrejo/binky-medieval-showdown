@@ -46,7 +46,7 @@ export class PlayerArchetype {
     public movementHistory: { x: number; y: number; time: number }[] = [];
     public xpGained: number = 0;
     public lastXpTime: number = 0;
-    
+
     // Leveling system
     public level: number = 1;
     public currentLevelXP: number = 0;
@@ -131,7 +131,7 @@ export class PlayerArchetype {
     public updatePosition(x: number, y: number, time: number): void {
         this.position = { x, y };
         this.movementHistory.push({ x, y, time });
-        
+
         // Keep only last 10 seconds of movement history
         const tenSecondsAgo = time - 10000;
         this.movementHistory = this.movementHistory.filter(entry => entry.time > tenSecondsAgo);
@@ -209,7 +209,7 @@ export class PlayerArchetype {
      */
     public getMovementDistanceLastTenSeconds(_time: number): number {
         if (this.movementHistory.length < 2) return 0;
-        
+
         let totalDistance = 0;
         for (let i = 1; i < this.movementHistory.length; i++) {
             const prev = this.movementHistory[i - 1];
@@ -245,7 +245,7 @@ export class PlayerArchetype {
 import { SkillArchetype } from '../data/SkillTreeData';
 
 export const playerArchetypeToSkillArchetype: Record<PlayerArchetypeType, SkillArchetype> = {
-    [PlayerArchetypeType.TANK]: SkillArchetype.MELEE,
-    [PlayerArchetypeType.GLASS_CANNON]: SkillArchetype.PROJECTILE,
-    [PlayerArchetypeType.EVASIVE]: SkillArchetype.AOE,
+    [PlayerArchetypeType.TANK]: SkillArchetype.MELEE,           // Knight → Gladiator
+    [PlayerArchetypeType.GLASS_CANNON]: SkillArchetype.AOE,     // Magician → Sorcerer
+    [PlayerArchetypeType.EVASIVE]: SkillArchetype.PROJECTILE,   // Ninja → Ranger
 };

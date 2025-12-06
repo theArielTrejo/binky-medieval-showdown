@@ -6,12 +6,12 @@ import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
 
 export class CleaveSkill extends Skill {
     constructor() {
-        super(1000); 
+        super(1000);
     }
     activate(player: Player): void {
         const pointer = player.scene.input.activePointer;
         const worldPoint = player.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
-        
+
         const unlocked = player.scene.registry.get('unlockedSkills') as Map<string, boolean> || new Map();
         let lifesteal = 0;
         let isSundering = !!unlocked.get("Sunder");
@@ -30,18 +30,18 @@ export class CleaveSkill extends Skill {
                 lifesteal,
                 sunder: isSundering,
                 execution: isExecution,
-                isWide: false // Could be checked from registry
+                isWide: !!unlocked.get("Cleave") // Cleave skill enables wide arc
             }
         );
 
         // Register Collision
         const gameScene = player.scene as Game;
         const enemySystem = gameScene.getEnemySystem();
-        
+
         if (enemySystem && enemySystem.enemiesGroup) {
             player.scene.physics.add.overlap(
-                cleave, 
-                enemySystem.enemiesGroup, 
+                cleave,
+                enemySystem.enemiesGroup,
                 (obj1, obj2) => {
                     const skill = obj1 as CleaveObject;
                     const enemySprite = obj2 as Phaser.GameObjects.Sprite;
@@ -56,7 +56,7 @@ export class CleaveSkill extends Skill {
                 }
             );
         }
-        
+
         const cd = this.cooldown / player.archetype.stats.attackSpeed;
         player.cooldownManager.startCooldown('PRIMARY_SKILL', cd);
     }

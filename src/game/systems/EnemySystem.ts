@@ -37,7 +37,7 @@ export class EnemySystem {
     private xpOrbSystem: XPOrbSystem | undefined;
     private spawnTimer: Phaser.Time.TimerEvent | null = null;
     private onEnemySpawnedCallback: ((enemy: BaseEnemy) => void) | null = null;
-    
+
     // Attack object management
     private activeProjectiles: EnemyProjectile[] = [];
     private activeShields: Shield[] = [];
@@ -150,13 +150,13 @@ export class EnemySystem {
             this.enemies.push(enemy);
             this.enemiesGroup.add(enemy.sprite);
             spawnedEnemies.push(enemy);
-            
+
             // Notify callback if registered
             if (this.onEnemySpawnedCallback) {
                 this.onEnemySpawnedCallback(enemy);
             }
         }
-        
+
         return spawnedEnemies;
     }
 
@@ -183,13 +183,13 @@ export class EnemySystem {
         const gameHeight = worldView.height;
         const cameraX = worldView.x;
         const cameraY = worldView.y;
-        
+
         const safeZoneRadius = 200; // Safe zone around player
-        
+
         let spawnX, spawnY;
         let attempts = 0;
         const maxAttempts = 20;
-        
+
         do {
             switch (location) {
                 case 'near_player':
@@ -215,18 +215,18 @@ export class EnemySystem {
                     spawnY = cameraY + Math.random() * gameHeight;
                     break;
             }
-            
+
             // Ensure spawn position is within world bounds (get from physics world)
             const worldBounds = this.scene.physics.world.bounds;
             spawnX = Math.max(worldBounds.x + 20, Math.min(worldBounds.width - 20, spawnX));
             spawnY = Math.max(worldBounds.y + 20, Math.min(worldBounds.height - 20, spawnY));
-            
+
             attempts++;
         } while (this.isInSafeZone(spawnX, spawnY, playerX, playerY, safeZoneRadius) && attempts < maxAttempts);
-        
+
         return { x: spawnX, y: spawnY };
     }
-    
+
     private isInSafeZone(x: number, y: number, playerX: number, playerY: number, safeRadius: number): boolean {
         const distance = Math.sqrt(Math.pow(x - playerX, 2) + Math.pow(y - playerY, 2));
         return distance < safeRadius;
@@ -273,7 +273,7 @@ export class EnemySystem {
                     case 'shield':
                         this.shields.push(attackResult.attackObject as Shield);
                         // Store reference to shield in enemy
-                        (enemy as any).activeShield = attackResult.attackObject;
+                        enemy.activeShield = attackResult.attackObject as Shield;
                         break;
                     case 'cone':
                         this.coneAttacks.push(attackResult.attackObject as ConeAttack);
@@ -296,11 +296,11 @@ export class EnemySystem {
                 }
             }
         });
-        
+
         // Update all projectiles and check for shield collisions
         this.projectiles.forEach(projectile => {
             projectile.update(deltaTime);
-            
+
             // Check if any shield blocks this projectile
             for (const shield of this.shields) {
                 if (shield.isActive() && shield.blocksProjectile(projectile.sprite.x, projectile.sprite.y)) {
@@ -310,64 +310,64 @@ export class EnemySystem {
                 }
             }
         });
-        
+
         // Update all melee attacks
         this.meleeAttacks.forEach(attack => {
             attack.update(deltaTime);
         });
-        
+
         // Update all shields (follow their owners)
         this.shields.forEach(shield => {
             // Find the enemy that owns this shield
-            const owner = this.enemies.find(e => (e as any).activeShield === shield);
+            const owner = this.enemies.find(e => e.activeShield === shield);
             if (owner) {
                 shield.update(deltaTime, owner.sprite.x, owner.sprite.y);
             } else {
                 shield.update(deltaTime, shield.x, shield.y);
             }
         });
-        
+
         // Update all cone attacks
         this.coneAttacks.forEach(attack => {
             attack.update(deltaTime);
         });
-        
+
         // Update all vortex attacks
         this.vortexAttacks.forEach(attack => {
             attack.update(deltaTime);
         });
-        
+
         // Update all explosion attacks
         this.explosionAttacks.forEach(attack => {
             attack.update(deltaTime);
         });
-        
+
         // Update all lightning strikes
         this.lightningStrikes.forEach(attack => {
             attack.update(deltaTime);
         });
-        
+
         // Update all claw attacks
         this.clawAttacks.forEach(attack => {
             attack.update(deltaTime);
         });
-        
+
         // Update all arrow projectiles
         this.arrowProjectiles.forEach(arrow => {
             arrow.update(deltaTime);
         });
-        
+
         // Clean up inactive shields from enemy references
         this.shields.forEach(shield => {
             if (!shield.isActive()) {
                 this.enemies.forEach(enemy => {
-                    if ((enemy as any).activeShield === shield) {
-                        (enemy as any).activeShield = null;
+                    if (enemy.activeShield === shield) {
+                        enemy.activeShield = null;
                     }
                 });
             }
         });
-        
+
         // Remove destroyed enemies, inactive projectiles, and expired attacks
         this.enemies = this.enemies.filter(enemy => enemy.sprite.active);
         this.projectiles = this.projectiles.filter(projectile => projectile.isActive());
@@ -381,7 +381,7 @@ export class EnemySystem {
         this.arrowProjectiles = this.arrowProjectiles.filter(arrow => arrow.isActive());
         // Update all active attack objects
         this.updateAttackObjects(deltaTime, playerX, playerY);
-        
+
         // Remove destroyed enemies and spawn XP orbs
         this.enemies = this.enemies.filter(enemy => {
             const isDead = enemy.currentHealth <= 0;
@@ -390,9 +390,9 @@ export class EnemySystem {
                 // Spawn XP orbs only if enemy died from damage (isDead)
                 if (isDead && this.xpOrbSystem) {
                     // Use sprite position if active, otherwise try to use last known
-                    const spawnX = enemy.sprite.active ? enemy.sprite.x : (enemy.sprite as any).x || 0;
-                    const spawnY = enemy.sprite.active ? enemy.sprite.y : (enemy.sprite as any).y || 0;
-                    
+                    const spawnX = enemy.sprite.x || 0;
+                    const spawnY = enemy.sprite.y || 0;
+
                     console.log(`Enemy died at (${spawnX}, ${spawnY}), spawning XP orbs with value ${enemy.stats.xpValue}`);
                     this.xpOrbSystem.spawnXPOrbs(
                         spawnX,
@@ -442,16 +442,16 @@ export class EnemySystem {
         // Update and filter shields (need enemy position for shields)
         this.activeShields = this.activeShields.filter(shield => {
             // Find the enemy that owns this shield (simplified - could be improved with owner tracking)
-            const ownerEnemy = this.enemies.find(enemy => 
+            const ownerEnemy = this.enemies.find(enemy =>
                 Math.abs(enemy.sprite.x - shield.x) < 50 && Math.abs(enemy.sprite.y - shield.y) < 50
             );
-            
+
             if (ownerEnemy) {
                 shield.update(deltaTime, ownerEnemy.sprite.x, ownerEnemy.sprite.y);
             } else {
                 shield.update(deltaTime, shield.x, shield.y);
             }
-            
+
             if (!shield.isActive()) {
                 shield.destroy();
                 return false;
@@ -554,8 +554,8 @@ export class EnemySystem {
     public clearAllAttacks(): void {
         // Destroy all attack objects
         [...this.activeProjectiles, ...this.activeShields, ...this.activeConeAttacks,
-         ...this.activeExplosionAttacks, ...this.activeVortexAttacks, ...this.activeMeleeAttacks,
-         ...this.activeLightningStrikes, ...this.activeClawAttacks, ...this.activeArrowProjectiles]
+        ...this.activeExplosionAttacks, ...this.activeVortexAttacks, ...this.activeMeleeAttacks,
+        ...this.activeLightningStrikes, ...this.activeClawAttacks, ...this.activeArrowProjectiles]
             .forEach(attack => attack.destroy());
 
         // Clear arrays
@@ -720,7 +720,7 @@ export class EnemySystem {
     // Get cost breakdown by enemy type
     public getCostBreakdown(): { [key: string]: { count: number; totalCost: number; avgThreat: number } } {
         const breakdown: { [key: string]: { count: number; totalCost: number; avgThreat: number } } = {};
-        
+
         this.enemies.forEach(enemy => {
             const type = enemy.type;
             if (!breakdown[type]) {
@@ -730,12 +730,12 @@ export class EnemySystem {
             breakdown[type].totalCost += enemy.getCost();
             breakdown[type].avgThreat += enemy.getThreatLevel();
         });
-        
+
         // Calculate averages
         Object.keys(breakdown).forEach(type => {
             breakdown[type].avgThreat = Math.round((breakdown[type].avgThreat / breakdown[type].count) * 10) / 10;
         });
-        
+
         return breakdown;
     }
 }

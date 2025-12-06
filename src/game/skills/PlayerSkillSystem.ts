@@ -12,13 +12,13 @@ import { Player } from '../Player';
 export class PlayerSkillSystem {
     private scene: Scene;
     private enemySystem: EnemySystem;
-    private player: Player; 
-    
+    private player: Player;
+
     // Active skill objects
     private projectiles: PlayerProjectile[] = [];
     private cleaves: PlayerCleave[] = [];
     private novas: PlayerNova[] = [];
-    
+
     // Generic Skill Objects List
     private skillObjects: SkillObject[] = [];
 
@@ -26,8 +26,8 @@ export class PlayerSkillSystem {
     private projectileGroup: Phaser.Physics.Arcade.Group;
     private cleaveGroup: Phaser.Physics.Arcade.Group;
     private novaGroup: Phaser.Physics.Arcade.Group;
-    public hitboxGroup: Phaser.Physics.Arcade.Group; 
-    public shurikenGroup: Phaser.Physics.Arcade.Group; 
+    public hitboxGroup: Phaser.Physics.Arcade.Group;
+    public shurikenGroup: Phaser.Physics.Arcade.Group;
 
     constructor(scene: Scene, player: Player, enemySystem: EnemySystem) {
         this.scene = scene;
@@ -38,7 +38,7 @@ export class PlayerSkillSystem {
         this.cleaveGroup = this.scene.physics.add.group();
         this.novaGroup = this.scene.physics.add.group();
         this.hitboxGroup = this.scene.physics.add.group();
-        
+
         this.shurikenGroup = this.scene.physics.add.group({
             classType: Shuriken,
             maxSize: 50,
@@ -63,18 +63,18 @@ export class PlayerSkillSystem {
         // Update Projectiles
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const p = this.projectiles[i];
-            
+
             // Homing Logic
             if (p.options.homing && p.isActive()) {
-                let closestDist = 300; 
+                let closestDist = 300;
                 let targetEnemy = null;
-                
+
                 for (const enemy of enemies) {
                     if (!enemy.sprite.active) continue;
                     const dx = enemy.sprite.x - p.sprite.x;
                     const dy = enemy.sprite.y - p.sprite.y;
                     const d = Math.sqrt(dx * dx + dy * dy);
-                    
+
                     const enemyId = enemy.sprite.getData('enemyId');
                     if (d < closestDist && enemyId && !p.hitEnemies.has(enemyId)) {
                         closestDist = d;
@@ -86,7 +86,7 @@ export class PlayerSkillSystem {
                     const angleToEnemy = Phaser.Math.Angle.Between(p.sprite.x, p.sprite.y, targetEnemy.sprite.x, targetEnemy.sprite.y);
                     const currentAngle = Math.atan2(p.velocityY, p.velocityX);
                     const newAngle = Phaser.Math.Angle.RotateTo(currentAngle, angleToEnemy, 2 * deltaTime);
-                    
+
                     const speed = Math.sqrt(p.velocityX * p.velocityX + p.velocityY * p.velocityY);
                     p.velocityX = Math.cos(newAngle) * speed;
                     p.velocityY = Math.sin(newAngle) * speed;
@@ -127,10 +127,10 @@ export class PlayerSkillSystem {
         this.scene.physics.overlap(this.projectileGroup, this.enemySystem.enemiesGroup, this.handleProjectileHit, undefined, this);
         this.scene.physics.overlap(this.cleaveGroup, this.enemySystem.enemiesGroup, this.handleCleaveHit, undefined, this);
         this.scene.physics.overlap(this.novaGroup, this.enemySystem.enemiesGroup, this.handleNovaHit, undefined, this);
-        
+
         // Unified Skill Collision
         this.scene.physics.overlap(this.hitboxGroup, this.enemySystem.enemiesGroup, this.handleSkillHit, undefined, this);
-        
+
         // Shuriken Collision
         this.scene.physics.overlap(this.shurikenGroup, this.enemySystem.enemiesGroup, this.handleShurikenHit, undefined, this);
     }
@@ -149,7 +149,7 @@ export class PlayerSkillSystem {
 
         shuriken.hitEnemies.add(enemyId);
         enemy.takeDamage(shuriken.getDamage());
-        shuriken.disableBody(true, true);
+        shuriken.destroy(); // New Shuriken extends Container, not Sprite
     }
 
     private handleSkillHit(obj1: any, obj2: any): void {
@@ -171,17 +171,17 @@ export class PlayerSkillSystem {
             // Or manually:
             // if (!skill.isValidHit(enemy.sprite.x, enemy.sprite.y)) return;
             // skill.applyHit(enemy);
-            
+
             // ShieldBashObject.onHit handles isValidHit check
             skill.hitEnemies.add(enemyId);
-            
+
         } else if (skill instanceof ShadowDashObject) {
             if (skill.hitEnemies.has(enemyId)) return;
             if (skill.onHit) skill.onHit(enemy);
             skill.hitEnemies.add(enemyId);
-            
+
         } else if (skill instanceof WhirlwindObject) {
-            if (skill.onHit) skill.onHit(enemy); 
+            if (skill.onHit) skill.onHit(enemy);
         }
     }
 
@@ -200,7 +200,7 @@ export class PlayerSkillSystem {
         if (!proj.hitEnemies.has(enemyId)) {
             proj.hitEnemies.add(enemyId);
             enemy.takeDamage(proj.damage);
-            
+
             if (proj.options.freeze) {
                 enemy.sprite.setTint(0x00ffff);
             }
@@ -208,30 +208,30 @@ export class PlayerSkillSystem {
             if (proj.options.explosive) {
                 this.castNova(proj.sprite.x, proj.sprite.y, proj.damage * 0.25, 80);
             }
-            
-            if (proj.options.ricochet && !proj.options.homing) { 
-                 const enemies = this.enemySystem.getEnemies();
-                 let closestNext = 400;
-                 let nextTarget = null;
-                 for (const other of enemies) {
-                     const otherId = other.sprite.getData('enemyId');
-                     if (other === enemy || !other.sprite.active || !otherId || proj.hitEnemies.has(otherId)) continue;
-                     const d = Phaser.Math.Distance.Between(enemy.sprite.x, enemy.sprite.y, other.sprite.x, other.sprite.y);
-                     if (d < closestNext) {
-                         closestNext = d;
-                         nextTarget = other;
-                     }
-                 }
 
-                 if (nextTarget) {
-                     const angle = Phaser.Math.Angle.Between(proj.sprite.x, proj.sprite.y, nextTarget.sprite.x, nextTarget.sprite.y);
-                     const speed = 400;
-                     proj.velocityX = Math.cos(angle) * speed;
-                     proj.velocityY = Math.sin(angle) * speed;
-                     proj.sprite.rotation = angle;
-                     proj.options.ricochet = false;
-                     return; 
-                 }
+            if (proj.options.ricochet && !proj.options.homing) {
+                const enemies = this.enemySystem.getEnemies();
+                let closestNext = 400;
+                let nextTarget = null;
+                for (const other of enemies) {
+                    const otherId = other.sprite.getData('enemyId');
+                    if (other === enemy || !other.sprite.active || !otherId || proj.hitEnemies.has(otherId)) continue;
+                    const d = Phaser.Math.Distance.Between(enemy.sprite.x, enemy.sprite.y, other.sprite.x, other.sprite.y);
+                    if (d < closestNext) {
+                        closestNext = d;
+                        nextTarget = other;
+                    }
+                }
+
+                if (nextTarget) {
+                    const angle = Phaser.Math.Angle.Between(proj.sprite.x, proj.sprite.y, nextTarget.sprite.x, nextTarget.sprite.y);
+                    const speed = 400;
+                    proj.velocityX = Math.cos(angle) * speed;
+                    proj.velocityY = Math.sin(angle) * speed;
+                    proj.sprite.rotation = angle;
+                    proj.options.ricochet = false;
+                    return;
+                }
             }
 
             if (proj.hitEnemies.size > proj.pierceCount) {
@@ -268,7 +268,7 @@ export class PlayerSkillSystem {
             }
 
             if (cleave.options.sunder) {
-                enemy.sprite.setTint(0xff0000); 
+                enemy.sprite.setTint(0xff0000);
                 enemy.sprite.setData('sunder', true);
             }
         }
@@ -285,7 +285,7 @@ export class PlayerSkillSystem {
 
         const enemyId = enemySprite.getData('enemyId');
         if (!enemyId) return;
-        
+
         if (nova.hitEnemies.has(enemyId)) return;
 
         enemy.takeDamage(nova.damage);
@@ -296,13 +296,13 @@ export class PlayerSkillSystem {
             enemy.sprite.x += Math.cos(angle) * 30;
             enemy.sprite.y += Math.sin(angle) * 30;
         }
-        
+
         if (nova.options.slow) {
-             enemy.sprite.setTint(0x00ffff);
+            enemy.sprite.setTint(0x00ffff);
         }
 
         if (nova.options.heal) {
-            this.player.heal(enemy.stats.health * nova.options.heal);
+            this.player.heal(this.player.archetype.stats.maxHealth * nova.options.heal);
         }
     }
 
@@ -315,7 +315,7 @@ export class PlayerSkillSystem {
     }
 
     public castCleave(x: number, y: number, targetX: number, targetY: number, damage: number, radius: number = 150, options: CleaveOptions = {}): void {
-        const angle = options.isWide ? Math.PI / 2 : Math.PI / 6; 
+        const angle = options.isWide ? Math.PI / 2 : Math.PI / 6;
         const c = new PlayerCleave(this.scene, x, y, targetX, targetY, damage, radius, angle, options);
         c.sprite.setData('wrapper', c);
         this.cleaves.push(c);
@@ -340,12 +340,12 @@ export class PlayerSkillSystem {
     }
 
     public castShurikenFan(x: number, y: number, targetX: number, targetY: number): void {
-        const skill = new ShurikenFanObject(this.scene, x, y, targetX, targetY, this.shurikenGroup);
+        const skill = new ShurikenFanObject(this.scene, x, y, targetX, targetY);
         this.addSkill(skill);
     }
 
     public castWhirlwind(playerSprite: Phaser.Physics.Arcade.Sprite): void {
-        const skill = new WhirlwindObject(this.scene, playerSprite, 10); 
+        const skill = new WhirlwindObject(this.scene, playerSprite, 10);
         this.addSkill(skill);
     }
 
@@ -359,12 +359,12 @@ export class PlayerSkillSystem {
         this.cleaves.forEach(c => c.destroy());
         this.novas.forEach(n => n.destroy());
         this.skillObjects.forEach(s => s.destroy());
-        
+
         this.projectiles = [];
         this.cleaves = [];
         this.novas = [];
         this.skillObjects = [];
-        
+
         if (this.projectileGroup?.children) this.projectileGroup.clear(true, true);
         if (this.cleaveGroup?.children) this.cleaveGroup.clear(true, true);
         if (this.novaGroup?.children) this.novaGroup.clear(true, true);

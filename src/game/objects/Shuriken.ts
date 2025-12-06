@@ -1,44 +1,80 @@
 import { Scene } from 'phaser';
+import { BaseProjectile, ProjectileOptions } from '../skills/objects/BaseProjectile';
 
-export class Shuriken extends Phaser.Physics.Arcade.Sprite {
-    private damage: number = 10;
-    private lifeTime: number = 2000;
-    private lifeTimer: number = 0;
-    public hitEnemies: Set<number> = new Set(); // Track enemies hit
+/**
+ * Shuriken - Ninja's throwing star projectile
+ * Extends BaseProjectile for shared pierce/freeze/explosion logic.
+ */
+export class Shuriken extends BaseProjectile {
+    private rotationSpeed: number = 15;
 
-    constructor(scene: Scene, x: number, y: number) {
-        super(scene, x, y, 'shuriken'); // Assuming texture key 'shuriken' exists, if not we'll handle fallback
+    constructor(scene: Scene, x: number, y: number, options: ProjectileOptions = {}) {
+        // Shurikens are fast, short-lived
+        super(scene, x, y, 10, 600, 2000, options);
+
+        // Shuriken is a Phaser.Physics.Arcade.Sprite in the original
+        // But BaseProjectile uses Container. We'll create a simple graphic.
+        const graphics = scene.add.graphics();
+        graphics.lineStyle(2, 0xcccccc, 1);
+        graphics.fillStyle(0x888888, 1);
+
+        // Draw 4-pointed star shape
+        graphics.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI / 2);
+            const outerX = Math.cos(angle) * 10;
+            const outerY = Math.sin(angle) * 10;
+            const innerAngle = angle + Math.PI / 4;
+            const innerX = Math.cos(innerAngle) * 4;
+            const innerY = Math.sin(innerAngle) * 4;
+
+            if (i === 0) graphics.moveTo(outerX, outerY);
+            else graphics.lineTo(outerX, outerY);
+            graphics.lineTo(innerX, innerY);
+        }
+        graphics.closePath();
+        graphics.fillPath();
+        graphics.strokePath();
+        this.add(graphics);
+
+        // Body
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setCircle(10);
+            body.setOffset(-10, -10);
+        }
     }
 
-    public fire(x: number, y: number, angle: number, speed: number, damage: number): void {
-        this.enableBody(true, x, y, true, true);
-        this.setActive(true);
-        this.setVisible(true);
-        this.hitEnemies.clear();
-        this.damage = damage;
-        this.lifeTimer = 0;
+    public fire(targetX: number, targetY: number): void {
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        const angle = Math.atan2(dy, dx);
 
-        // Velocity
-        this.scene.physics.velocityFromRotation(angle, speed, this.body!.velocity);
-        
-        // Size
-        this.body!.setCircle(10); 
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            this.scene.physics.velocityFromRotation(angle, this.speed, body.velocity);
+        }
     }
 
-    public update(_time: number, delta: number): void {
+    /**
+     * Fire at a specific angle (radians) - used by ShurikenFanSkill for spread
+     */
+    public fireAtAngle(angle: number): void {
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            this.scene.physics.velocityFromRotation(angle, this.speed, body.velocity);
+        }
+    }
+
+    public update(_deltaTime: number): void {
         if (!this.active) return;
 
-        this.lifeTimer += delta;
-        if (this.lifeTimer >= this.lifeTime) {
-            this.disableBody(true, true);
-            return;
-        }
-
         // Spin visual
-        this.angle += 15;
+        this.angle += this.rotationSpeed;
     }
 
     public getDamage(): number {
         return this.damage;
     }
 }
+

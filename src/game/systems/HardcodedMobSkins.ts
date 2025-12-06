@@ -114,7 +114,7 @@ export function preventDynamicSkinAssignment(context: string): never {
 export function verifyHardcodedSystem(): boolean {
     // Verify all mob spawner UI types have hardcoded skins
     validateAllMobSpawnerSkins();
-    
+
     // Verify no dynamic references exist
     const allTypes = Object.values(EnemyType);
     for (const type of allTypes) {
@@ -124,7 +124,7 @@ export function verifyHardcodedSystem(): boolean {
         }
         validateHardcodedSkin(type);
     }
-    
+
     console.log('✅ Hardcoded mob skin system verification passed');
     return true;
 }
@@ -149,7 +149,7 @@ export function validateNoRandomSelection(selectedSkin: string, expectedSkin: st
  */
 export function validateSkinImmutability(enemyType: EnemyType, iterations: number = 10): boolean {
     const firstSkin = getHardcodedMobSkin(enemyType);
-    
+
     for (let i = 0; i < iterations; i++) {
         const currentSkin = getHardcodedMobSkin(enemyType);
         if (currentSkin !== firstSkin) {
@@ -159,7 +159,7 @@ export function validateSkinImmutability(enemyType: EnemyType, iterations: numbe
             );
         }
     }
-    
+
     return true;
 }
 
@@ -169,31 +169,25 @@ export function validateSkinImmutability(enemyType: EnemyType, iterations: numbe
  */
 export function performSystemIntegrityCheck(): boolean {
     console.log('🔍 Performing comprehensive hardcoded mob skin system integrity check...');
-    
-    try {
-        // 1. Verify all enemy types have hardcoded skins
-        verifyHardcodedSystem();
-        
-        // 2. Test immutability for all enemy types
-        Object.values(EnemyType).forEach(type => {
-            validateSkinImmutability(type, 20); // Test 20 iterations
-        });
-        
-        // 3. Verify mob spawner UI compliance
-        validateAllMobSpawnerSkins();
-        
-        // 4. Check that all hardcoded skins exist in the system
-        Object.keys(HARDCODED_MOB_SKINS).forEach(enemyType => {
-            validateHardcodedSkin(enemyType as EnemyType);
-        });
-        
-        console.log('✅ System integrity check PASSED - All validations successful');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ System integrity check FAILED:', error);
-        throw error;
-    }
+
+    // 1. Verify all enemy types have hardcoded skins
+    verifyHardcodedSystem();
+
+    // 2. Test immutability for all enemy types
+    Object.values(EnemyType).forEach(type => {
+        validateSkinImmutability(type, 20); // Test 20 iterations
+    });
+
+    // 3. Verify mob spawner UI compliance
+    validateAllMobSpawnerSkins();
+
+    // 4. Check that all hardcoded skins exist in the system
+    Object.keys(HARDCODED_MOB_SKINS).forEach(enemyType => {
+        validateHardcodedSkin(enemyType as EnemyType);
+    });
+
+    console.log('✅ System integrity check PASSED - All validations successful');
+    return true;
 }
 
 /**
@@ -203,10 +197,10 @@ export function performSystemIntegrityCheck(): boolean {
 export function developmentValidation(): void {
     if (process.env.NODE_ENV === 'development') {
         performSystemIntegrityCheck();
-        
+
         // Additional development checks
         console.log('🛠️ Development validation: Checking for potential dynamic references...');
-        
+
         // Verify that the hardcoded mapping is complete
         const mobSpawnerTypes = [
             EnemyType.SKELETON_VIKING,
@@ -216,17 +210,17 @@ export function developmentValidation(): void {
             EnemyType.SKELETON_PIRATE,
             EnemyType.ELEMENTAL_SPIRIT
         ];
-        
+
         const allTypes = [
             ...mobSpawnerTypes,
             EnemyType.LIGHTNING_MAGE
         ];
-        
+
         allTypes.forEach(type => {
             const skin = getHardcodedMobSkin(type);
             console.log(`✓ ${type} → ${skin} (hardcoded)`);
         });
-        
+
         console.log('✅ Development validation completed successfully');
     }
 }

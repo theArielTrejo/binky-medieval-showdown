@@ -12,8 +12,8 @@ import { SkillLoadout } from './skills/SkillLoadout';
 import { ShieldBashSkill } from './skills/ShieldBashSkill';
 import { ShadowDashSkill } from './skills/ShadowDashSkill';
 import { CleaveSkill } from './skills/CleaveSkill';
-import { ProjectileSkill } from './skills/ProjectileSkill';
 import { ShurikenFanSkill } from './skills/ShurikenFanSkill';
+import { NovaSkill } from './skills/NovaSkill';
 import { WhirlwindSkill } from './skills/WhirlwindSkill';
 
 import { CombatComponent } from './components/CombatComponent';
@@ -30,24 +30,28 @@ import { ChannelingState } from './states/ChannelingState';
 
 export class Player {
     public sprite: Phaser.Physics.Arcade.Sprite;
-    public archetype: PlayerArchetype; 
+    public archetype: PlayerArchetype;
     public loadout: SkillLoadout;
     public combatComponent: CombatComponent;
     public visualComponent: VisualComponent;
-    
+
     public scene: Scene;
-    
+
     // FSM State
     public stateMachine: StateMachine;
     public inputManager: InputManager;
     public inputBuffer?: InputBuffer;
     public cooldownManager: CooldownManager;
     public passiveManager: PassiveManager;
-    
+
     public slowMultiplier: number = 1.0;
     private slowEndTime: number = 0;
     public facingLeft: boolean = false;
     private lastToggleTime: number = 0;
+
+    public resetToggleCooldown(): void {
+        this.lastToggleTime = this.scene.time.now;
+    }
 
     /** Convert "idle_blinking" → "Idle_Blinking" for JSON frame names */
     private capitalizeWords(name: string): string {
@@ -62,7 +66,7 @@ export class Player {
         this.passiveManager = new PassiveManager(scene); // Initialize PassiveManager
         this.archetype = new PlayerArchetype(archetypeType);
         this.combatComponent = new CombatComponent(this, this.passiveManager); // Initialize Combat Component
-        
+
         this.loadout = new SkillLoadout();
         if (this.archetype.type === PlayerArchetypeType.TANK) {
             this.loadout.primary = new CleaveSkill();
@@ -72,7 +76,8 @@ export class Player {
             this.loadout.primary = new ShurikenFanSkill();
             this.loadout.secondary = new ShadowDashSkill();
         } else {
-            this.loadout.primary = new ProjectileSkill();
+            this.loadout.primary = new NovaSkill();
+            this.loadout.secondary = new ShadowDashSkill();
         }
 
         // Initialize Registry if needed
@@ -87,10 +92,10 @@ export class Player {
         let characterBase = this.getArchetypeDisplayName().toLowerCase();
         const formattedName = characterBase.charAt(0).toUpperCase() + characterBase.slice(1);
         if (characterBase === 'rogue') characterBase = 'ninja';
-        
+
         const idleName = this.archetype.type === PlayerArchetypeType.TANK ? 'idle' : 'idle_blinking';
         const initialFrame = `0_${formattedName}_${this.capitalizeWords(idleName)}_000.png`;
-        
+
         this.sprite = scene.physics.add.sprite(x, y, `${characterBase}_${idleName}`, initialFrame);
 
         // Immediately play idle animation
@@ -177,7 +182,7 @@ export class Player {
     }
 
     // --- (getArchetypeDisplayName, setEnemyDeathCallback, handleEnemyDeath remain the same) ---
-     private getArchetypeDisplayName(): string {
+    private getArchetypeDisplayName(): string {
         switch (this.archetype.type) {
             case PlayerArchetypeType.TANK:
                 return 'Knight';
@@ -187,18 +192,18 @@ export class Player {
                 return 'Ninja';
         }
     }
-    
+
     // handleEnemyDeath removed as it was unused
 
     public update(_enemies: Enemy[], deltaTime: number): void {
         this.inputManager.update();
-        
+
         // Toggle Skill Tree
         if (this.inputManager.isActionJustPressed(PlayerAction.TOGGLE_SKILL_TREE)) {
             const now = this.scene.time.now;
             if (now - this.lastToggleTime > 500) {
                 this.lastToggleTime = now;
-                this.scene.scene.pause('GameScene');
+                this.scene.scene.pause('Game'); // Fixed: was 'GameScene' but scene key is 'Game'
                 this.scene.scene.launch('SkillTreeScene', { archetype: this.archetype.type });
                 this.scene.scene.bringToTop('SkillTreeScene');
             }
@@ -217,16 +222,17 @@ export class Player {
         if (this.loadout.secondary) {
             this.loadout.secondary.activate(this);
         } else {
-             console.log("Secondary skill not implemented for this class yet");
-             this.stateMachine.transition(PlayerState.IDLE);
+            console.log("Secondary skill not implemented for this class yet");
+            // Use delayedCall to avoid recursive state transition issues
+            this.scene.time.delayedCall(0, () => {
+                this.stateMachine.transition(PlayerState.IDLE);
+            });
         }
     }
-    
-    // ... applyMovement ...
 
     public applyMovement(moveVector: Phaser.Math.Vector2): void {
         this.updateSlowEffect();
-        
+
         let velocityX = moveVector.x * this.archetype.stats.speed;
         let velocityY = moveVector.y * this.archetype.stats.speed;
 
@@ -252,7 +258,7 @@ export class Player {
 
         this.archetype.updatePosition(this.sprite.x, this.sprite.y, this.scene.time.now);
     }
-    
+
     public playAnimation(animationName: keyof CharacterAnimationSet): void {
         this.visualComponent.playAnimation(animationName);
     }
@@ -266,17 +272,17 @@ export class Player {
 
         // Special logic for Whirlwind (Knight) - Allow slow movement
         if (this.archetype.type === PlayerArchetypeType.TANK) {
-             const moveVector = this.inputManager.getMovementVector();
-             // Apply movement with 50% speed penalty
-             
-             let velocityX = moveVector.x * this.archetype.stats.speed * 0.5;
-             let velocityY = moveVector.y * this.archetype.stats.speed * 0.5;
+            const moveVector = this.inputManager.getMovementVector();
+            // Apply movement with 50% speed penalty
 
-             const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-             body.setVelocity(velocityX, velocityY);
-             
-             // Update archetype position tracking
-             this.archetype.updatePosition(this.sprite.x, this.sprite.y, this.scene.time.now);
+            let velocityX = moveVector.x * this.archetype.stats.speed * 0.5;
+            let velocityY = moveVector.y * this.archetype.stats.speed * 0.5;
+
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            body.setVelocity(velocityX, velocityY);
+
+            // Update archetype position tracking
+            this.archetype.updatePosition(this.sprite.x, this.sprite.y, this.scene.time.now);
         } else {
             // Other classes might be stationary channel
             this.sprite.setVelocity(0, 0);
@@ -289,7 +295,10 @@ export class Player {
         } else {
             // Ninja / Mage Special not implemented yet
             console.log("Special skill not implemented for this class");
-            this.stateMachine.transition(PlayerState.IDLE);
+            // Use delayedCall to avoid recursive state transition issues
+            this.scene.time.delayedCall(0, () => {
+                this.stateMachine.transition(PlayerState.IDLE);
+            });
         }
     }
 
@@ -304,12 +313,12 @@ export class Player {
     public updateHealthBar(): void {
         this.visualComponent.updateHealthBar();
     }
-    
+
     private updateArchetype(): void {
         // Check for level up using gainXP(0) to trigger internal checks
         this.gainXP(0);
     }
-    
+
     // updateInvulnerability REMOVED (delegated)
 
     private updateSlowEffect(): void {
@@ -323,7 +332,7 @@ export class Player {
     public isAlive(): boolean {
         return this.archetype.currentHealth > 0;
     }
-    
+
     public collectXPOrbs(system: XPOrbSystem): void {
         system.collectOrbs(this.sprite.x, this.sprite.y, (xp) => {
             this.gainXP(xp);
@@ -336,7 +345,7 @@ export class Player {
             // Visual effect
             const txt = this.scene.add.text(this.sprite.x, this.sprite.y - 60, "LEVEL UP!", { color: "#ffff00", fontSize: "20px", fontStyle: "bold" });
             this.scene.tweens.add({ targets: txt, y: txt.y - 50, alpha: 0, duration: 1500, onComplete: () => txt.destroy() });
-            
+
             // Sync points
             this.scene.registry.set('skillPoints', this.archetype.skillPoints);
         }
@@ -379,7 +388,7 @@ export class Player {
     public takeDamage(amount: number): void {
         this.combatComponent.takeDamage(amount);
     }
-    
+
     public destroy(): void {
         this.scene.events.off('resume', this.onSceneResume, this);
         this.inputManager.destroy();

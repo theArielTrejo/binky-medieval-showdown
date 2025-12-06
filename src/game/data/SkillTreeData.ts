@@ -68,9 +68,9 @@ export const skillTreeData: { [key in SkillArchetype]: SkillTree } = {
                 name: "The Sniper",
                 skills: [
                     { name: "Piercing Shots", type: SkillType.ATTACK_MOD, description: "Your bullets now pass through one additional enemy.", tier: 1, icon: "➡️", prerequisites: [], x: 0, y: 0 },
-                    { name: "Deadeye", type: SkillType.PASSIVE, description: "Your projectileAttack speed is reduced by 20%, but projectile damage is increased by 40%.", tier: 2, icon: "🎯", prerequisites: ["Piercing Shots"], x: -150, y: 200 },
+                    { name: "Explosive Rounds", type: SkillType.ATTACK_MOD, description: "Your projectiles explode on every hit, dealing 25% splash damage to nearby enemies.", tier: 2, icon: "💥", prerequisites: ["Piercing Shots"], x: -150, y: 200 },
                     { name: "Long Shot", type: SkillType.PASSIVE, description: "Your projectiles gain bonus damage based on the distance traveled, up to +50% at maximum range.", tier: 3, icon: "♐", prerequisites: ["Piercing Shots"], x: 150, y: 200 },
-                    { name: "Headshot", type: SkillType.PASSIVE, description: "Every 4th projectileAttack is a guaranteed critical hit, dealing 250% damage.", tier: 4, icon: "💯", prerequisites: ["Deadeye", "Long Shot"], x: 0, y: 400 },
+                    { name: "Multi-Shot", type: SkillType.ATTACK_MOD, description: "Fire 2 projectiles instead of 1, slightly spread apart.", tier: 4, icon: "🎯", prerequisites: ["Explosive Rounds", "Long Shot"], x: 0, y: 400 },
                 ],
             },
             "Trickster": {
