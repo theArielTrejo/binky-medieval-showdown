@@ -147,7 +147,7 @@ export class Game extends Scene {
                 { name: 'floor1', imageKey: 'floor1', imagePath: 'assets/tilemaps/floor1.png' },
                 { name: 'GraveyardTileset', imageKey: 'GraveyardTileset', imagePath: 'assets/tilemaps/GraveyardTileset.png' },
                 { name: 'tiledwallandfloor', imageKey: 'tiledwallandfloor', imagePath: 'assets/tilemaps/tiledwallandfloor.png' },
-                { name: 'gatedoorandflags', imageKey: 'gatedoorandflags', imagePath: 'assets/tilemaps/gatedoorandflags.png' },
+
                 { name: 'castlewall', imageKey: 'castlewall', imagePath: 'assets/tilemaps/castlewall.png' },
                 { name: 'objecthouserocksstatues', imageKey: 'objecthouserocksstatues', imagePath: 'assets/tilemaps/objecthouserocksstatues.png' },
                 { name: 'houses1', imageKey: 'houses1', imagePath: 'assets/tilemaps/houses1.png' },
@@ -162,17 +162,14 @@ export class Game extends Scene {
                 { name: 'farmgrass', imageKey: 'farmgrass', imagePath: 'assets/tilemaps/farmgrass.png' },
                 { name: 'farmobjects', imageKey: 'farmobjects', imagePath: 'assets/tilemaps/farmobjects.png' },
                 { name: 'collision', imageKey: 'collision', imagePath: 'assets/tilemaps/collision.png' },
-                { name: 'D_CastleGate', imageKey: 'D_CastleGate', imagePath: 'assets/tilemaps/D_CastleGate.png' },
-                { name: 'Portcullis', imageKey: 'Portcullis', imagePath: 'assets/tilemaps/Portcullis.png' },
-                { name: 'grassclippings2', imageKey: 'grassclippings2', imagePath: 'assets/tilemaps/grassclippings2.png' },
-                { name: 'objectbrickstools', imageKey: 'objectbrickstools', imagePath: 'assets/tilemaps/objectbrickstools.png' },
+
                 { name: 'FieldsTileset', imageKey: 'FieldsTileset', imagePath: 'assets/tilemaps/FieldsTileset.png' },
                 { name: 'forrestground', imageKey: 'forrestground', imagePath: 'assets/tilemaps/forrestground.png' },
                 { name: 'forrestobjects', imageKey: 'forrestobjects', imagePath: 'assets/tilemaps/forrestobjects.png' },
                 { name: 'spots_lianas', imageKey: 'spots_lianas', imagePath: 'assets/tilemaps/spots_lianas.png' },
                 { name: 'Water_coasts', imageKey: 'Water_coasts', imagePath: 'assets/tilemaps/Water_coasts.png' },
                 { name: 'water_detilazation', imageKey: 'water_detilazation', imagePath: 'assets/tilemaps/water_detilazation.png' },
-                { name: 'water_detilazation_v2', imageKey: 'water_detilazation_v2', imagePath: 'assets/tilemaps/water_detilazation_v2.png' },
+
                 { name: 'Water_lilis', imageKey: 'Water_lilis', imagePath: 'assets/tilemaps/Water_lilis.png' }
             ],
             layers: [
@@ -182,7 +179,6 @@ export class Game extends Scene {
                 { name: 'foregroundobjects', tilesets: [], depth: 4, visible: true, collides: false }, // Solid structures
                 { name: 'Trees', tilesets: [], depth: 5, visible: true, collides: false }, // Trees are solid
                 { name: 'collisions', tilesets: [], visible: true, collides: true }, // Dedicated collision layer
-                { name: 'objectcollisions', tilesets: [], visible: true, collides: true } // Object collision layer
             ]
         };
 

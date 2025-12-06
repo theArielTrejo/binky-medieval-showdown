@@ -124,13 +124,15 @@ export class SkillTreeScene extends Scene {
     }
 
     private handleResize(gameSize: Phaser.Structs.Size) {
+        if (!this.scene.isActive() || !this.cameras || !this.cameras.main) return;
+
         const width = gameSize.width;
         const height = gameSize.height;
 
         // Resize all cameras
         this.cameras.main.setSize(width, height);
-        this.worldCamera.setSize(width, height);
-        this.uiCamera.setSize(width, height);
+        if (this.worldCamera) this.worldCamera.setSize(width, height);
+        if (this.uiCamera) this.uiCamera.setSize(width, height);
 
         // Resize Star Layers
         const dimension = Math.max(width, height) * 2.5;

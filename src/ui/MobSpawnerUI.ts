@@ -26,7 +26,7 @@ export class MobSpawnerUI {
         if (zoom !== 1) {
             this.container.setScale(1 / zoom);
         }
-        
+
         this.createUI();
         this.createToggleHint();
         this.setupKeyboardShortcuts();
@@ -46,7 +46,7 @@ export class MobSpawnerUI {
     private createUI(): void {
         const panelWidth = 220;
         const panelHeight = 565; // Increased to fit 7 buttons
-        
+
         // Create main panel background with enhanced styling
         const panelBg = this.scene.add.rectangle(0, 0, panelWidth, panelHeight, 0x1a1a1a, 0.95);
         panelBg.setStrokeStyle(2, 0x4a90e2, 0.8);
@@ -68,7 +68,7 @@ export class MobSpawnerUI {
         this.container.add(this.headerText);
 
         // Instructions with better styling
-        const instructions = this.scene.add.text(10, 50, 'Click to spawn at cursor\nHotkeys: 1-7, T to toggle', {
+        const instructions = this.scene.add.text(10, 50, 'Click to spawn at cursor\nHotkeys: 1-7, M to toggle', {
             fontSize: '11px',
             color: '#cccccc',
             fontFamily: 'Arial',
@@ -78,45 +78,45 @@ export class MobSpawnerUI {
 
         // Enhanced mob type buttons with icons and better colors
         const mobTypes = [
-            { 
-                type: EnemyType.SKELETON_VIKING, 
-                name: '🛡️ Skeleton Viking', 
+            {
+                type: EnemyType.SKELETON_VIKING,
+                name: '🛡️ Skeleton Viking',
                 color: 0x8844ff,
                 description: 'Shield & Cone Attack'
             },
-            { 
-                type: EnemyType.OGRE, 
-                name: '🗿 Ogre', 
+            {
+                type: EnemyType.OGRE,
+                name: '🗿 Ogre',
                 color: 0x888888,
                 description: 'Heavy Melee'
             },
-            { 
-                type: EnemyType.ARCHER, 
-                name: '🏹 Archer', 
+            {
+                type: EnemyType.ARCHER,
+                name: '🏹 Archer',
                 color: 0x44ff44,
                 description: 'Ranged Projectiles'
             },
-            { 
-                type: EnemyType.GNOLL, 
-                name: '🐺 Gnoll', 
+            {
+                type: EnemyType.GNOLL,
+                name: '🐺 Gnoll',
                 color: 0xff8844,
                 description: 'Fast Melee'
             },
-            { 
-                type: EnemyType.SKELETON_PIRATE, 
-                name: '🏴‍☠️ Skeleton Pirate', 
+            {
+                type: EnemyType.SKELETON_PIRATE,
+                name: '🏴‍☠️ Skeleton Pirate',
                 color: 0x00cccc,
                 description: 'Vortex & Slow'
             },
-            { 
-                type: EnemyType.ELEMENTAL_SPIRIT, 
-                name: '🔥 Elemental Spirit', 
+            {
+                type: EnemyType.ELEMENTAL_SPIRIT,
+                name: '🔥 Elemental Spirit',
                 color: 0xff6600,
                 description: 'Explosive Suicide'
             },
-            { 
-                type: EnemyType.LIGHTNING_MAGE, 
-                name: '⚡ Lightning Mage', 
+            {
+                type: EnemyType.LIGHTNING_MAGE,
+                name: '⚡ Lightning Mage',
                 color: 0x66ddff,
                 description: 'AOE Lightning Strike'
             }
@@ -125,11 +125,11 @@ export class MobSpawnerUI {
         let yOffset = 85;
         mobTypes.forEach((mob, index) => {
             const button = this.createEnhancedButton(
-                mob.name, 
+                mob.name,
                 mob.description,
-                mob.color, 
-                10, 
-                yOffset, 
+                mob.color,
+                10,
+                yOffset,
                 () => this.spawnMobAtCursor(mob.type),
                 index + 1
             );
@@ -200,7 +200,7 @@ export class MobSpawnerUI {
             bg.setFillStyle(color, 1);
             bg.setStrokeStyle(2, 0xffffff, 0.8);
             buttonContainer.setScale(1.02);
-            
+
             // Add glow effect
             this.scene.tweens.add({
                 targets: bg,
@@ -215,7 +215,7 @@ export class MobSpawnerUI {
             bg.setFillStyle(color, 0.8);
             bg.setStrokeStyle(1, 0xffffff, 0.3);
             buttonContainer.setScale(1);
-            
+
             // Remove glow effect
             this.scene.tweens.killTweensOf(bg);
             bg.setAlpha(1);
@@ -245,7 +245,7 @@ export class MobSpawnerUI {
         bg.setOrigin(0, 0);
         bg.setInteractive({ useHandCursor: true });
 
-        const text = this.scene.add.text(buttonWidth / 2, buttonHeight / 2, '👁️ Toggle UI [T]', {
+        const text = this.scene.add.text(buttonWidth / 2, buttonHeight / 2, '👁️ Toggle UI [M]', {
             fontSize: '12px',
             color: '#ffffff',
             fontFamily: 'Arial',
@@ -277,7 +277,7 @@ export class MobSpawnerUI {
             const code = evt.code || '';
             const key = (evt.key || '').toLowerCase();
             // Toggle
-            if (code === 'KeyT' || key === 't') {
+            if (code === 'KeyM' || key === 'm') {
                 this.toggleVisibility();
                 return;
             }
@@ -342,7 +342,7 @@ export class MobSpawnerUI {
 
     private createSpawnEffect(x: number, y: number, type: EnemyType): void {
         // Create multiple visual effects for better feedback
-        
+
         // Main spawn circle
         const circle = this.scene.add.circle(x, y, 25, 0xffffff, 0.8);
         circle.setDepth(999);
@@ -441,7 +441,7 @@ export class MobSpawnerUI {
         } else {
             this.show();
         }
-        
+
         console.log(`🎮 Mob Spawner UI ${this.visible ? 'shown' : 'hidden'}`);
     }
 
@@ -460,7 +460,7 @@ export class MobSpawnerUI {
         this.container.setVisible(true);
         this.container.setAlpha(0);
         this.toggleHint.setVisible(false);
-        
+
         this.scene.tweens.add({
             targets: this.container,
             alpha: 1,

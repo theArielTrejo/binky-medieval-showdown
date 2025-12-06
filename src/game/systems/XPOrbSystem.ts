@@ -21,25 +21,25 @@ export class XPOrbSystem {
 
     public spawnXPOrbs(x: number, y: number, enemyType: EnemyType, totalXP: number): void {
         const orbConfig = this.getOrbConfiguration(enemyType, totalXP);
-        
+
         for (let i = 0; i < orbConfig.count; i++) {
             const orb = this.orbsGroup.get() as XPOrb;
 
             if (orb) {
                 const angle = (Math.PI * 2 * i) / orbConfig.count + Math.random() * XP_CONSTANTS.SPAWN_ANGLE_VARIANCE;
-                
+
                 const distance = Phaser.Math.Between(XP_CONSTANTS.SPAWN_DISTANCE_MIN, XP_CONSTANTS.SPAWN_DISTANCE_MAX);
-                
+
                 const orbX = x + Math.cos(angle) * distance;
                 const orbY = y + Math.sin(angle) * distance;
-                
+
                 const clampedPos = clampToGameBounds(orbX, orbY, this.scene);
-                
+
                 orb.launch(clampedPos.x, clampedPos.y, orbConfig.xpPerOrb);
             }
         }
     }
-    
+
     private getOrbConfiguration(enemyType: EnemyType, totalXP: number): { count: number; xpPerOrb: number } {
         const config = getOrbConfigForEnemyType(enemyType);
         let finalCount = config.baseCount;
@@ -52,23 +52,23 @@ export class XPOrbSystem {
         const xpPerOrb = Math.ceil(totalXP / finalCount);
         return { count: finalCount, xpPerOrb };
     }
-    
 
-    
+
+
     public collectOrbs(playerX: number, playerY: number, onXPCollected: (xp: number) => void): number {
         let totalXPCollected = 0;
         let collectedThisFrame = 0;
         const MAX_COLLECTIONS_PER_FRAME = 5;
         const PICKUP_RANGE = 25; // Distance to trigger actual collection
         const MAGNET_SPEED = 300;
-        
+
         this.orbsGroup.getChildren().forEach(orbGO => {
             const orb = orbGO as XPOrb;
             if (!orb.active || orb.isOrbCollected()) return;
 
             // Distance check
             const dist = Phaser.Math.Distance.Between(orb.x, orb.y, playerX, playerY);
-            
+
             // 1. Magnetize if in range
             if (dist <= this.collectionRange) {
                 // Update magnet target every frame so it follows the player
@@ -84,18 +84,18 @@ export class XPOrbSystem {
 
                     // Trigger effect and kill
                     EffectManager.createCollectionEffect(this.scene, orb.x, orb.y, xpValue);
-                    
+
                     orb.collect(() => {
                         onXPCollected(xpValue);
                     });
                 } else {
                     // If we hit the limit, we just keep magnetizing it close to the player
                     // It will be collected in the next frame(s)
-                    orb.magnetize(playerX, playerY, MAGNET_SPEED); 
+                    orb.magnetize(playerX, playerY, MAGNET_SPEED);
                 }
             }
         });
-        
+
         return totalXPCollected;
     }
 
@@ -104,6 +104,7 @@ export class XPOrbSystem {
     }
 
     public clearAllOrbs(): void {
+        if (!this.orbsGroup || !this.orbsGroup.children) return;
         this.orbsGroup.getChildren().forEach(orbGO => {
             const orb = orbGO as XPOrb;
             if (orb.active) {
@@ -115,11 +116,11 @@ export class XPOrbSystem {
     public getAllOrbs(): XPOrb[] {
         return this.orbsGroup.getMatching('active', true) as XPOrb[];
     }
-    
+
     public getCollectionRange(): number {
         return this.collectionRange;
     }
-    
+
     public setCollectionRange(range: number): void {
         this.collectionRange = clampCollectionRange(range);
     }
