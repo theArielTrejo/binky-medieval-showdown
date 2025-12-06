@@ -772,7 +772,7 @@ export class Game extends Scene {
         this.darkness = this.add.rectangle(
             0, 0,
             this.cameras.main.width, this.cameras.main.height,
-            0x000000, 1 //Change it to 0 for debug
+            0x000000, 0 //Change it to 0 for debug
         ).setOrigin(0).setScrollFactor(0).setDepth(9998).setVisible(false);
 
         // --- Vision mask (the radius of light around player) ---
@@ -1496,7 +1496,8 @@ export class Game extends Scene {
         // --- DOOR CONTROL LOGIC ---
         // The door to the Dark Forest unlocks ONLY when Round 5 is reached.
         // Rounds 1-4: Door remains locked and impassable.
-        if (!this.doorOpened && this.roundManager && this.roundManager.getCurrentRound() >= 5) {
+        // Set to 1 to debug
+        if (!this.doorOpened && this.roundManager && this.roundManager.getCurrentRound() >= 1) {
             this.openDoor();
         }
     }
