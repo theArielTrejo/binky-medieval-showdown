@@ -77,11 +77,11 @@ export class LightingSystem {
             const sy = playerPos.y - cam.scrollY;
 
             this.visionGfx.clear();
-            const radius = 1; // visible radius
-            const fadeRings = 6; // rings around radius
-            const ringStep = 10; // length of one ring to another
+            const radius = 80; // visible radius
+            const fadeRings = 3; // rings around radius (reduced for less fog)
+            const ringStep = 20; // length of one ring to another
             for (let i = fadeRings; i >= 0; i--) {
-                const alpha = 0.2 - i * 0.02; // Light
+                const alpha = 0.3 - i * 0.08; // Sharper falloff, less fog
                 this.visionGfx.fillStyle(0xffeedd, Math.max(alpha, 0));
                 this.visionGfx.fillCircle(sx, sy, radius + i * ringStep);
             }

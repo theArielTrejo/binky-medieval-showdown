@@ -555,10 +555,18 @@ export class Game extends Scene {
         this.roundManager?.update(deltaTime);
 
         // --- DOOR CONTROL LOGIC ---
-        // The door to the Dark Forest unlocks ONLY when Round 5 is reached.
-        // Rounds 1-4: Door remains locked and impassable.
-        if (this.roundManager && this.roundManager.getCurrentRound() >= 5) {
-            this.mapInteractionSystem.openDarkForestGate();
+        // Open doors after completing specific waves (thresholds use next-round start, e.g., >5 means wave 5 completed)
+        if (this.roundManager && this.mapInteractionSystem) {
+            const round = this.roundManager.getCurrentRound();
+            if (round >= 6) {
+                this.mapInteractionSystem.openDoorGroup(0, 'The Dark Forest Gate has opened!');
+            }
+            if (round >= 11) {
+                this.mapInteractionSystem.openDoorGroup(1, "Binky's Town Gate has opened!");
+            }
+            if (round >= 16) {
+                this.mapInteractionSystem.openDoorGroup(2, ' Water Ways Gate has opened!');
+            }
         }
     }
 
