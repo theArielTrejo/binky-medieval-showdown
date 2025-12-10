@@ -6,8 +6,8 @@ import { ExplosionAttack } from '../attacks/ExplosionAttack';
 export class ElementalSpiritEnemy extends BaseEnemy {
     private isExploding: boolean = false;
     private deathTimer: number = 0;
-    private readonly deathAnimationDuration: number = 0.75;
-    private readonly explosionTriggerRange: number = 30;
+    private readonly deathAnimationDuration: number = 0.75; // Duration of death animation (15 frames at ~20fps)
+    private readonly explosionTriggerRange: number = 30; // Distance at which to trigger death/explosion
 
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, EnemyType.ELEMENTAL_SPIRIT);
@@ -15,9 +15,9 @@ export class ElementalSpiritEnemy extends BaseEnemy {
 
     protected getStats(): EnemyStats {
         const baseStats = {
-            health: 30,
-            speed: 110,
-            damage: 25,
+            health: 30, // Low health - designed to explode
+            speed: 110, // Very high mobility to rush player
+            damage: 25, // High explosion damage
             size: 30,
             xpValue: 20
         };
@@ -35,15 +35,18 @@ export class ElementalSpiritEnemy extends BaseEnemy {
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
 
         // Exploding State
         if (this.isExploding) {
             this.deathTimer += deltaTime;
-            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             if (body) body.setVelocity(0, 0);
 
             if (this.deathTimer >= this.deathAnimationDuration) {
+                // Death animation complete, trigger explosion
                 const explosion = new ExplosionAttack(this.scene, this.sprite.x, this.sprite.y, this.stats.damage);
+                
+                // Destroy the sprite immediately after creating explosion
                 this.destroy();
                 
                 return { 
@@ -59,16 +62,16 @@ export class ElementalSpiritEnemy extends BaseEnemy {
 
         // Movement / Trigger
         if (distance <= this.explosionTriggerRange) {
+            // Close enough to trigger death animation
             this.isExploding = true;
             this.deathTimer = 0;
-            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             if (body) body.setVelocity(0, 0);
-            this.playAnimation(this.mobAnimations.idle);
-            console.log(`Enemy #${this.sprite.getData('enemyId')} (ELEMENTAL_SPIRIT) triggered death sequence`);
+            // Play the dying animation - explosion happens after it finishes
+            this.sprite.play('elemental_spirit_dying');
         } else {
+            // Rush towards player with high speed
             const velocityX = (dx / distance) * this.stats.speed;
             const velocityY = (dy / distance) * this.stats.speed;
-            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             

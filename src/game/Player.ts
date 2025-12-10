@@ -45,7 +45,7 @@ export class Player {
     public passiveManager: PassiveManager;
 
     public slowMultiplier: number = 1.0;
-    private slowEndTime: number = 0;
+    public slowEndTime: number = 0;
     public facingLeft: boolean = false;
     private lastToggleTime: number = 0;
 

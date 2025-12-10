@@ -6,8 +6,18 @@ import { LightningStrikeAttack } from '../attacks/LightningStrikeAttack';
 export class LightningMageEnemy extends BaseEnemy {
     private lightningCooldown: number = 0;
     private readonly lightningInterval: number = 3.0;
-    private readonly optimalRange: number = 320;
-    private readonly minRange: number = 180;
+    private readonly optimalRange: number = 320; // Preferred casting distance (reduced to fit in camera view)
+    private readonly minRange: number = 180; // Minimum distance to maintain
+
+    // Slashing animation state
+    private lightningMageIsSlashing: boolean = false;
+    private lightningMageSlashTimer: number = 0;
+    private readonly lightningMageSlashDuration: number = 0.75; // Duration of slashing animation (12 frames at 16fps)
+    private lightningMageStrikeSpawned: boolean = false; // Track if lightning strike has been spawned this cycle
+    
+    // Store target position for delayed lightning spawn
+    private targetPlayerX: number = 0;
+    private targetPlayerY: number = 0;
 
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, EnemyType.LIGHTNING_MAGE);
@@ -15,9 +25,9 @@ export class LightningMageEnemy extends BaseEnemy {
 
     protected getStats(): EnemyStats {
         const baseStats = {
-            health: 70,
-            speed: 40,
-            damage: 35,
+            health: 70, // Medium health - ranged caster
+            speed: 40, // Slow movement - prefers to keep distance
+            damage: 35, // High AOE damage
             size: 35,
             xpValue: 22
         };
@@ -33,69 +43,98 @@ export class LightningMageEnemy extends BaseEnemy {
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
         if (this.lightningCooldown > 0) this.lightningCooldown -= deltaTime;
-        
-        if (this.isAttacking) {
-            this.attackTimer -= deltaTime;
-            if (this.attackTimer <= 0) this.isAttacking = false;
-            
-            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-            if (body) body.setVelocity(0, 0);
-            this.playAnimation(this.mobAnimations.idle);
-            return null;
-        }
 
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const inCamera = this.isInCameraView();
+        const inCameraView = this.isInCameraView();
+        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
 
-        // Facing
-        const shouldFaceLeft = dx < 0;
-        if (shouldFaceLeft !== this.facingLeft) {
-            this.facingLeft = shouldFaceLeft;
-            this.sprite.setFlipX(this.facingLeft);
+        // Always stop velocity at the start of the update, then apply if needed
+        if (body) body.setVelocity(0, 0);
+
+        // State 1: Currently in slashing animation (highest priority)
+        if (this.lightningMageIsSlashing) {
+            this.lightningMageSlashTimer += deltaTime;
+            
+            // Spawn lightning strike partway through animation (around 50%)
+            if (!this.lightningMageStrikeSpawned && this.lightningMageSlashTimer >= this.lightningMageSlashDuration * 0.5) {
+                this.lightningMageStrikeSpawned = true;
+                const lightningStrike = new LightningStrikeAttack(this.scene, this.targetPlayerX, this.targetPlayerY, this.stats.damage);
+                return { 
+                    type: 'lightning', 
+                    damage: this.stats.damage, 
+                    position: { x: this.targetPlayerX, y: this.targetPlayerY }, 
+                    hitPlayer: false, 
+                    attackObject: lightningStrike 
+                };
+            }
+            
+            // Wait for full animation to complete before allowing other actions
+            if (this.lightningMageSlashTimer >= this.lightningMageSlashDuration) {
+                this.lightningMageIsSlashing = false;
+                this.lightningMageSlashTimer = 0;
+                this.isAttacking = false;
+                this.lightningMageStrikeSpawned = false;
+                // Force transition to idle
+                if (this.scene.anims.exists(this.mobAnimations.idle)) {
+                    this.sprite.play(this.mobAnimations.idle, true);
+                    this.currentAnimation = this.mobAnimations.idle;
+                }
+            }
+            return null; // Don't do anything else while slashing
         }
 
-        // Movement
-        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
-        if (!inCamera || distance > this.optimalRange) {
+        // State 2: Attack if in camera view and cooldown ready
+        if (inCameraView && this.lightningCooldown <= 0) {
+            this.lightningCooldown = this.lightningInterval;
+            this.isAttacking = true;
+            this.lightningMageIsSlashing = true;
+            this.lightningMageSlashTimer = 0;
+            this.lightningMageStrikeSpawned = false;
+            // Store target position for when lightning spawns
+            this.targetPlayerX = playerX;
+            this.targetPlayerY = playerY;
+            // Play the slashing animation
+            if (this.scene.anims.exists('lightning_mage_slashing')) {
+                this.sprite.play('lightning_mage_slashing', true);
+                this.currentAnimation = 'lightning_mage_slashing';
+            }
+            return null; // Attack initiated, return
+        }
+
+        // Facing - only update when not attacking
+        if (!this.isAttacking) {
+            const flipDeadzone = 20;
+            if (Math.abs(dx) > flipDeadzone) {
+                const shouldFaceLeft = dx < 0;
+                if (shouldFaceLeft !== this.facingLeft) {
+                    this.facingLeft = shouldFaceLeft;
+                    this.sprite.setFlipX(this.facingLeft);
+                }
+            }
+        }
+
+        // State 3: Movement - Approach if not in camera view or too far
+        if (!inCameraView || distance > this.optimalRange) {
             const velocityX = (dx / distance) * this.stats.speed;
             const velocityY = (dy / distance) * this.stats.speed;
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
-        } else if (distance < this.minRange) {
+            return null;
+        }
+
+        // State 4: Movement - Back away if player is too close
+        if (distance < this.minRange) {
             const velocityX = -(dx / distance) * (this.stats.speed * 0.7);
             const velocityY = -(dy / distance) * (this.stats.speed * 0.7);
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
-        } else {
-            if (body) body.setVelocity(0, 0);
-            this.playAnimation(this.mobAnimations.idle);
+            return null;
         }
 
-        // Attack
-        if (inCamera && this.lightningCooldown <= 0) {
-            return this.performLightningStrike(playerX, playerY);
-        }
-
+        // State 5: Default - In camera view, good range, waiting for cooldown - stay idle
+        this.playAnimation(this.mobAnimations.idle);
         return null;
-    }
-
-    private performLightningStrike(playerX: number, playerY: number): EnemyAttackResult {
-        this.lightningCooldown = this.lightningInterval;
-        this.isAttacking = true;
-        this.attackTimer = 1.5;
-        
-        const lightningStrike = new LightningStrikeAttack(this.scene, playerX, playerY, this.stats.damage);
-        
-        console.log(`Enemy #${this.sprite.getData('enemyId')} (LIGHTNING_MAGE) creating LIGHTNING STRIKE`);
-        
-        return { 
-            type: 'lightning', 
-            damage: this.stats.damage, 
-            position: { x: playerX, y: playerY }, 
-            hitPlayer: false,
-            attackObject: lightningStrike 
-        };
     }
 }

@@ -36,7 +36,7 @@ export const HARDCODED_MOB_SKINS = Object.freeze({
     [EnemyType.GNOLL]: 'Gnoll_3',                             // Fast gnoll warrior - uses mob-texture-316
     [EnemyType.SKELETON_PIRATE]: 'Skeleton_Pirate_Captain_1', // Skeleton pirate with vortex attacks - uses mob-texture-196
     [EnemyType.ELEMENTAL_SPIRIT]: 'Elemental_Spirits_2',      // Elemental spirit suicide bomber - uses mob-texture-205 (idle) + 204 (running)
-    [EnemyType.LIGHTNING_MAGE]: 'Skeleton_Death_Knight_1'     // Lightning mage - AOE lightning strikes from distance - uses mob-texture-131
+    [EnemyType.LIGHTNING_MAGE]: 'Cursed_Alchemist_1'          // Lightning mage - AOE lightning strikes from distance - uses custom lightning_mage animations
 } as const);
 
 /**

@@ -2,6 +2,8 @@ import { Player } from '../Player';
 import { BaseEnemy } from '../enemies/BaseEnemy';
 import { Shield } from '../enemies/attacks/Shield';
 import { PassiveManager } from '../systems/PassiveManager';
+import { VortexAttack } from '../enemies/attacks/VortexAttack';
+import { SpearAttack } from '../enemies/attacks/SpearAttack';
 
 export class CombatComponent {
     private player: Player;
@@ -10,6 +12,10 @@ export class CombatComponent {
     public lastDamageTime: number = 0;
     public damageCooldown: number = 1000; // 1 second invincibility frames
     public isInvulnerable: boolean = false;
+    
+    // Vortex-specific cooldown
+    private lastVortexHitTime: number = 0;
+    private vortexHitCooldown: number = 500; // Allow slow reapplication every 500ms
 
     constructor(player: Player, passiveManager: PassiveManager) {
         this.player = player;
@@ -86,12 +92,50 @@ export class CombatComponent {
      * Unified collision check for all hostile attacks (Projectiles and AOE).
      */
     public checkAttacks(attacks: any[]): void {
-        if (this.isInvulnerable) return;
+        const playerX = this.player.sprite.x;
+        const playerY = this.player.sprite.y;
         const playerBounds = this.player.sprite.getBounds();
+        const currentTime = this.player.scene.time.now;
 
         for (const attack of attacks) {
             if (!attack.isActive()) continue;
 
+            // Special handling for VortexAttack - apply slow effect
+            if (attack instanceof VortexAttack) {
+                if (attack.isPointInVortex(playerX, playerY)) {
+                    // Stop traveling vortexes when they hit the player
+                    if (attack.isTravelingToTarget()) {
+                        attack.stopAtCurrentPosition();
+                    }
+                    
+                    // Apply damage with invulnerability check
+                    if (!this.isInvulnerable) {
+                        this.takeDamage(attack.damage);
+                    }
+                    
+                    // Apply slow effect (independent of invulnerability)
+                    if (this.canBeHitByVortex()) {
+                        this.applySlowEffect(attack.slowEffect, attack.slowDuration);
+                        this.lastVortexHitTime = currentTime;
+                    }
+                }
+                continue;
+            }
+            
+            // Special handling for SpearAttack - use its custom collision
+            if (attack instanceof SpearAttack) {
+                if (attack.isPointInSpear(playerX, playerY) && !attack.hasDamageBeenDealt()) {
+                    if (!this.isInvulnerable) {
+                        this.takeDamage(attack.damage);
+                        attack.markDamageDealt();
+                    }
+                }
+                continue;
+            }
+
+            // Standard collision handling for other attacks
+            if (this.isInvulnerable) continue;
+            
             let bounds;
             // Handle BaseProjectile composition (sprite property) vs SkillObject inheritance (Container)
             if (attack.sprite && attack.sprite.getBounds) {
@@ -112,6 +156,24 @@ export class CombatComponent {
                 if (this.isInvulnerable) return;
             }
         }
+    }
+    
+    /**
+     * Applies slow effect to the player
+     */
+    private applySlowEffect(multiplier: number, duration: number): void {
+        this.player.slowMultiplier = Math.min(this.player.slowMultiplier, multiplier);
+        const endTime = this.player.scene.time.now + duration;
+        this.player.slowEndTime = Math.max(this.player.slowEndTime || 0, endTime);
+        console.log(`Player slowed! Speed: ${(multiplier * 100).toFixed(0)}%, Duration: ${(duration / 1000).toFixed(1)}s`);
+    }
+    
+    /**
+     * Check if player can be hit by vortex slow effect (cooldown)
+     */
+    private canBeHitByVortex(): boolean {
+        const currentTime = this.player.scene.time.now;
+        return currentTime - this.lastVortexHitTime >= this.vortexHitCooldown;
     }
 
     public checkCollisionWithAttacks(attacks: any[]): void {

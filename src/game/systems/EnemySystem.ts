@@ -6,6 +6,7 @@ import { XPOrbSystem } from './XPOrbSystem';
 
 import { Shield } from '../enemies/attacks/Shield';
 import { ConeAttack } from '../enemies/attacks/ConeAttack';
+import { SpearAttack } from '../enemies/attacks/SpearAttack';
 import { ExplosionAttack } from '../enemies/attacks/ExplosionAttack';
 import { VortexAttack } from '../enemies/attacks/VortexAttack';
 import { LightningStrikeAttack } from '../enemies/attacks/LightningStrikeAttack';
@@ -25,6 +26,7 @@ export class EnemySystem {
     private meleeAttacks: MeleeAttack[] = [];
     private shields: Shield[] = [];
     private coneAttacks: ConeAttack[] = [];
+    private spearAttacks: SpearAttack[] = [];
     private vortexAttacks: VortexAttack[] = [];
     private explosionAttacks: ExplosionAttack[] = [];
     private lightningStrikes: LightningStrikeAttack[] = [];
@@ -278,6 +280,9 @@ export class EnemySystem {
                     case 'cone':
                         this.coneAttacks.push(attackResult.attackObject as ConeAttack);
                         break;
+                    case 'spear':
+                        this.spearAttacks.push(attackResult.attackObject as SpearAttack);
+                        break;
                     case 'vortex':
                         this.vortexAttacks.push(attackResult.attackObject as VortexAttack);
                         break;
@@ -332,6 +337,11 @@ export class EnemySystem {
             attack.update(deltaTime);
         });
 
+        // Update all spear attacks
+        this.spearAttacks.forEach(attack => {
+            attack.update(deltaTime);
+        });
+
         // Update all vortex attacks
         this.vortexAttacks.forEach(attack => {
             attack.update(deltaTime);
@@ -374,6 +384,7 @@ export class EnemySystem {
         this.meleeAttacks = this.meleeAttacks.filter(attack => attack.isActive());
         this.shields = this.shields.filter(shield => shield.isActive());
         this.coneAttacks = this.coneAttacks.filter(attack => attack.isActive());
+        this.spearAttacks = this.spearAttacks.filter(attack => attack.isActive());
         this.vortexAttacks = this.vortexAttacks.filter(attack => attack.isActive());
         this.explosionAttacks = this.explosionAttacks.filter(attack => attack.isActive());
         this.lightningStrikes = this.lightningStrikes.filter(attack => attack.isActive());
@@ -620,6 +631,14 @@ export class EnemySystem {
     }
 
     /**
+     * Gets all active spear attacks
+     * @returns Array of all active spear attacks
+     */
+    public getSpearAttacks(): SpearAttack[] {
+        return this.spearAttacks;
+    }
+
+    /**
      * Gets all active vortex attacks
      * @returns Array of all active vortex attacks
      */
@@ -669,6 +688,7 @@ export class EnemySystem {
             ...this.arrowProjectiles,
             ...this.meleeAttacks,
             ...this.coneAttacks,
+            ...this.spearAttacks,
             ...this.vortexAttacks,
             ...this.explosionAttacks,
             ...this.lightningStrikes,
@@ -690,6 +710,8 @@ export class EnemySystem {
         this.shields = [];
         this.coneAttacks.forEach(attack => attack.destroy());
         this.coneAttacks = [];
+        this.spearAttacks.forEach(attack => attack.destroy());
+        this.spearAttacks = [];
         this.vortexAttacks.forEach(attack => attack.destroy());
         this.vortexAttacks = [];
         this.explosionAttacks.forEach(attack => attack.destroy());

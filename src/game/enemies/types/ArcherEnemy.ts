@@ -14,6 +14,12 @@ export class ArcherEnemy extends BaseEnemy {
     private readonly arrowChargeDuration: number = 1.5;
     private lockedArrowAngle: number = 0;
     private activeArrowIndicator: ArrowIndicator | null = null;
+    
+    // Animation state
+    private archerDrawAnimPlayed: boolean = false;
+    private archerIsReleasing: boolean = false;
+    private archerReleaseTimer: number = 0;
+    private arrowTipStar: Phaser.GameObjects.Graphics | null = null;
 
     // Kiting
     private readonly optimalRange: number = 300;
@@ -52,30 +58,107 @@ export class ArcherEnemy extends BaseEnemy {
 
         const body = this.sprite.body as Phaser.Physics.Arcade.Body;
         if (!body) return null;
+        
+        const drawAnimDuration = 0.33; // 4 frames at 12fps
+        const releaseAnimDuration = 0.31; // 5 frames at 16fps
+        const inCameraView = this.isInCameraView();
 
-        // CHARGING STATE
+        // State 1: Playing release animation after arrow is shot
+        if (this.archerIsReleasing) {
+            body.setVelocity(0, 0);
+            this.archerReleaseTimer += deltaTime;
+            
+            if (this.archerReleaseTimer >= releaseAnimDuration) {
+                // Release animation done, go back to normal
+                this.archerIsReleasing = false;
+                this.archerReleaseTimer = 0;
+            }
+            return null;
+        }
+
+        // State 2: Charging arrow (drawing bow)
         if (this.isChargingArrow) {
             body.setVelocity(0, 0);
-            this.playAnimation(this.mobAnimations.idle);
             
+            // Update arrow indicator
             if (this.activeArrowIndicator) {
                 this.activeArrowIndicator.update(deltaTime);
             }
             
+            // Update charge time
             this.arrowChargeTime += deltaTime;
             
+            // Play draw animation at start, then hold at frame 003
+            if (!this.archerDrawAnimPlayed) {
+                if (this.arrowChargeTime < drawAnimDuration) {
+                    // Still in draw animation
+                    if (this.currentAnimation !== 'skeleton_archer_shooting_draw') {
+                        this.sprite.play('skeleton_archer_shooting_draw', true);
+                        this.currentAnimation = 'skeleton_archer_shooting_draw';
+                    }
+                } else {
+                    // Draw animation done, hold at frame 003
+                    this.archerDrawAnimPlayed = true;
+                    this.sprite.stop();
+                    this.sprite.setTexture('skeleton_archer_shooting_003');
+                }
+            }
+            
+            // Update star effect position and appearance - only show when almost ready to fire
+            const chargeProgress = (this.arrowChargeTime - drawAnimDuration) / (this.arrowChargeDuration - drawAnimDuration);
+            const showStar = chargeProgress >= 0.60; // Only show star in last 40% of charge
+            
+            if (this.archerDrawAnimPlayed && showStar) {
+                // Create star if it doesn't exist
+                if (!this.arrowTipStar) {
+                    this.arrowTipStar = this.scene.add.graphics();
+                    this.arrowTipStar.setDepth(20);
+                }
+                
+                const starDistance = 18; // Distance from sprite center to bow side
+                // Star appears to the left or right based on facing direction
+                const starX = this.sprite.x + (this.facingLeft ? -starDistance : starDistance);
+                const starY = this.sprite.y + 5; // Slightly below center where bow is held
+                
+                // Clear and redraw star with pulsing effect
+                this.arrowTipStar.clear();
+                const pulse = 0.7 + Math.sin(this.arrowChargeTime * 20) * 0.3; // Fast pulsing
+                const starSize = 6; // Fixed size
+                const alpha = 0.9; // Bright
+                
+                // Draw 4-pointed star
+                this.arrowTipStar.fillStyle(0xffffff, alpha * pulse);
+                this.arrowTipStar.beginPath();
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i * Math.PI / 4) - Math.PI / 8;
+                    const radius = i % 2 === 0 ? starSize : starSize * 0.4;
+                    const px = starX + Math.cos(angle) * radius;
+                    const py = starY + Math.sin(angle) * radius;
+                    if (i === 0) {
+                        this.arrowTipStar.moveTo(px, py);
+                    } else {
+                        this.arrowTipStar.lineTo(px, py);
+                    }
+                }
+                this.arrowTipStar.closePath();
+                this.arrowTipStar.fillPath();
+                
+                // Add glow effect
+                this.arrowTipStar.fillStyle(0xffffff, alpha * pulse * 0.3);
+                this.arrowTipStar.fillCircle(starX, starY, starSize * 1.5);
+            }
+            
+            // Release arrow when charge is complete
             if (this.arrowChargeTime >= this.arrowChargeDuration) {
                 return this.fireArrow();
             }
-            
             return null;
         }
 
-        // MOVING STATE
-        const inCamera = this.isInCameraView();
-        
-        // Facing
-        if (!this.isChargingArrow) {
+        // State 3: Not charging - handle movement and positioning
+        // Facing - only update when not in any attack state
+        const flipDeadzone = 20;
+        if (Math.abs(dx) > flipDeadzone) {
             const shouldFaceLeft = dx < 0;
             if (shouldFaceLeft !== this.facingLeft) {
                 this.facingLeft = shouldFaceLeft;
@@ -83,26 +166,27 @@ export class ArcherEnemy extends BaseEnemy {
             }
         }
 
-        if (!inCamera || distance > this.optimalRange) {
-            // Move closer
+        // Movement logic - try to maintain optimal range and stay in camera view
+        if (!inCameraView || distance > this.optimalRange) {
+            // Not in camera view or too far - move towards player
             const velocityX = (dx / distance) * this.stats.speed;
             const velocityY = (dy / distance) * this.stats.speed;
             body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
         } else if (distance < this.minRange) {
-            // Kite away
+            // Too close - kite away
             const velocityX = -(dx / distance) * this.stats.speed;
             const velocityY = -(dy / distance) * this.stats.speed;
             body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
         } else {
-            // Hold position
+            // In optimal range (150-300 pixels) - stop and idle
             body.setVelocity(0, 0);
             this.playAnimation(this.mobAnimations.idle);
         }
 
-        // Attack Trigger
-        if (inCamera && this.shootCooldown <= 0) {
+        // Attack logic - can start charging arrow when in camera view and cooldown ready
+        if (inCameraView && this.shootCooldown <= 0) {
             this.startCharging(dx, dy);
         }
 
@@ -112,7 +196,12 @@ export class ArcherEnemy extends BaseEnemy {
     private startCharging(dx: number, dy: number): void {
         this.isChargingArrow = true;
         this.arrowChargeTime = 0;
+        this.archerDrawAnimPlayed = false;
         this.lockedArrowAngle = Math.atan2(dy, dx);
+        
+        // Play draw animation
+        this.sprite.play('skeleton_archer_shooting_draw', true);
+        this.currentAnimation = 'skeleton_archer_shooting_draw';
         
         const { endX, endY } = this.calculateArrowEndpoint(
             this.sprite.x,
@@ -130,31 +219,50 @@ export class ArcherEnemy extends BaseEnemy {
     }
 
     private fireArrow(): EnemyAttackResult {
+        // Destroy the indicator
         if (this.activeArrowIndicator) {
             this.activeArrowIndicator.destroy();
             this.activeArrowIndicator = null;
         }
         
+        // Destroy the star effect
+        if (this.arrowTipStar) {
+            this.arrowTipStar.destroy();
+            this.arrowTipStar = null;
+        }
+        
+        // Play release animation
+        this.sprite.play('skeleton_archer_shooting_release', true);
+        this.currentAnimation = 'skeleton_archer_shooting_release';
+        this.archerIsReleasing = true;
+        this.archerReleaseTimer = 0;
+        
+        // Get collision layers from scene
+        const collisionLayers = this.getCollisionLayersFromScene();
+        
+        // Create arrow projectile
         const arrow = new ArrowProjectile(
             this.scene,
             this.sprite.x,
             this.sprite.y,
             this.lockedArrowAngle,
             this.stats.damage,
-            this.getCollisionLayersFromScene(),
-            600
+            collisionLayers,
+            600 // High speed
         );
         
+        // Reset charging state
         this.isChargingArrow = false;
         this.arrowChargeTime = 0;
+        this.archerDrawAnimPlayed = false;
         this.shootCooldown = this.shootInterval;
         
-        return {
-            type: 'arrow',
-            damage: this.stats.damage,
-            position: { x: this.sprite.x, y: this.sprite.y },
-            hitPlayer: false,
-            attackObject: arrow
+        return { 
+            type: 'arrow', 
+            damage: this.stats.damage, 
+            position: { x: this.sprite.x, y: this.sprite.y }, 
+            hitPlayer: false, 
+            attackObject: arrow 
         };
     }
 
@@ -186,9 +294,15 @@ export class ArcherEnemy extends BaseEnemy {
     }
 
     public destroy(): void {
+        // Clean up arrow indicator if archer is charging
         if (this.activeArrowIndicator) {
             this.activeArrowIndicator.destroy();
             this.activeArrowIndicator = null;
+        }
+        // Clean up arrow tip star effect
+        if (this.arrowTipStar) {
+            this.arrowTipStar.destroy();
+            this.arrowTipStar = null;
         }
         super.destroy();
     }

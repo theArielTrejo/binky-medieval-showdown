@@ -8,6 +8,7 @@
 import { EnemyProjectile } from '../enemies/attacks/EnemyProjectile';
 import { MeleeAttack } from '../enemies/attacks/MeleeAttack';
 import { ConeAttack } from '../enemies/attacks/ConeAttack';
+import { SpearAttack } from '../enemies/attacks/SpearAttack';
 import { ExplosionAttack } from '../enemies/attacks/ExplosionAttack';
 import { VortexAttack } from '../enemies/attacks/VortexAttack';
 import { Shield } from '../enemies/attacks/Shield';
@@ -29,7 +30,7 @@ export enum EnemyType {
  * Interface for enemy attack results
  */
 export interface EnemyAttackResult {
-    type: 'projectile' | 'melee' | 'cone' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow';
+    type: 'projectile' | 'melee' | 'cone' | 'spear' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow';
     damage: number;
     position: { x: number; y: number };
     hitPlayer: boolean;
@@ -39,7 +40,7 @@ export interface EnemyAttackResult {
         knockback?: { x: number; y: number };
         blocked?: boolean;
     };
-    attackObject?: EnemyProjectile | MeleeAttack | ConeAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile;
+    attackObject?: EnemyProjectile | MeleeAttack | ConeAttack | SpearAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile;
 }
 
 export interface EnemyStats {

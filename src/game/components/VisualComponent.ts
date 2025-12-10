@@ -94,9 +94,18 @@ export class VisualComponent {
     }
 
     public updateSlowEffect(slowMultiplier: number, slowEndTime: number): void {
-        if (slowMultiplier < 1.0 && this.player.scene.time.now > slowEndTime) {
-            // Reset handled by Player logic usually, but here we just clear tint if needed
-             this.player.sprite.clearTint(); 
+        const currentTime = this.player.scene.time.now;
+        
+        if (currentTime < slowEndTime && slowMultiplier < 1.0) {
+            // Player is slowed - apply cyan tint
+            this.player.sprite.setTint(0x00ffff);
+        } else if (currentTime >= slowEndTime) {
+            // Slow has ended - reset multiplier and clear tint
+            this.player.slowMultiplier = 1.0;
+            // Only clear tint if not invulnerable (invulnerability has its own tint)
+            if (!this.player.combatComponent.isInvulnerable) {
+                this.player.sprite.clearTint();
+            }
         }
     }
 

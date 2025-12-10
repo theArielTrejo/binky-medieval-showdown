@@ -140,6 +140,7 @@ export class Preloader extends Scene {
         for (let i = 0; i <= 11; i++) this.load.image(`skeleton_pirate_slashing_${String(i).padStart(3, '0')}`, `mobs/skeleton-pirate/Slashing/0_Skeleton_Pirate_Captain_Slashing_${String(i).padStart(3, '0')}.png`);
 
         // Lightning Mage
+        for (let i = 0; i <= 17; i++) this.load.image(`lightning_mage_idle_${String(i).padStart(3, '0')}`, `mobs/lightning-mage/Idle/0_Cursed_Alchemist_Idle_${String(i).padStart(3, '0')}.png`);
         for (let i = 0; i <= 11; i++) this.load.image(`lightning_mage_running_${String(i).padStart(3, '0')}`, `mobs/lightning-mage/Running/0_Cursed_Alchemist_Running_${String(i).padStart(3, '0')}.png`);
         for (let i = 0; i <= 11; i++) this.load.image(`lightning_mage_slashing_${String(i).padStart(3, '0')}`, `mobs/lightning-mage/Slashing/0_Cursed_Alchemist_Slashing_${String(i).padStart(3, '0')}.png`);
 
