@@ -101,7 +101,7 @@ export class SkillTreeScene extends Scene {
 
 
         // 3. Background (Parallax) with Colors and Tiny Spirals
-        this.createParallaxBackground();
+        //this.createParallaxBackground();
 
         // 4. Connections Graphics
         this.connectionsGraphics = this.make.graphics({ x: 0, y: 0 });
@@ -146,16 +146,16 @@ export class SkillTreeScene extends Scene {
         this.createUI();
     }
 
-    private createParallaxBackground() {
+    /*private createParallaxBackground() {
         const width = this.scale.width;
         const height = this.scale.height;
         const dimension = Math.max(width, height) * 2.5; // Oversized for rotation
 
         // Define layers based on ClassSelectionUI but adapted for rotation
         const layers = [
-            { key: 'stars_far_tree', count: 800, size: 1, alpha: 0.4, speed: 0.05 },
-            { key: 'stars_mid_tree', count: 200, size: 2, alpha: 0.7, speed: 0.1 },
-            { key: 'stars_near_tree', count: 50, size: 3, alpha: 1.0, speed: 0.15 }
+            { key: 'stars_far_tree', count: 200, size: 1, alpha: 0.4, speed: 0.05 },
+            { key: 'stars_mid_tree', count: 80, size: 2, alpha: 0.7, speed: 0.1 },
+            { key: 'stars_near_tree', count: 10, size: 3, alpha: 1.0, speed: 0.15 }
         ];
 
         this.starLayers = []; // Reset
@@ -235,7 +235,7 @@ export class SkillTreeScene extends Scene {
                 speed: layer.speed
             });
         });
-    }
+    } */
 
     private createUI() {
         const { width, height } = this.scale;
@@ -618,12 +618,12 @@ export class SkillTreeScene extends Scene {
         this.starLayers.forEach((layer, index) => {
             // 1. Rotation: Rotate layers at different speeds/directions for depth
             const dir = index % 2 === 0 ? 1 : -1; // Alternate direction
-            layer.sprite.setRotation(baseRotation * layer.speed * dir);
+            //layer.sprite.setRotation(baseRotation * layer.speed * dir);
 
             // 2. Parallax: Scroll tile position based on world camera
             // This gives the "Panning" effect the user liked
-            layer.sprite.tilePositionX = this.worldCamera.scrollX * (layer.speed * 0.5);
-            layer.sprite.tilePositionY = this.worldCamera.scrollY * (layer.speed * 0.5);
+            //layer.sprite.tilePositionX = this.worldCamera.scrollX * (layer.speed * 0.5);
+            //layer.sprite.tilePositionY = this.worldCamera.scrollY * (layer.speed * 0.5);
         });
     }
 }

@@ -114,7 +114,9 @@ export class SkillNode extends Phaser.Events.EventEmitter {
 
         // Unlock Bloom Effect
         if (wasLocked && isUnlocked) {
-            if (this.scene.renderer.type === Phaser.WEBGL) {
+            // Lightweight “available” highlight
+            this.background.setTint(0x00aaff);
+            /*if (this.scene.renderer.type === Phaser.WEBGL) {
                 // Apply bloom to the background sprite
                 if ((this.background as any).postFX) {
                     const bloom = (this.background as any).postFX.addBloom(0xffffff, 1, 1, 2, 1.2);
@@ -127,7 +129,7 @@ export class SkillNode extends Phaser.Events.EventEmitter {
                         }
                     });
                 }
-            }
+            } */
         }
     }
 
@@ -148,8 +150,13 @@ export class SkillNode extends Phaser.Events.EventEmitter {
             this.background.setAlpha(0.9);
             this.iconText.setAlpha(0.7);
 
+            // Lightweight available highlight (no shaders, no tweens)
+            this.background.setTint(0x00ccff);
+            this.background.setAlpha(0.9);
+
+
             // Cyan/Blue pulsing glow to indicate "purchasable"
-            if (this.scene.renderer.type === Phaser.WEBGL && (this.background as any).postFX) {
+            /*if (this.scene.renderer.type === Phaser.WEBGL && (this.background as any).postFX) {
                 const glow = (this.background as any).postFX.addGlow(0x00ccff, 3, 0, false, 0.15, 12);
                 this.scene.tweens.add({
                     targets: glow,
@@ -158,7 +165,7 @@ export class SkillNode extends Phaser.Events.EventEmitter {
                     repeat: -1,
                     duration: 1200
                 });
-            }
+            } */
         } else {
             // LOCKED: Grey, no glow
             this.background.setTint(0x444444);
@@ -166,7 +173,7 @@ export class SkillNode extends Phaser.Events.EventEmitter {
             this.iconText.setAlpha(0.4);
 
             if (this.scene.renderer.type === Phaser.WEBGL && (this.background as any).postFX) {
-                (this.background as any).postFX.addColorMatrix().grayscale(1.0);
+                this.background.setTint(0x333333);
             }
         }
     }

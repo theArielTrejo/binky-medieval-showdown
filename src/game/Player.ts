@@ -15,6 +15,7 @@ import { CleaveSkill } from './skills/CleaveSkill';
 import { ShurikenFanSkill } from './skills/ShurikenFanSkill';
 import { NovaSkill } from './skills/NovaSkill';
 import { WhirlwindSkill } from './skills/WhirlwindSkill';
+import { EffectManager } from './effects/EffectManager';
 
 import { CombatComponent } from './components/CombatComponent';
 import { VisualComponent } from './components/VisualComponent';
@@ -336,8 +337,17 @@ export class Player {
     public collectXPOrbs(system: XPOrbSystem): void {
         system.collectOrbs(this.sprite.x, this.sprite.y, (xp) => {
             this.gainXP(xp);
+
+            // ONE grouped FX per pickup
+            EffectManager.createCollectionEffect(
+                this.scene,
+                this.sprite.x,
+                this.sprite.y,
+                xp
+            );
         });
     }
+
 
     private gainXP(amount: number): void {
         const levels = this.archetype.gainXP(amount, this.scene.time.now);

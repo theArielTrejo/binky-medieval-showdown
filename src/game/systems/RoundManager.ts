@@ -70,9 +70,36 @@ export class RoundManager {
     
     private startNextRound(): void {
         this.currentRound++;
+        this.scene.registry.set("current_round", this.currentRound);
+        
+        // === Unlock additional spawn zones based on round number ===
+        const zones = this.scene.registry.get("enemy_spawn_zones") || [];
+        zones.forEach((z: any) => {
+            const name = z.name;
+
+            if (this.currentRound >= 1 && name === "zone_graveyard") {
+                const prop = z.properties.find((p: any) => p.name === "active");
+                if (prop) prop.value = true;
+            }
+
+            if (this.currentRound >= 6 && name === "zone_forest") {
+                const prop = z.properties.find((p: any) => p.name === "active");
+                if (prop) prop.value = true;
+            }
+
+            if (this.currentRound >= 11 && name === "zone_town") {
+                const prop = z.properties.find((p: any) => p.name === "active");
+                if (prop) prop.value = true;
+            }
+
+            if (this.currentRound >= 16 && name === "zone_water") {
+                const prop = z.properties.find((p: any) => p.name === "active");
+                if (prop) prop.value = true;
+            }
+        });
+
         this.state = RoundState.WAITING_TO_START;
         this.stateTimer = this.timeBetweenRounds;
-        
         this.updateUI();
         this.showAnnouncement(`Round ${this.currentRound}`, 3000);
     }

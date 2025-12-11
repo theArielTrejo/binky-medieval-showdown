@@ -66,6 +66,62 @@ export class EnemySystem {
         this.onEnemySpawnedCallback = callback;
     }
 
+    // Grabs the spawn zones that was set up in Tiled, enemies will spawn here
+    private getActiveSpawnZones(): any[] {
+        const zones = (this.scene.registry.get("enemy_spawn_zones") || []) as any[];
+        const round = this.scene.registry.get("current_round") || 1;
+
+        return zones.filter(z => {
+            const type = (z.type || "").trim();
+            if (type !== "spawn_zone") return false;
+
+            // accept ANY zone_* (graveyard, forest, town, water)
+            if (!z.name.startsWith("zone_")) return false;
+
+            const props = z.properties || [];
+
+            const activeProp = props.find((p: any) => p.name === "active");
+            const isActive = activeProp?.value === true;
+            if (!isActive) return false;
+
+            const minRoundProp = props.find((p: any) => p.name === "minRound");
+            const minRound = minRoundProp?.value || 1;
+
+            return round >= minRound;
+        });
+    }
+
+
+
+    // This PREVENTS enemies from spawning inside of collision tiles, walls, houses, etc
+    private isValidSpawn(x: number, y: number): boolean {
+        const map = this.scene.registry.get('tilemap_ref');
+        if (!map) return false;
+
+        // Check tile exists on ANY tilemap layer → prevents void-area spawns
+        let tileExists = false;
+
+        (map.layers as Phaser.Tilemaps.LayerData[]).forEach((layer: Phaser.Tilemaps.LayerData) => {
+            const tile = layer.tilemapLayer?.getTileAtWorldXY(x, y);
+            if (tile) tileExists = true;
+        });
+
+        if (!tileExists) return false;
+
+        // Tile collision check
+        const collisionLayer = this.scene.registry.get('collision_layer');
+        if (collisionLayer) {
+            const tile = collisionLayer.getTileAtWorldXY(x, y);
+            if (tile && tile.collides) return false;
+        }
+
+        // Physics overlap check (objects, houses, walls)
+        const bodies = this.scene.physics.overlapRect(x - 12, y - 12, 24, 24);
+        if (bodies.length > 0) return false;
+
+        return true;
+    }
+
     /**
      * Starts the enemy spawning system
      */
@@ -146,6 +202,7 @@ export class EnemySystem {
         const spawnCount = Math.min(count, remainingCapacity);
         const spawnedEnemies: BaseEnemy[] = [];
 
+
         for (let i = 0; i < spawnCount; i++) {
             const spawnPos = this.getSpawnPosition(location, playerX, playerY);
             const enemy = EnemyFactory.create(this.scene, spawnPos.x, spawnPos.y, enemyType);
@@ -178,61 +235,47 @@ export class EnemySystem {
     }
 
     private getSpawnPosition(location: string, playerX: number, playerY: number): { x: number; y: number } {
-        // Get camera world view bounds instead of hardcoded screen dimensions
-        const camera = this.scene.cameras.main;
-        const worldView = camera.worldView;
-        const gameWidth = worldView.width;
-        const gameHeight = worldView.height;
-        const cameraX = worldView.x;
-        const cameraY = worldView.y;
+        const zones = this.getActiveSpawnZones();
 
-        const safeZoneRadius = 200; // Safe zone around player
+        if (zones.length === 0) {
+            console.warn("No active spawn zones found. Using fallback.");
+            return { x: playerX + 300, y: playerY + 300 };
+        }
 
-        let spawnX, spawnY;
+        // Pick a random rectangle zone
+        const zone = Phaser.Utils.Array.GetRandom(zones);
+
+        const safeRadius = 180;
+        let x = 0, y = 0;
         let attempts = 0;
-        const maxAttempts = 20;
+
+        const cam = this.scene.cameras.main;
+
+        // Declare inView OUTSIDE the loop
+        let inView = false;
 
         do {
-            switch (location) {
-                case 'near_player':
-                    // Spawn in a circle around player but outside safe zone
-                    const angle = Math.random() * Math.PI * 2;
-                    const distance = safeZoneRadius + 50 + Math.random() * 100;
-                    spawnX = playerX + Math.cos(angle) * distance;
-                    spawnY = playerY + Math.sin(angle) * distance;
-                    break;
-                case 'screen_edges':
-                    const edge = Math.floor(Math.random() * 4);
-                    switch (edge) {
-                        case 0: spawnX = cameraX + Math.random() * gameWidth; spawnY = cameraY; break; // Top
-                        case 1: spawnX = cameraX + gameWidth; spawnY = cameraY + Math.random() * gameHeight; break; // Right
-                        case 2: spawnX = cameraX + Math.random() * gameWidth; spawnY = cameraY + gameHeight; break; // Bottom
-                        case 3: spawnX = cameraX; spawnY = cameraY + Math.random() * gameHeight; break; // Left
-                        default: spawnX = cameraX; spawnY = cameraY;
-                    }
-                    break;
-                case 'random_ambush':
-                default:
-                    spawnX = cameraX + Math.random() * gameWidth;
-                    spawnY = cameraY + Math.random() * gameHeight;
-                    break;
-            }
+            x = Phaser.Math.Between(zone.x, zone.x + zone.width);
+            y = Phaser.Math.Between(zone.y, zone.y + zone.height);
 
-            // Ensure spawn position is within world bounds (get from physics world)
-            const worldBounds = this.scene.physics.world.bounds;
-            spawnX = Math.max(worldBounds.x + 20, Math.min(worldBounds.width - 20, spawnX));
-            spawnY = Math.max(worldBounds.y + 20, Math.min(worldBounds.height - 20, spawnY));
+            // Update inView value
+            inView = cam.worldView.contains(x, y);
 
             attempts++;
-        } while (this.isInSafeZone(spawnX, spawnY, playerX, playerY, safeZoneRadius) && attempts < maxAttempts);
 
-        return { x: spawnX, y: spawnY };
+        } while (
+            (
+                Phaser.Math.Distance.Between(x, y, playerX, playerY) < safeRadius ||
+                inView ||                                     // <-- USE BOOLEAN HERE
+                !this.isValidSpawn(x, y)
+            )
+            &&
+            attempts < 50
+        );
+
+        return { x, y };
     }
 
-    private isInSafeZone(x: number, y: number, playerX: number, playerY: number, safeRadius: number): boolean {
-        const distance = Math.sqrt(Math.pow(x - playerX, 2) + Math.pow(y - playerY, 2));
-        return distance < safeRadius;
-    }
 
     /**
      * Starts a special enemy event
@@ -301,6 +344,48 @@ export class EnemySystem {
                 }
             }
         });
+
+        //------------------------------------------------------
+        // COD ZOMBIES STYLE: FAR-DISTANCE RESPAWN SYSTEM
+        //------------------------------------------------------
+
+        const cam = this.scene.cameras.main;
+        const maxDistance = 500;        // Too far from player
+        const stuckTimeLimit = 2200;    // 2 seconds far away
+        const dt = this.scene.game.loop.delta;
+
+        this.enemies.forEach(enemy => {
+            if (!enemy._farTimer) enemy._farTimer = 0;
+
+            const dist = Phaser.Math.Distance.Between(
+                enemy.sprite.x, enemy.sprite.y,
+                playerX, playerY
+            );
+
+            if (dist > maxDistance) {
+                // Enemy too far — increase timer
+                enemy._farTimer += dt;
+
+                // If far too long → teleport it to a valid spawn zone
+                if (enemy._farTimer > stuckTimeLimit) {
+
+                    const pos = this.getSpawnPosition("zone", playerX, playerY);
+
+                    // Ensure respawn is off-screen
+                    const invisibleSpawn = !cam.worldView.contains(pos.x, pos.y);
+
+                    if (invisibleSpawn) {
+                        enemy.sprite.x = pos.x;
+                        enemy.sprite.y = pos.y;
+                        enemy._farTimer = 0;
+                    }
+                }
+            } else {
+                // Enemy is close again — reset timer
+                enemy._farTimer = 0;
+            }
+        });
+
 
         // Update all projectiles and check for shield collisions
         this.projectiles.forEach(projectile => {

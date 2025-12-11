@@ -11,6 +11,7 @@ export abstract class BaseEnemy {
     public currentHealth: number;
     public scene: Scene;
     public activeShield: Shield | null = null;
+    public _farTimer: number = 0;
 
     protected currentAnimation: string = '';
     protected mobAnimations: MobAnimationSet;

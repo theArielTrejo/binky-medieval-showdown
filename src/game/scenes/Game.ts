@@ -291,6 +291,26 @@ export class Game extends Scene {
         // Set up tilemap collision detection for player
         this.physicsSystem.setupPlayerCollisions(this.player);
 
+        // Add here
+        const spawnZoneLayer = this.tilemap.getObjectLayer("EnemySpawnZones");
+
+        if (spawnZoneLayer) {
+            console.log("Loaded spawn zones:", spawnZoneLayer.objects);
+            this.registry.set("enemy_spawn_zones", spawnZoneLayer.objects);
+        } else {
+            console.warn("No EnemySpawnZones layer found in tilemap!");
+        }
+
+        // Store collision layer for spawn validation
+        // This tells the EnemySystem ask the tilemap:
+        // “Is this tile blocked or walkable?”
+        // Store references for spawn validation
+        this.registry.set("tilemap_ref", this.tilemap);
+
+        const collisionLayer = this.tilemap.getLayer('collisions')?.tilemapLayer;
+        this.registry.set("collision_layer", collisionLayer);
+
+
         // Initialize XP Orb System
         this.xpOrbSystem = new XPOrbSystem(this);
 

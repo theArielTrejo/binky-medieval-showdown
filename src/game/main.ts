@@ -26,7 +26,7 @@ const config: Types.Core.GameConfig = {
     default: 'arcade',
     arcade: {
       gravity: { x:0, y: 0 },
-      debug: true,               // shows collision boxes
+      debug: false,               // shows collision boxes
     },
   },
   plugins: {

@@ -27,8 +27,9 @@ export class XPOrb extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);
         
         // Add the Glow FX directly to this sprite
-        const glow = this.postFX.addGlow(0x00ff00, 1, 0, false, 0.1, 10);
-        this.setData('glowEffect', glow);
+        // I disabled anything with postFx and glow, this causes game to lag when orbs drop
+        //const glow = this.postFX.addGlow(0x00ff00, 1, 0, false, 0.1, 10);
+        //this.setData('glowEffect', glow);
         this.setDepth(XP_CONSTANTS.DEPTH.ORB);
     }
 
@@ -118,7 +119,8 @@ export class XPOrb extends Phaser.Physics.Arcade.Sprite {
         this.isCollected = true;
         
         // Instant visual feedback instead of long tween
-        EffectManager.createFlashEffect(this.scene, this.x, this.y);
+        // Removed expensive per-orb FX
+        // EffectManager.createFlashEffect(this.scene, this.x, this.y
         
         this.kill();
         onComplete();
