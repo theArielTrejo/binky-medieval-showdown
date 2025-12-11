@@ -6,10 +6,9 @@ import { Scene } from 'phaser';
  * Includes trail FX using fading circles
  */
 export class SpellMissileObject extends Phaser.GameObjects.Container {
-    private graphics: Phaser.GameObjects.Graphics;
+    private cometSprite: Phaser.GameObjects.Sprite | null = null;
     private onReachTarget: () => void;
-    private trailTimer: Phaser.Time.TimerEvent | null = null;
-
+    private animTimer: Phaser.Time.TimerEvent | null = null;
     constructor(
         scene: Scene,
         startX: number,
@@ -24,41 +23,62 @@ export class SpellMissileObject extends Phaser.GameObjects.Container {
 
         this.onReachTarget = onReachTarget;
 
-        // Generate particle texture if it doesn't exist
-        if (!scene.textures.exists('spell_particle')) {
-            const particleGraphics = scene.make.graphics({ x: 0, y: 0 }, false);
-            particleGraphics.fillStyle(0xffffff, 1);
-            particleGraphics.fillCircle(8, 8, 8);
-            particleGraphics.generateTexture('spell_particle', 16, 16);
-            particleGraphics.destroy();
+        // Visual: Comet sprite (frames) only
+        if (scene.textures.exists('comet-1')) {
+            this.cometSprite = scene.add.sprite(0, 0, 'comet-1');
+            this.cometSprite.setScale(0.9);
+            this.cometSprite.setDepth(15);
+            this.cometSprite.setBlendMode(Phaser.BlendModes.ADD);
+            this.cometSprite.setOrigin(0.5, 0.5);
+            this.add(this.cometSprite);
         }
 
-        // Visual: Glowing orb
-        this.graphics = scene.add.graphics();
-        this.graphics.fillStyle(0x9933ff, 1); // Purple magic
-        this.graphics.fillCircle(0, 0, 8);
-
-        // Outer glow
-        this.graphics.fillStyle(0xcc66ff, 0.4);
-        this.graphics.fillCircle(0, 0, 12);
-
-        this.add(this.graphics);
+        // If no comet sprite loaded, do nothing (invisible projectile), AOE still triggers
         this.setDepth(15);
 
-        // Spawn trail particles every 30ms
-        this.trailTimer = scene.time.addEvent({
-            delay: 30,
-            loop: true,
-            callback: () => {
-                this.spawnTrailParticle();
-            }
-        });
-
         // Calculate travel duration based on distance and speed
-        const dx = targetX - startX;
-        const dy = targetY - startY;
+        // Spawn from player center, slightly forward toward target
+        const initialDx = targetX - startX;
+        const initialDy = targetY - startY;
+        const travelAngle = Math.atan2(initialDy, initialDx);
+        const forwardOffset = 12; // move a bit more forward from the player
+        // Vertical nudge: lift a bit, reduce lift when shooting downward
+        const baseVerticalNudge = -12;
+        const downwardComp = Math.max(0, Math.sin(travelAngle)) * 10; // add up to +10 when aiming downward
+        const verticalNudge = baseVerticalNudge + downwardComp;
+        // Mirror spawn horizontally when facing left so the projectile comes from the correct side
+        const isLeft = travelAngle > Math.PI / 2 || travelAngle < -Math.PI / 2;
+        const launchX = startX + Math.cos(travelAngle) * forwardOffset;
+        const launchY = startY + Math.sin(travelAngle) * forwardOffset + verticalNudge;
+        this.setPosition(launchX, launchY);
+
+        const dx = targetX - launchX;
+        const dy = targetY - launchY;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const duration = (distance / speed) * 1000; // Convert to ms
+        if (this.cometSprite) {
+            // Orient comet to face travel direction (sprite faces to the right by default)
+            this.cometSprite.setRotation(travelAngle);
+            // Flip vertically when aiming left so the sprite appears mirrored across the player
+            this.cometSprite.setFlipY(isLeft);
+            // Animate frames 1..8 over the travel duration (clamp min/max)
+            const totalFrames = 8;
+            const minFrameDuration = 30;
+            const maxFrameDuration = 120;
+            const frameDuration = Phaser.Math.Clamp(duration / totalFrames, minFrameDuration, maxFrameDuration);
+            let currentFrame = 1;
+            this.animTimer = scene.time.addEvent({
+                delay: frameDuration,
+                repeat: totalFrames - 1,
+                callback: () => {
+                    currentFrame = Math.min(currentFrame + 1, totalFrames);
+                    const key = `comet-${currentFrame}`;
+                    if (this.cometSprite && this.cometSprite.active && scene.textures.exists(key)) {
+                        this.cometSprite.setTexture(key);
+                    }
+                }
+            });
+        }
 
         // Tween to target location (like throwing a bomb)
         scene.tweens.add({
@@ -73,36 +93,11 @@ export class SpellMissileObject extends Phaser.GameObjects.Container {
         });
     }
 
-    private spawnTrailParticle(): void {
-        if (!this.scene || !this.active) return;
-
-        // Create a small fading circle at current position
-        const trail = this.scene.add.graphics();
-        trail.fillStyle(0x9933ff, 0.8);
-        trail.fillCircle(0, 0, 5);
-        trail.setPosition(this.x, this.y);
-        trail.setDepth(14);
-        trail.setBlendMode(Phaser.BlendModes.ADD);
-
-        // Fade and shrink the trail particle
-        this.scene.tweens.add({
-            targets: trail,
-            alpha: 0,
-            scaleX: 0.2,
-            scaleY: 0.2,
-            duration: 300,
-            ease: 'Quad.easeOut',
-            onComplete: () => {
-                trail.destroy();
-            }
-        });
-    }
-
     private explode(): void {
-        // Stop trail spawning
-        if (this.trailTimer) {
-            this.trailTimer.destroy();
-            this.trailTimer = null;
+        // Stop animation timer
+        if (this.animTimer) {
+            this.animTimer.destroy();
+            this.animTimer = null;
         }
 
         // Burst effect - spawn multiple particles outward
@@ -115,8 +110,10 @@ export class SpellMissileObject extends Phaser.GameObjects.Container {
             burst.setDepth(16);
             burst.setBlendMode(Phaser.BlendModes.ADD);
 
-            const targetX = this.x + Math.cos(angle) * 40;
-            const targetY = this.y + Math.sin(angle) * 40;
+            // Keep burst within the smaller Nova radius (radius now 30)
+            const burstDistance = 22;
+            const targetX = this.x + Math.cos(angle) * burstDistance;
+            const targetY = this.y + Math.sin(angle) * burstDistance;
 
             this.scene.tweens.add({
                 targets: burst,

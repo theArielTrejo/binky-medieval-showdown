@@ -183,6 +183,16 @@ export class Preloader extends Scene {
         
         // Projectile sprites
         this.load.image('wind-ball', 'Effects/Wind ball.png');
+        this.load.image('ninja-star', 'Effects/Ninja Star.png');
+        // Comet projectile (14 frames)
+        for (let i = 1; i <= 14; i++) {
+            this.load.image(`comet-${i}`, `Effects/comet/comet${i}.png`);
+        }
+
+        // Knight basic attack animation (10 frames)
+        for (let i = 1; i <= 10; i++) {
+            this.load.image(`knight-basic-${i}`, `Effects/knight-basic/${i}.png`);
+        }
 
         // UI and misc
         this.load.image('logo', 'logo.png');

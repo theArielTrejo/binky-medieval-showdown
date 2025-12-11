@@ -12,7 +12,7 @@ export class NovaSkill extends Skill {
     activate(player: Player): void {
         const unlocked = player.scene.registry.get('unlockedSkills') as Map<string, boolean> || new Map();
 
-        let radius = 40; // Reduced base radius (User requested ~67% reduction from 120)
+        let radius = 30; // Slightly smaller AoE
         let damage = player.archetype.stats.damage;
         const options: NovaOptions = {};
 
