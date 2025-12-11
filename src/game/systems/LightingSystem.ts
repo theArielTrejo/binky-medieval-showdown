@@ -27,7 +27,7 @@ export class LightingSystem {
         this.darkness = this.scene.add.rectangle(
             0, 0,
             this.scene.cameras.main.width, this.scene.cameras.main.height,
-            0x000000, 1 // Alpha 1, heavily managed by tweens/visibility
+            0x000000, .3 // Alpha 1, heavily managed by tweens/visibility
         ).setOrigin(0).setScrollFactor(0).setDepth(9998).setVisible(false);
 
         // --- Vision mask (the radius of light around player) ---
@@ -71,22 +71,22 @@ export class LightingSystem {
         }
 
         // --- Update the circular vision mask if active ---
-        if (this.inDarkZone) {
-            const cam = this.scene.cameras.main;
-            const sx = playerPos.x - cam.scrollX;
-            const sy = playerPos.y - cam.scrollY;
+        //if (this.inDarkZone) {
+           // const cam = this.scene.cameras.main;
+           // const sx = playerPos.x - cam.scrollX;
+           // const sy = playerPos.y - cam.scrollY;
 
-            this.visionGfx.clear();
-            const radius = 80; // visible radius
-            const fadeRings = 3; // rings around radius (reduced for less fog)
-            const ringStep = 20; // length of one ring to another
-            for (let i = fadeRings; i >= 0; i--) {
-                const alpha = 0.3 - i * 0.08; // Sharper falloff, less fog
-                this.visionGfx.fillStyle(0xffeedd, Math.max(alpha, 0));
-                this.visionGfx.fillCircle(sx, sy, radius + i * ringStep);
-            }
-        } else {
-            this.visionGfx.clear();
-        }
+          //  this.visionGfx.clear();
+            //const radius = 80; // visible radius
+            //const fadeRings = 3; // rings around radius (reduced for less fog)
+            //const ringStep = 20; // length of one ring to another
+            //for (let i = fadeRings; i >= 0; i--) {
+            //    const alpha = 0.3 - i * 0.08; // Sharper falloff, less fog
+             //   this.visionGfx.fillStyle(0xffeedd, Math.max(alpha, 0));
+            //    this.visionGfx.fillCircle(sx, sy, radius + i * ringStep);
+           // }
+        //} else {
+           // this.visionGfx.clear();
+        //}
     }
 }
