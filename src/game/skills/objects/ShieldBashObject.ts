@@ -7,7 +7,8 @@ export class ShieldBashObject extends SkillObject {
     private coneAngle: number;
     private facingVector: Phaser.Math.Vector2;
 
-    constructor(scene: Scene, x: number, y: number, facingVector: Phaser.Math.Vector2, damage: number = 20, duration: number = 200) {
+    constructor(scene: Scene, x: number, y: number, facingVector: Phaser.Math.Vector2, damage: number = 30, duration: number = 200) {
+        // Default damage of 30, should be passed from skill with player.archetype.stats.damage
         super(scene, x, y, damage, duration);
         
         this.radius = 150;

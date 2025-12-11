@@ -386,6 +386,10 @@ export class Game extends Scene {
         return this.enemySystem;
     }
 
+    public getPhysicsSystem(): PhysicsSystem {
+        return this.physicsSystem;
+    }
+
     private hardRestartScene(): void {
         if (this.isRestarting) return;
         this.isRestarting = true;

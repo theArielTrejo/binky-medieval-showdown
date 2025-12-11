@@ -23,14 +23,17 @@ export enum EnemyType {
     GNOLL = 'gnoll',
     SKELETON_PIRATE = 'skeleton_pirate',
     ELEMENTAL_SPIRIT = 'elemental_spirit',
-    LIGHTNING_MAGE = 'lightning_mage'
+    LIGHTNING_MAGE = 'lightning_mage',
+    FALLEN_ANGEL = 'fallen_angel',
+    TOMBSTONE = 'tombstone',
+    ZOMBIE = 'zombie'
 }
 
 /**
  * Interface for enemy attack results
  */
 export interface EnemyAttackResult {
-    type: 'projectile' | 'melee' | 'cone' | 'spear' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow';
+    type: 'projectile' | 'melee' | 'cone' | 'spear' | 'explosion' | 'vortex' | 'shield' | 'lightning' | 'claw' | 'arrow' | 'heal';
     damage: number;
     position: { x: number; y: number };
     hitPlayer: boolean;
@@ -39,8 +42,10 @@ export interface EnemyAttackResult {
         slowDuration?: number;
         knockback?: { x: number; y: number };
         blocked?: boolean;
+        healAmount?: number;
+        healTargets?: any[];  // References to healed enemies
     };
-    attackObject?: EnemyProjectile | MeleeAttack | ConeAttack | SpearAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile;
+    attackObject?: EnemyProjectile | MeleeAttack | ConeAttack | SpearAttack | ExplosionAttack | VortexAttack | Shield | LightningStrikeAttack | ClawAttack | ArrowProjectile | any;
 }
 
 export interface EnemyStats {

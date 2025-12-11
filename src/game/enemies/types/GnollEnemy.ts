@@ -23,12 +23,13 @@ export class GnollEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 50,
-            speed: 80,
-            damage: 6,
+            health: 50,      // Low health - swarm fodder
+            speed: 80,       // Fast - high mobility to close gaps
+            damage: 6,       // Low damage per hit
             size: 25,
-            xpValue: 10
+            xpValue: 10      // Low XP value
         };
         const specialAbilities = ['fast_movement'];
         

@@ -3,7 +3,8 @@ import { SkillObject } from '../SkillObject';
 import { Shuriken } from '../../objects/Shuriken';
 
 export class ShurikenFanObject extends SkillObject {
-    constructor(scene: Scene, x: number, y: number, targetX: number, targetY: number, damage: number = 15) {
+    // damage should be passed from skill with player.archetype.stats.damage
+    constructor(scene: Scene, x: number, y: number, targetX: number, targetY: number, damage: number = 20) {
         super(scene, x, y, damage, 100);
 
         const count = 3;

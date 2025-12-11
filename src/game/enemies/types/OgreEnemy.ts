@@ -23,12 +23,13 @@ export class OgreEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 150,
-            speed: 30,
-            damage: 20,
+            health: 150,     // Very Tanky - boss/mini-boss
+            speed: 30,       // Very Slow - can be kited
+            damage: 20,      // High damage per hit
             size: 50,
-            xpValue: 25
+            xpValue: 25      // High XP reward
         };
         const specialAbilities = ['melee_attack', 'high_damage'];
         

@@ -298,6 +298,37 @@ export const MOB_ANIMATIONS: { [key: string]: MobAnimationSet } = {
     idle: 'lightning_mage_idle',
     walk: 'lightning_mage_running',
     texture: 'lightning_mage_idle_000'
+  },
+
+  // Fallen Angels (Healer) - all use the same custom animations
+  'Fallen_Angel_1': {
+    idle: 'fallen_angel_idle',
+    walk: 'fallen_angel_running',
+    texture: 'fallen_angel_idle_000'
+  },
+  'Fallen_Angel_2': {
+    idle: 'fallen_angel_idle',
+    walk: 'fallen_angel_running',
+    texture: 'fallen_angel_idle_000'
+  },
+  'Fallen_Angel_3': {
+    idle: 'fallen_angel_idle',
+    walk: 'fallen_angel_running',
+    texture: 'fallen_angel_idle_000'
+  },
+
+  // Zombies (Spawned minions) - all use the same custom animations
+  'Zombie_1': {
+    idle: 'zombie_idle',
+    walk: 'zombie_running',
+    texture: 'zombie_idle_000'
+  },
+
+  // Tombstone (Spawner structure) - uses static sprite
+  'Tombstone_1': {
+    idle: 'tombstone_idle',
+    walk: 'tombstone_idle',  // Tombstone doesn't walk
+    texture: 'tombstone'
   }
 };
 
@@ -326,7 +357,10 @@ export const STANDARDIZED_MOB_CLASSES = {
   'skeletonviking': ['Skeleton_Viking_1', 'Skeleton_Viking_2', 'Skeleton_Viking_3'],
   'skeletonpirate': ['Skeleton_Pirate_Captain_1', 'Skeleton_Pirate_Captain_2', 'Skeleton_Pirate_Captain_3'],
   'elemental': ['Elemental_Spirits_1', 'Elemental_Spirits_2', 'Elemental_Spirits_3'],
-  'alchemist': ['Cursed_Alchemist_1', 'Cursed_Alchemist_2', 'Cursed_Alchemist_3']
+  'alchemist': ['Cursed_Alchemist_1', 'Cursed_Alchemist_2', 'Cursed_Alchemist_3'],
+  'fallenangel': ['Fallen_Angel_1', 'Fallen_Angel_2', 'Fallen_Angel_3'],
+  'zombie': ['Zombie_1'],
+  'tombstone': ['Tombstone_1']
 };
 
 // Mapping from EnemyType to standardized mob class names - each type gets unique skins

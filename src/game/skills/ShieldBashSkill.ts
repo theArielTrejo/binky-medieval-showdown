@@ -92,8 +92,8 @@ export class ShieldBashSkill extends Skill {
                         if (distSq < 60 * 60) {
                             hitEnemies.add(enemyId);
 
-                            // Deal damage
-                            enemy.takeDamage(35);
+                            // Deal damage (1.5x player damage for charge attack)
+                            enemy.takeDamage(Math.floor(player.archetype.stats.damage * 1.5));
 
                             // Knockback enemy
                             const knockback = new Phaser.Math.Vector2(dirX, dirY).scale(300);

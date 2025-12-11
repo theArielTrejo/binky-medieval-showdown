@@ -8,6 +8,9 @@ import { SkeletonVikingEnemy } from './types/SkeletonVikingEnemy';
 import { SkeletonPirateEnemy } from './types/SkeletonPirateEnemy';
 import { ElementalSpiritEnemy } from './types/ElementalSpiritEnemy';
 import { LightningMageEnemy } from './types/LightningMageEnemy';
+import { FallenAngelEnemy } from './types/FallenAngelEnemy';
+import { TombstoneEnemy } from './types/TombstoneEnemy';
+import { ZombieEnemy } from './types/ZombieEnemy';
 
 export class EnemyFactory {
     public static create(scene: Scene, x: number, y: number, type: EnemyType): BaseEnemy {
@@ -24,6 +27,12 @@ export class EnemyFactory {
                 return new ElementalSpiritEnemy(scene, x, y);
             case EnemyType.LIGHTNING_MAGE:
                 return new LightningMageEnemy(scene, x, y);
+            case EnemyType.FALLEN_ANGEL:
+                return new FallenAngelEnemy(scene, x, y);
+            case EnemyType.TOMBSTONE:
+                return new TombstoneEnemy(scene, x, y);
+            case EnemyType.ZOMBIE:
+                return new ZombieEnemy(scene, x, y);
             case EnemyType.GNOLL:
             default:
                 return new GnollEnemy(scene, x, y);

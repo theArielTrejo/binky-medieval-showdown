@@ -24,12 +24,13 @@ export class SkeletonPirateEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 60,
-            speed: 50,
-            damage: 5,
+            health: 60,      // Medium health
+            speed: 50,       // Medium speed
+            damage: 5,       // Low direct damage - vortex provides utility
             size: 35,
-            xpValue: 18
+            xpValue: 18      // Good XP for zone control ability
         };
         const specialAbilities = ['vortex_attack', 'slow_debuff', 'area_control'];
         

@@ -9,9 +9,17 @@ export abstract class BaseEnemy {
     public type: EnemyType;
     public stats: EnemyStats;
     public currentHealth: number;
+    public maxHealth: number;
     public scene: Scene;
     public activeShield: Shield | null = null;
     public _farTimer: number = 0;
+
+    // Health bar graphics
+    protected healthBarBackground: Phaser.GameObjects.Graphics | null = null;
+    protected healthBarFill: Phaser.GameObjects.Graphics | null = null;
+    protected readonly HEALTH_BAR_WIDTH: number = 32;
+    protected readonly HEALTH_BAR_HEIGHT: number = 4;
+    protected readonly HEALTH_BAR_OFFSET_Y: number = -25;
 
     protected currentAnimation: string = '';
     protected mobAnimations: MobAnimationSet;
@@ -26,8 +34,10 @@ export abstract class BaseEnemy {
         this.type = type;
         this.stats = this.getStats();
         this.currentHealth = this.stats.health;
+        this.maxHealth = this.stats.health;
 
         this.initializeSprite(x, y);
+        this.createHealthBar();
     }
 
     protected abstract getStats(): EnemyStats;
@@ -76,10 +86,99 @@ export abstract class BaseEnemy {
 
     public takeDamage(amount: number): boolean {
         this.currentHealth -= amount;
+        this.updateHealthBar();
         return this.currentHealth <= 0;
     }
 
+    /**
+     * Heal the enemy by a specified amount
+     * @param amount - Amount of health to restore
+     * @returns The actual amount healed
+     */
+    public heal(amount: number): number {
+        const previousHealth = this.currentHealth;
+        this.currentHealth = Math.min(this.currentHealth + amount, this.maxHealth);
+        const actualHealed = this.currentHealth - previousHealth;
+        this.updateHealthBar();
+        return actualHealed;
+    }
+
+    /**
+     * Create the health bar graphics above the enemy
+     */
+    protected createHealthBar(): void {
+        // Background (dark red)
+        this.healthBarBackground = this.scene.add.graphics();
+        this.healthBarBackground.setDepth(10);
+        
+        // Fill (green for health)
+        this.healthBarFill = this.scene.add.graphics();
+        this.healthBarFill.setDepth(11);
+        
+        this.updateHealthBar();
+    }
+
+    /**
+     * Update the health bar position and fill
+     */
+    protected updateHealthBar(): void {
+        if (!this.healthBarBackground || !this.healthBarFill || !this.sprite || !this.sprite.active) {
+            return;
+        }
+
+        const x = this.sprite.x - this.HEALTH_BAR_WIDTH / 2;
+        const y = this.sprite.y + this.HEALTH_BAR_OFFSET_Y;
+
+        // Clear and redraw background
+        this.healthBarBackground.clear();
+        this.healthBarBackground.fillStyle(0x1a1a2e, 0.8);
+        this.healthBarBackground.fillRoundedRect(x - 1, y - 1, this.HEALTH_BAR_WIDTH + 2, this.HEALTH_BAR_HEIGHT + 2, 2);
+        
+        // Border
+        this.healthBarBackground.lineStyle(1, 0x000000, 0.5);
+        this.healthBarBackground.strokeRoundedRect(x - 1, y - 1, this.HEALTH_BAR_WIDTH + 2, this.HEALTH_BAR_HEIGHT + 2, 2);
+
+        // Calculate fill width based on health percentage
+        const healthPercent = Math.max(0, this.currentHealth / this.maxHealth);
+        const fillWidth = this.HEALTH_BAR_WIDTH * healthPercent;
+
+        // Clear and redraw fill
+        this.healthBarFill.clear();
+        
+        // Color gradient based on health percentage
+        let fillColor: number;
+        if (healthPercent > 0.6) {
+            fillColor = 0x4ade80; // Green
+        } else if (healthPercent > 0.3) {
+            fillColor = 0xfbbf24; // Yellow/Orange
+        } else {
+            fillColor = 0xef4444; // Red
+        }
+        
+        if (fillWidth > 0) {
+            this.healthBarFill.fillStyle(fillColor, 1);
+            this.healthBarFill.fillRoundedRect(x, y, fillWidth, this.HEALTH_BAR_HEIGHT, 1);
+        }
+    }
+
+    /**
+     * Update health bar position (call in update loop)
+     */
+    public updateHealthBarPosition(): void {
+        this.updateHealthBar();
+    }
+
     public destroy(): void {
+        // Clean up health bar graphics
+        if (this.healthBarBackground) {
+            this.healthBarBackground.destroy();
+            this.healthBarBackground = null;
+        }
+        if (this.healthBarFill) {
+            this.healthBarFill.destroy();
+            this.healthBarFill = null;
+        }
+        
         if (this.sprite && this.sprite.active) {
             this.sprite.destroy();
         }
@@ -126,8 +225,17 @@ export abstract class BaseEnemy {
     }
 
     protected getCollisionLayersFromScene(): Phaser.Tilemaps.TilemapLayer[] {
+        // Try to get collision layers from PhysicsSystem (preferred method)
+        const gameScene = this.scene as any;
+        if (gameScene.getPhysicsSystem) {
+            const physicsSystem = gameScene.getPhysicsSystem();
+            if (physicsSystem && physicsSystem.getCollisionLayers) {
+                return physicsSystem.getCollisionLayers();
+            }
+        }
+        
+        // Fallback: search for tilemap layers in scene children
         const collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
-        // Helper to safely get collision layers from the scene
         const tilemap = this.scene.children.getAll().find(child => child instanceof Phaser.Tilemaps.TilemapLayer) as Phaser.Tilemaps.TilemapLayer;
         if (tilemap) {
             collisionLayers.push(tilemap);

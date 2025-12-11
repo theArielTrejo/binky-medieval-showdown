@@ -24,12 +24,13 @@ export class LightningMageEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 70, // Medium health - ranged caster
-            speed: 40, // Slow movement - prefers to keep distance
-            damage: 35, // High AOE damage
+            health: 70,      // Medium health - ranged caster
+            speed: 40,       // Slow - prefers to keep distance
+            damage: 35,      // High AOE damage
             size: 35,
-            xpValue: 22
+            xpValue: 22      // Good XP for artillery role
         };
         const specialAbilities = ['lightning_strike', 'aoe_damage', 'ranged_caster', 'immobilize_during_cast'];
         

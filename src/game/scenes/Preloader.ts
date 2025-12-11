@@ -159,11 +159,30 @@ export class Preloader extends Scene {
         for (let i = 0; i <= 11; i++) this.load.image(`elemental_spirit_running_${String(i).padStart(3, '0')}`, `mobs/elemental-spirit/0_Elemental_Spirits_Running_${String(i).padStart(3, '0')}.png`);
         for (let i = 0; i <= 14; i++) this.load.image(`elemental_spirit_dying_${String(i).padStart(3, '0')}`, `mobs/elemental-spirit/0_Elemental_Spirits_Dying_${String(i).padStart(3, '0')}.png`);
 
+        // Fallen Angel (Healer)
+        for (let i = 0; i <= 17; i++) this.load.image(`fallen_angel_idle_${String(i).padStart(3, '0')}`, `mobs/fallen-angel/Idle/0_Fallen_Angels_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`fallen_angel_running_${String(i).padStart(3, '0')}`, `mobs/fallen-angel/Running/0_Fallen_Angels_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`fallen_angel_slashing_${String(i).padStart(3, '0')}`, `mobs/fallen-angel/Slashing/0_Fallen_Angels_Slashing_${String(i).padStart(3, '0')}.png`);
+
+        // Zombie (spawned minions)
+        for (let i = 0; i <= 17; i++) this.load.image(`zombie_idle_${String(i).padStart(3, '0')}`, `mobs/zombie/Idle/0_Zombie_Idle_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`zombie_running_${String(i).padStart(3, '0')}`, `mobs/zombie/Running/0_Zombie_Running_${String(i).padStart(3, '0')}.png`);
+        for (let i = 0; i <= 11; i++) this.load.image(`zombie_slashing_${String(i).padStart(3, '0')}`, `mobs/zombie/Slashing/0_Zombie_Slashing_${String(i).padStart(3, '0')}.png`);
+
+        // Tombstone (spawner structure)
+        this.load.image('tombstone', 'mobs/tombstone.png');
+
         // Ogre
         for (let i = 0; i <= 17; i++) this.load.image(`ogre-walk-${i}`, `mobs/ogre/Walking_${String(i).padStart(3, '0')}.png`);
         for (let i = 0; i <= 11; i++) this.load.image(`ogre-attack-${i}`, `mobs/ogre/Attacking_${String(i).padStart(3, '0')}.png`);
         for (let i = 0; i <= 2; i++) this.load.image(`bone-slam-${i}`, `Effects/Bone_Slam/Frame_${String(i).padStart(2, '0')}.png`);
         this.load.image('FieldsTileset', 'tilemaps/FieldsTileset.png');
+
+        // Heal Effect
+        this.load.image('feather-heal', 'Effects/feather-heal.png');
+        
+        // Projectile sprites
+        this.load.image('wind-ball', 'Effects/Wind ball.png');
 
         // UI and misc
         this.load.image('logo', 'logo.png');

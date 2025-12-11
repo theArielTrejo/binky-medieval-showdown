@@ -63,26 +63,32 @@ export class PlayerArchetype {
     private getStatsForType(type: PlayerArchetypeType): PlayerStats {
         switch (type) {
             case PlayerArchetypeType.TANK:
+                // Tank: High health, slower but hits hard
+                // ~5 hits for Ogre (150hp), ~4 hits for Viking (120hp), ~2 hits for Gnoll (50hp)
                 return {
                     maxHealth: 1000,
                     speed: 200,
-                    damage: 150,
+                    damage: 30,
                     attackRange: 60,
                     attackSpeed: 2.0
                 };
             case PlayerArchetypeType.GLASS_CANNON:
+                // Glass Cannon: Low health but highest damage per hit
+                // ~4 hits for Ogre, ~3 hits for Viking, ~2 hits for Gnoll
                 return {
                     maxHealth: 400,
                     speed: 250,
-                    damage: 225,
+                    damage: 40,
                     attackRange: 300,
                     attackSpeed: 4.0
                 };
             case PlayerArchetypeType.EVASIVE:
+                // Evasive: Medium health, fast but lower damage
+                // ~8 hits for Ogre, ~6 hits for Viking, ~3 hits for Gnoll
                 return {
                     maxHealth: 600,
                     speed: 400,
-                    damage: 100,
+                    damage: 20,
                     attackRange: 150,
                     attackSpeed: 3.0
                 };

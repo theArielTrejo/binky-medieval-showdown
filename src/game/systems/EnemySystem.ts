@@ -2,6 +2,8 @@ import { Scene } from 'phaser';
 import { EnemyType, EnemyAttackResult } from '../types/EnemyTypes';
 import { BaseEnemy } from '../enemies/BaseEnemy';
 import { EnemyFactory } from '../enemies/EnemyFactory';
+import { FallenAngelEnemy } from '../enemies/types/FallenAngelEnemy';
+import { TombstoneEnemy } from '../enemies/types/TombstoneEnemy';
 import { XPOrbSystem } from './XPOrbSystem';
 
 import { Shield } from '../enemies/attacks/Shield';
@@ -179,6 +181,17 @@ export class EnemySystem {
         }
 
         const enemy = EnemyFactory.create(this.scene, x, y, enemyType);
+        
+        // Setup Fallen Angel with reference to enemy system for healing
+        if (enemy instanceof FallenAngelEnemy) {
+            enemy.setEnemySystemRef(this);
+        }
+        
+        // Setup Tombstone with reference to enemy system for spawning zombies
+        if (enemy instanceof TombstoneEnemy) {
+            enemy.setEnemySystemRef(this);
+        }
+        
         this.enemies.push(enemy);
         this.enemiesGroup.add(enemy.sprite);
         return enemy;
@@ -206,6 +219,17 @@ export class EnemySystem {
         for (let i = 0; i < spawnCount; i++) {
             const spawnPos = this.getSpawnPosition(location, playerX, playerY);
             const enemy = EnemyFactory.create(this.scene, spawnPos.x, spawnPos.y, enemyType);
+            
+            // Setup Fallen Angel with reference to enemy system for healing
+            if (enemy instanceof FallenAngelEnemy) {
+                enemy.setEnemySystemRef(this);
+            }
+            
+            // Setup Tombstone with reference to enemy system for spawning zombies
+            if (enemy instanceof TombstoneEnemy) {
+                enemy.setEnemySystemRef(this);
+            }
+            
             this.enemies.push(enemy);
             this.enemiesGroup.add(enemy.sprite);
             spawnedEnemies.push(enemy);
@@ -229,8 +253,25 @@ export class EnemySystem {
         }
 
         const enemy = EnemyFactory.create(this.scene, x, y, enemyType);
+        
+        // Setup Fallen Angel with reference to enemy system for healing
+        if (enemy instanceof FallenAngelEnemy) {
+            enemy.setEnemySystemRef(this);
+        }
+        
+        // Setup Tombstone with reference to enemy system for spawning zombies
+        if (enemy instanceof TombstoneEnemy) {
+            enemy.setEnemySystemRef(this);
+        }
+        
         this.enemies.push(enemy);
         this.enemiesGroup.add(enemy.sprite);
+        
+        // Notify callback if registered (for collision setup, etc.)
+        if (this.onEnemySpawnedCallback) {
+            this.onEnemySpawnedCallback(enemy);
+        }
+        
         return enemy;
     }
 
@@ -307,6 +348,10 @@ export class EnemySystem {
         // Update enemies and collect new attacks
         this.enemies.forEach(enemy => {
             const attackResult: EnemyAttackResult | null = enemy.update(playerX, playerY, deltaTime);
+            
+            // Update health bar position after enemy movement
+            enemy.updateHealthBarPosition();
+            
             if (attackResult && attackResult.attackObject) {
                 switch (attackResult.type) {
                     case 'projectile':

@@ -14,12 +14,13 @@ export class ElementalSpiritEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 30, // Low health - designed to explode
-            speed: 110, // Very high mobility to rush player
-            damage: 25, // High explosion damage
+            health: 30,      // Very Fragile - suicide bomber
+            speed: 110,      // Very Fast - rushes player
+            damage: 25,      // High explosion damage
             size: 30,
-            xpValue: 20
+            xpValue: 20      // Good XP reward
         };
         const specialAbilities = ['explosive_death', 'high_mobility', 'suicide_attack'];
         

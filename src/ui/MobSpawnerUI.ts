@@ -119,6 +119,24 @@ export class MobSpawnerUI {
                 name: '⚡ Lightning Mage',
                 color: 0x66ddff,
                 description: 'AOE Lightning Strike'
+            },
+            {
+                type: EnemyType.FALLEN_ANGEL,
+                name: '👼 Fallen Angel',
+                color: 0xaa88ff,
+                description: 'Heals Nearby Allies'
+            },
+            {
+                type: EnemyType.TOMBSTONE,
+                name: '🪦 Tombstone',
+                color: 0x444455,
+                description: 'Spawns Zombies'
+            },
+            {
+                type: EnemyType.ZOMBIE,
+                name: '🧟 Zombie',
+                color: 0x556644,
+                description: 'Weak Melee Minion'
             }
         ];
 
@@ -308,6 +326,18 @@ export class MobSpawnerUI {
             }
             if (code === 'Digit7' || key === '7') {
                 this.spawnMobAtCursor(EnemyType.LIGHTNING_MAGE);
+                return;
+            }
+            if (code === 'Digit8' || key === '8') {
+                this.spawnMobAtCursor(EnemyType.FALLEN_ANGEL);
+                return;
+            }
+            if (code === 'Digit9' || key === '9') {
+                this.spawnMobAtCursor(EnemyType.TOMBSTONE);
+                return;
+            }
+            if (code === 'Digit0' || key === '0') {
+                this.spawnMobAtCursor(EnemyType.ZOMBIE);
                 return;
             }
         };

@@ -36,7 +36,10 @@ export const HARDCODED_MOB_SKINS = Object.freeze({
     [EnemyType.GNOLL]: 'Gnoll_3',                             // Fast gnoll warrior - uses mob-texture-316
     [EnemyType.SKELETON_PIRATE]: 'Skeleton_Pirate_Captain_1', // Skeleton pirate with vortex attacks - uses mob-texture-196
     [EnemyType.ELEMENTAL_SPIRIT]: 'Elemental_Spirits_2',      // Elemental spirit suicide bomber - uses mob-texture-205 (idle) + 204 (running)
-    [EnemyType.LIGHTNING_MAGE]: 'Cursed_Alchemist_1'          // Lightning mage - AOE lightning strikes from distance - uses custom lightning_mage animations
+    [EnemyType.LIGHTNING_MAGE]: 'Cursed_Alchemist_1',         // Lightning mage - AOE lightning strikes from distance - uses custom lightning_mage animations
+    [EnemyType.FALLEN_ANGEL]: 'Fallen_Angel_1',               // Fallen Angel healer - backline support that heals allies
+    [EnemyType.TOMBSTONE]: 'Tombstone_1',                     // Tombstone spawner - stationary structure that spawns zombies
+    [EnemyType.ZOMBIE]: 'Zombie_1'                            // Zombie minion - weak melee fodder spawned by tombstones
 } as const);
 
 /**
@@ -89,7 +92,10 @@ export function validateAllMobSpawnerSkins(): boolean {
         EnemyType.GNOLL,
         EnemyType.SKELETON_PIRATE,
         EnemyType.ELEMENTAL_SPIRIT,
-        EnemyType.LIGHTNING_MAGE
+        EnemyType.LIGHTNING_MAGE,
+        EnemyType.FALLEN_ANGEL,
+        EnemyType.TOMBSTONE,
+        EnemyType.ZOMBIE
     ];
 
     for (const enemyType of requiredEnemyTypes) {
@@ -213,7 +219,10 @@ export function developmentValidation(): void {
 
         const allTypes = [
             ...mobSpawnerTypes,
-            EnemyType.LIGHTNING_MAGE
+            EnemyType.LIGHTNING_MAGE,
+            EnemyType.FALLEN_ANGEL,
+            EnemyType.TOMBSTONE,
+            EnemyType.ZOMBIE
         ];
 
         allTypes.forEach(type => {
@@ -239,6 +248,9 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
     const texture205Variants = ['Elemental_Spirits_2']; // Elemental spirits (idle frames in 205, running in 204)
     const texture131Variants = ['Skeleton_Death_Knight_1', 'Skeleton_Death_Knight_2', 'Skeleton_Death_Knight_3']; // Death Knight idle/walk frames
     const ogreVariants = ['Ogre_1']; // Ogre uses custom walking animation
+    const fallenAngelVariants = ['Fallen_Angel_1', 'Fallen_Angel_2', 'Fallen_Angel_3']; // Fallen Angel uses custom animations
+    const zombieVariants = ['Zombie_1']; // Zombie uses custom animations
+    const tombstoneVariants = ['Tombstone_1']; // Tombstone uses static sprite
 
     if (texture196Variants.includes(mobVariant)) {
         return 'mob-texture-196';
@@ -254,6 +266,12 @@ export function getTextureKeyForMobVariant(mobVariant: string): string {
         return 'mob-texture-131';
     } else if (ogreVariants.includes(mobVariant)) {
         return 'ogre-walk-0';
+    } else if (fallenAngelVariants.includes(mobVariant)) {
+        return 'fallen_angel_idle_000';
+    } else if (zombieVariants.includes(mobVariant)) {
+        return 'zombie_idle_000';
+    } else if (tombstoneVariants.includes(mobVariant)) {
+        return 'tombstone';
     } else {
         // Fallback for any unknown variants
         console.warn(`Unknown mob variant: ${mobVariant}, using fallback texture-196`);

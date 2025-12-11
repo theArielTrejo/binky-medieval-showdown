@@ -138,11 +138,12 @@ export class CombatComponent {
             
             let bounds;
             // Handle BaseProjectile composition (sprite property) vs SkillObject inheritance (Container)
-            if (attack.sprite && attack.sprite.getBounds) {
-                 bounds = attack.sprite.getBounds();
-            } else if (attack.getBounds) {
+            // Check for custom getBounds on attack first (for Graphics-based projectiles like EnemyProjectile)
+            if (attack.getBounds && typeof attack.getBounds === 'function') {
                  const b = attack.getBounds();
-                 bounds = new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height);
+                 bounds = b instanceof Phaser.Geom.Rectangle ? b : new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height);
+            } else if (attack.sprite && attack.sprite.getBounds) {
+                 bounds = attack.sprite.getBounds();
             }
             
             if (bounds && Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, bounds)) {

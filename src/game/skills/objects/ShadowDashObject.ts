@@ -8,7 +8,8 @@ export class ShadowDashObject extends SkillObject {
     private startPosition: Phaser.Math.Vector2;
     private ghostTimer?: Phaser.Time.TimerEvent;
 
-    constructor(scene: Scene, x: number, y: number, playerSprite: Phaser.Physics.Arcade.Sprite, targetX: number, targetY: number, damage: number = 30, duration: number = 200) {
+    constructor(scene: Scene, x: number, y: number, playerSprite: Phaser.Physics.Arcade.Sprite, targetX: number, targetY: number, damage: number, duration: number = 200) {
+        // damage should be passed from skill with player.archetype.stats.damage * multiplier
         super(scene, x, y, damage, duration);
         
         this.playerSprite = playerSprite;

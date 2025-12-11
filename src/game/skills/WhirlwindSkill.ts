@@ -10,8 +10,9 @@ export class WhirlwindSkill extends Skill {
     }
 
     activate(player: Player): void {
-        // Instantiate the Whirlwind Object
-        const whirlwind = new WhirlwindObject(player.scene as Game, player.sprite, 10);
+        // Instantiate the Whirlwind Object - damage per tick scales with player stats (0.5x per tick)
+        const whirlwindDamage = Math.floor(player.archetype.stats.damage * 0.5);
+        const whirlwind = new WhirlwindObject(player.scene as Game, player.sprite, whirlwindDamage);
         
         // Register Collision
         const gameScene = player.scene as Game;

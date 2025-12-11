@@ -10,7 +10,8 @@ export class Shuriken extends BaseProjectile {
 
     constructor(scene: Scene, x: number, y: number, options: ProjectileOptions = {}) {
         // Shurikens are fast, short-lived
-        super(scene, x, y, 10, 600, 2000, options);
+        // Default damage of 20, will be overwritten by skill activation with player.archetype.stats.damage
+        super(scene, x, y, 20, 600, 2000, options);
 
         // Shuriken is a Phaser.Physics.Arcade.Sprite in the original
         // But BaseProjectile uses Container. We'll create a simple graphic.

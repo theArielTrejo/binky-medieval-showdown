@@ -30,12 +30,13 @@ export class ArcherEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 40,
-            speed: 50,
-            damage: 10,
+            health: 40,      // Fragile - glass cannon
+            speed: 50,       // Medium speed
+            damage: 10,      // Medium damage per arrow
             size: 30,
-            xpValue: 12
+            xpValue: 12      // Slightly higher XP for difficulty
         };
         const specialAbilities = ['ranged_attack', 'kiting'];
         

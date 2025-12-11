@@ -24,12 +24,13 @@ export class SkeletonVikingEnemy extends BaseEnemy {
     }
 
     protected getStats(): EnemyStats {
+        // Stats from ENEMY_TYPES_DESIGN.md
         const baseStats = {
-            health: 120,
-            speed: 45,
-            damage: 30,
+            health: 120,     // Tanky - elite defender
+            speed: 45,       // Slow - methodical approach
+            damage: 30,      // High damage per spear
             size: 35,
-            xpValue: 18
+            xpValue: 18      // Good XP reward for difficulty
         };
         const specialAbilities = ['shield', 'spear_attack'];
 

@@ -14,7 +14,7 @@ export class ShadowDashSkill extends Skill {
         const targetPos = player.inputManager.getPointerWorldPosition();
         const duration = 200;
         
-        // Instantiate directly
+        // Instantiate directly - damage scales with player stats
         const dash = new ShadowDashObject(
             player.scene, 
             player.sprite.x, 
@@ -22,7 +22,7 @@ export class ShadowDashSkill extends Skill {
             player.sprite, 
             targetPos.x, 
             targetPos.y,
-            30, // damage
+            Math.floor(player.archetype.stats.damage * 1.5), // 1.5x player damage
             duration
         );
         

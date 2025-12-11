@@ -241,7 +241,9 @@ export class AtlasManager {
             { key: 'lightning_mage', actions: ['idle', 'running', 'slashing'], frames: [18, 12, 12], rates: [8, 12, 16] },
             { key: 'gnoll', actions: ['idle', 'running', 'throwing'], frames: [18, 12, 12], rates: [8, 12, 20] },
             { key: 'skeleton_archer', actions: ['idle', 'running', 'shooting'], frames: [18, 12, 9], rates: [8, 12, 12] },
-            { key: 'elemental_spirit', actions: ['idle', 'running', 'dying'], frames: [18, 12, 15], rates: [8, 12, 20] }
+            { key: 'elemental_spirit', actions: ['idle', 'running', 'dying'], frames: [18, 12, 15], rates: [8, 12, 20] },
+            { key: 'fallen_angel', actions: ['idle', 'running', 'slashing'], frames: [18, 12, 12], rates: [8, 12, 16] },
+            { key: 'zombie', actions: ['idle', 'running', 'slashing'], frames: [18, 12, 12], rates: [8, 12, 16] }
         ];
 
         mobs.forEach(mob => {
@@ -286,6 +288,16 @@ export class AtlasManager {
         // Special Archer handling
         this.createKeyFrameAnimation('skeleton_archer_shooting_draw', 4, 'skeleton_archer_shooting_', 12, 0);
         this.createKeyFrameAnimation('skeleton_archer_shooting_release', 5, 'skeleton_archer_shooting_', 16, 0, false, 4);
+
+        // Tombstone (static image - single frame animation)
+        if (!this.scene.anims.exists('tombstone_idle') && this.scene.textures.exists('tombstone')) {
+            this.scene.anims.create({
+                key: 'tombstone_idle',
+                frames: [{ key: 'tombstone' }],
+                frameRate: 1,
+                repeat: -1
+            });
+        }
     }
 
     /**

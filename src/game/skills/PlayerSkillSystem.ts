@@ -329,23 +329,27 @@ export class PlayerSkillSystem {
         this.novaGroup.add(n.sprite);
     }
 
-    public castShieldBash(x: number, y: number, facingVector: Phaser.Math.Vector2): void {
-        const skill = new ShieldBashObject(this.scene, x, y, facingVector);
+    public castShieldBash(x: number, y: number, facingVector: Phaser.Math.Vector2, damage?: number): void {
+        const actualDamage = damage ?? this.player.archetype.stats.damage;
+        const skill = new ShieldBashObject(this.scene, x, y, facingVector, actualDamage);
         this.addSkill(skill);
     }
 
-    public castShadowDash(playerSprite: Phaser.Physics.Arcade.Sprite, targetX: number, targetY: number): void {
-        const skill = new ShadowDashObject(this.scene, playerSprite.x, playerSprite.y, playerSprite, targetX, targetY);
+    public castShadowDash(playerSprite: Phaser.Physics.Arcade.Sprite, targetX: number, targetY: number, damage?: number): void {
+        const actualDamage = damage ?? Math.floor(this.player.archetype.stats.damage * 1.5);
+        const skill = new ShadowDashObject(this.scene, playerSprite.x, playerSprite.y, playerSprite, targetX, targetY, actualDamage);
         this.addSkill(skill);
     }
 
-    public castShurikenFan(x: number, y: number, targetX: number, targetY: number): void {
-        const skill = new ShurikenFanObject(this.scene, x, y, targetX, targetY);
+    public castShurikenFan(x: number, y: number, targetX: number, targetY: number, damage?: number): void {
+        const actualDamage = damage ?? this.player.archetype.stats.damage;
+        const skill = new ShurikenFanObject(this.scene, x, y, targetX, targetY, actualDamage);
         this.addSkill(skill);
     }
 
-    public castWhirlwind(playerSprite: Phaser.Physics.Arcade.Sprite): void {
-        const skill = new WhirlwindObject(this.scene, playerSprite, 10);
+    public castWhirlwind(playerSprite: Phaser.Physics.Arcade.Sprite, damage?: number): void {
+        const actualDamage = damage ?? Math.floor(this.player.archetype.stats.damage * 0.5);
+        const skill = new WhirlwindObject(this.scene, playerSprite, actualDamage);
         this.addSkill(skill);
     }
 
