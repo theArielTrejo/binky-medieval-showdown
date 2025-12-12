@@ -49,6 +49,13 @@ export class LightningMageEnemy extends BaseEnemy {
             return null;
         }
 
+        // If player is invisible, wander randomly
+        if (this.isPlayerInvisible()) {
+            this.wanderRandomly(deltaTime);
+            this.updateHealthBar();
+            return null;
+        }
+
         if (this.lightningCooldown > 0) this.lightningCooldown -= deltaTime;
 
         const dx = playerX - this.sprite.x;
@@ -124,8 +131,8 @@ export class LightningMageEnemy extends BaseEnemy {
 
         // State 3: Movement - Approach if not in camera view or too far
         if (!inCameraView || distance > this.optimalRange) {
-            const velocityX = (dx / distance) * this.stats.speed;
-            const velocityY = (dy / distance) * this.stats.speed;
+            const velocityX = (dx / distance) * this.getEffectiveSpeed();
+            const velocityY = (dy / distance) * this.getEffectiveSpeed();
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             return null;
@@ -133,8 +140,8 @@ export class LightningMageEnemy extends BaseEnemy {
 
         // State 4: Movement - Back away if player is too close
         if (distance < this.minRange) {
-            const velocityX = -(dx / distance) * (this.stats.speed * 0.7);
-            const velocityY = -(dy / distance) * (this.stats.speed * 0.7);
+            const velocityX = -(dx / distance) * (this.getEffectiveSpeed() * 0.7);
+            const velocityY = -(dy / distance) * (this.getEffectiveSpeed() * 0.7);
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             return null;

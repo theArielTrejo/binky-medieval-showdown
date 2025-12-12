@@ -200,6 +200,12 @@ export class Preloader extends Scene {
         // Pixel hammer for hammer throw
         this.load.image('pixel-hammer', 'Effects/pixel-hammer.png');
 
+        // Dagger for ninja stab
+        this.load.image('dagger', 'Effects/dagger.png');
+
+        // Caltrop for ninja trap
+        this.load.image('caltrop', 'Effects/caltrop.png');
+
         // Shield dash effect
         this.load.image('shield-dash', 'Effects/shield-dash.png');
         this.load.image('wood-shield', 'Effects/wood sheild.jpg');

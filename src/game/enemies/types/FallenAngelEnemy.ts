@@ -92,6 +92,13 @@ export class FallenAngelEnemy extends BaseEnemy {
             return null;
         }
 
+        // If player is invisible, wander randomly (but still heal allies)
+        if (this.isPlayerInvisible()) {
+            this.wanderRandomly(deltaTime);
+            this.updateHealthBar();
+            return null;
+        }
+
         if (this.healCooldown > 0) this.healCooldown -= deltaTime;
         if (this.orbAttackCooldown > 0) this.orbAttackCooldown -= deltaTime;
 
@@ -204,8 +211,8 @@ export class FallenAngelEnemy extends BaseEnemy {
 
         // State 6: Movement - Need to get into camera view
         if (!inCameraView) {
-            const velocityX = (dx / distance) * this.stats.speed;
-            const velocityY = (dy / distance) * this.stats.speed;
+            const velocityX = (dx / distance) * this.getEffectiveSpeed();
+            const velocityY = (dy / distance) * this.getEffectiveSpeed();
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             return null;
@@ -213,8 +220,8 @@ export class FallenAngelEnemy extends BaseEnemy {
 
         // State 7: Movement - Player too close, back away
         if (distance < this.minRange) {
-            const velocityX = -(dx / distance) * (this.stats.speed * 0.4);
-            const velocityY = -(dy / distance) * (this.stats.speed * 0.4);
+            const velocityX = -(dx / distance) * (this.getEffectiveSpeed() * 0.4);
+            const velocityY = -(dy / distance) * (this.getEffectiveSpeed() * 0.4);
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             return null;

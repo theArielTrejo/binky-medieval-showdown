@@ -55,6 +55,13 @@ export class ArcherEnemy extends BaseEnemy {
             return null;
         }
 
+        // If player is invisible, wander randomly
+        if (this.isPlayerInvisible()) {
+            this.wanderRandomly(deltaTime);
+            this.updateHealthBar();
+            return null;
+        }
+
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -176,14 +183,14 @@ export class ArcherEnemy extends BaseEnemy {
         // Movement logic - try to maintain optimal range and stay in camera view
         if (!inCameraView || distance > this.optimalRange) {
             // Not in camera view or too far - move towards player
-            const velocityX = (dx / distance) * this.stats.speed;
-            const velocityY = (dy / distance) * this.stats.speed;
+            const velocityX = (dx / distance) * this.getEffectiveSpeed();
+            const velocityY = (dy / distance) * this.getEffectiveSpeed();
             body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
         } else if (distance < this.minRange) {
             // Too close - kite away
-            const velocityX = -(dx / distance) * this.stats.speed;
-            const velocityY = -(dy / distance) * this.stats.speed;
+            const velocityX = -(dx / distance) * this.getEffectiveSpeed();
+            const velocityY = -(dy / distance) * this.getEffectiveSpeed();
             body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
         } else {

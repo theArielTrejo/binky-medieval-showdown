@@ -49,6 +49,13 @@ export class SkeletonPirateEnemy extends BaseEnemy {
             return null;
         }
 
+        // If player is invisible, wander randomly
+        if (this.isPlayerInvisible()) {
+            this.wanderRandomly(deltaTime);
+            this.updateHealthBar();
+            return null;
+        }
+
         if (this.vortexAttackCooldown > 0) this.vortexAttackCooldown -= deltaTime;
 
         const dx = playerX - this.sprite.x;
@@ -128,8 +135,8 @@ export class SkeletonPirateEnemy extends BaseEnemy {
 
         // State 4: Need to get into camera view
         if (!inCameraView) {
-            const velocityX = (dx / distance) * this.stats.speed;
-            const velocityY = (dy / distance) * this.stats.speed;
+            const velocityX = (dx / distance) * this.getEffectiveSpeed();
+            const velocityY = (dy / distance) * this.getEffectiveSpeed();
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             return null;
@@ -137,8 +144,8 @@ export class SkeletonPirateEnemy extends BaseEnemy {
 
         // State 5: Player too close - back away
         if (distance < this.minRange) {
-            const velocityX = -(dx / distance) * (this.stats.speed * 0.4);
-            const velocityY = -(dy / distance) * (this.stats.speed * 0.4);
+            const velocityX = -(dx / distance) * (this.getEffectiveSpeed() * 0.4);
+            const velocityY = -(dy / distance) * (this.getEffectiveSpeed() * 0.4);
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);
             return null;

@@ -78,6 +78,8 @@ export class TombstoneEnemy extends BaseEnemy {
             return null;
         }
 
+        // Tombstone ignores invisibility - it's a structure that keeps spawning
+
         // Tombstone doesn't move - ensure velocity is always 0
         const body = this.sprite.body as Phaser.Physics.Arcade.Body;
         if (body) body.setVelocity(0, 0);

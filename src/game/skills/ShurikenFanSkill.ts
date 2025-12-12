@@ -11,6 +11,13 @@ export class ShurikenFanSkill extends Skill {
     }
 
     activate(player: Player): void {
+        // Break invisibility when attacking
+        if (player.sprite.getData('invisible')) {
+            player.sprite.setData('invisible', false);
+            player.sprite.setAlpha(1);
+            player.sprite.clearTint();
+        }
+
         const targetPos = player.inputManager.getPointerWorldPosition();
         const x = player.sprite.x;
         const y = player.sprite.y;

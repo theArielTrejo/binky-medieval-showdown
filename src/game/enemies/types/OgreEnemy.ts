@@ -54,6 +54,13 @@ export class OgreEnemy extends BaseEnemy {
             return null;
         }
 
+        // If player is invisible, wander randomly
+        if (this.isPlayerInvisible()) {
+            this.wanderRandomly(deltaTime);
+            this.updateHealthBar();
+            return null;
+        }
+
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -92,8 +99,8 @@ export class OgreEnemy extends BaseEnemy {
 
         if (distance > attackRange) {
             // Move
-            const velocityX = (dx / distance) * this.stats.speed;
-            const velocityY = (dy / distance) * this.stats.speed;
+            const velocityX = (dx / distance) * this.getEffectiveSpeed();
+            const velocityY = (dy / distance) * this.getEffectiveSpeed();
             const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             if (body) body.setVelocity(velocityX, velocityY);
             this.playAnimation(this.mobAnimations.walk);

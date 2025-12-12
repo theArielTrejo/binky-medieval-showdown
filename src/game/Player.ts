@@ -16,6 +16,8 @@ import { ShurikenFanSkill } from './skills/ShurikenFanSkill';
 import { NovaSkill } from './skills/NovaSkill';
 import { WhirlwindSkill } from './skills/WhirlwindSkill';
 import { HammerThrowSkill } from './skills/HammerThrowSkill';
+import { DaggerStabSkill } from './skills/DaggerStabSkill';
+import { CaltropSkill } from './skills/CaltropSkill';
 import { EffectManager } from './effects/EffectManager';
 
 import { CombatComponent } from './components/CombatComponent';
@@ -78,6 +80,8 @@ export class Player {
         } else if (this.archetype.type === PlayerArchetypeType.EVASIVE) {
             this.loadout.primary = new ShurikenFanSkill();
             this.loadout.secondary = new ShadowDashSkill();
+            this.loadout.special = new DaggerStabSkill();
+            this.loadout.utility = new CaltropSkill();
         } else {
             this.loadout.primary = new NovaSkill();
             this.loadout.secondary = new ShadowDashSkill();

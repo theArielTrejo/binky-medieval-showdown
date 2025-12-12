@@ -30,6 +30,62 @@ export abstract class BaseEnemy {
     protected attackCooldown: number = 1000;
 
     /**
+     * Get the effective speed after applying any slow effects
+     */
+    public getEffectiveSpeed(): number {
+        let speed = this.stats.speed;
+        
+        // Check for caltrop slow
+        if (this.sprite.getData('caltropSlowed')) {
+            speed *= 0.5; // 50% slow = 50% speed
+        }
+        
+        return speed;
+    }
+
+    /**
+     * Check if the player is invisible (from smoke bomb dash)
+     * Returns true if enemies should ignore the player
+     */
+    protected isPlayerInvisible(): boolean {
+        // Find player sprite in scene
+        const gameScene = this.scene as any;
+        if (gameScene.player && gameScene.player.sprite) {
+            return gameScene.player.sprite.getData('invisible') === true;
+        }
+        return false;
+    }
+
+    /**
+     * Wander randomly when player is invisible
+     */
+    protected wanderRandomly(_deltaTime: number): void {
+        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+        if (!body) return;
+
+        // Change direction occasionally
+        if (!this.sprite.getData('wanderAngle') || Math.random() < 0.02) {
+            this.sprite.setData('wanderAngle', Math.random() * Math.PI * 2);
+        }
+
+        const wanderAngle = this.sprite.getData('wanderAngle') as number;
+        const wanderSpeed = this.getEffectiveSpeed() * 0.5; // Walk slowly
+
+        body.setVelocity(
+            Math.cos(wanderAngle) * wanderSpeed,
+            Math.sin(wanderAngle) * wanderSpeed
+        );
+
+        // Update facing
+        if (body.velocity.x !== 0) {
+            this.facingLeft = body.velocity.x < 0;
+            this.sprite.setFlipX(this.facingLeft);
+        }
+
+        this.playAnimation(this.mobAnimations.walk);
+    }
+
+    /**
      * Check if the enemy is currently stunned
      * @returns true if stunned and should skip all actions
      */
