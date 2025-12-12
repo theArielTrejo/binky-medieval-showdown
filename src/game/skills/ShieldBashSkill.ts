@@ -29,32 +29,24 @@ export class ShieldBashSkill extends Skill {
 
         const chargeDuration = 250; // ms
 
-        // Create holy cross aura centered on player
-        const aura = player.scene.add.graphics();
+        // Calculate the angle for the shield direction
+        const dashAngle = Math.atan2(dirY, dirX);
 
-        // Outer golden glow circle
-        aura.fillStyle(0xffd700, 0.2);
-        aura.fillCircle(0, 0, 50);
+        // Offset distance for shield (closer to player)
+        const shieldOffset = 18;
 
-        // Holy cross - vertical bar
-        aura.fillStyle(0xffffff, 0.8);
-        aura.fillRect(-6, -50, 12, 90);
-
-        // Holy cross - horizontal bar
-        aura.fillRect(-30, -35, 60, 12);
-
-        // Inner glow on cross
-        aura.fillStyle(0xffd700, 0.6);
-        aura.fillRect(-4, -48, 8, 86);
-        aura.fillRect(-28, -33, 56, 8);
-
-        // Pulsing outer ring
-        aura.lineStyle(3, 0xffd700, 0.5);
-        aura.strokeCircle(0, 0, 45);
-
-        aura.setPosition(player.sprite.x, player.sprite.y);
-        aura.setDepth(15);
-        aura.setBlendMode(Phaser.BlendModes.ADD);
+        // Create shield sprite in front of player
+        const shieldSprite = player.scene.add.sprite(
+            player.sprite.x + dirX * shieldOffset,
+            player.sprite.y + dirY * shieldOffset,
+            'wood-shield'
+        );
+        shieldSprite.setScale(0.07, 0.04);
+        shieldSprite.setDepth(15);
+        shieldSprite.setOrigin(0.5, 0.5);
+        
+        // Rotate shield to face the dash direction
+        shieldSprite.setRotation(dashAngle + Math.PI / 2);
 
         // Track enemies hit during charge
         const hitEnemies = new Set<number>();
@@ -62,6 +54,46 @@ export class ShieldBashSkill extends Skill {
         // Get enemy system for collision checks
         const gameScene = player.scene as Game;
         const enemySystem = gameScene.getEnemySystem();
+
+        // Dust particle spawner during dash
+        const dustTimer = player.scene.time.addEvent({
+            delay: 25,
+            callback: () => {
+                // Spawn dust behind the shield (opposite to dash direction)
+                const behindX = player.sprite.x - dirX * 10;
+                const behindY = player.sprite.y - dirY * 10;
+                
+                for (let i = 0; i < 2; i++) {
+                    const offsetX = Phaser.Math.Between(-15, 15);
+                    const offsetY = Phaser.Math.Between(-15, 15);
+                    const size = Phaser.Math.Between(3, 6);
+                    const colors = [0xd4c4a8, 0xc9b896, 0xb8a080, 0xa89070];
+                    const color = Phaser.Math.RND.pick(colors);
+                    
+                    const dust = player.scene.add.circle(
+                        behindX + offsetX,
+                        behindY + offsetY,
+                        size,
+                        color,
+                        0.7
+                    );
+                    dust.setDepth(14);
+                    
+                    // Animate dust fading out and drifting back
+                    player.scene.tweens.add({
+                        targets: dust,
+                        x: dust.x - dirX * 20,
+                        y: dust.y - dirY * 20,
+                        alpha: 0,
+                        scale: 0.3,
+                        duration: 300,
+                        ease: 'Quad.easeOut',
+                        onComplete: () => dust.destroy()
+                    });
+                }
+            },
+            loop: true
+        });
 
         // Charge tween - moves the player
         player.scene.tweens.add({
@@ -71,8 +103,11 @@ export class ShieldBashSkill extends Skill {
             duration: chargeDuration,
             ease: 'Quad.easeOut',
             onUpdate: () => {
-                // Update aura position
-                aura.setPosition(player.sprite.x, player.sprite.y);
+                // Update shield position (stays in front of player)
+                shieldSprite.setPosition(
+                    player.sprite.x + dirX * shieldOffset,
+                    player.sprite.y + dirY * shieldOffset
+                );
 
                 // Check for enemy collisions during charge
                 if (enemySystem) {
@@ -109,8 +144,9 @@ export class ShieldBashSkill extends Skill {
                 }
             },
             onComplete: () => {
-                // Destroy aura visual
-                aura.destroy();
+                // Stop dust spawning and destroy shield
+                dustTimer.destroy();
+                shieldSprite.destroy();
 
                 // Return to idle
                 player.stateMachine.transition(PlayerState.IDLE);

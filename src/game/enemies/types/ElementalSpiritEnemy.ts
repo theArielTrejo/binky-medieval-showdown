@@ -33,6 +33,12 @@ export class ElementalSpiritEnemy extends BaseEnemy {
     }
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip all actions (but still allow death animation)
+        if (this.isStunned() && !this.isExploding) {
+            this.updateHealthBar();
+            return null;
+        }
+
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);

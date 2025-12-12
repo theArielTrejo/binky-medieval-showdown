@@ -32,6 +32,13 @@ export class MoveState extends State {
             return;
         }
 
+        if (this.player.inputBuffer.consume(ActionType.UTILITY)) {
+            if (this.player.cooldownManager.isReady('UTILITY_SKILL') && this.player.loadout.utility) {
+                this.player.loadout.utility.activate(this.player);
+            }
+            return;
+        }
+
         if (!moveCmd) {
             this.player.sprite.setVelocity(0, 0);
             this.stateMachine.transition(PlayerState.IDLE);

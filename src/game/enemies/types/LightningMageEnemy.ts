@@ -43,6 +43,12 @@ export class LightningMageEnemy extends BaseEnemy {
     }
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip all actions
+        if (this.isStunned()) {
+            this.updateHealthBar();
+            return null;
+        }
+
         if (this.lightningCooldown > 0) this.lightningCooldown -= deltaTime;
 
         const dx = playerX - this.sprite.x;

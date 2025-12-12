@@ -16,6 +16,8 @@ export class OgreEnemy extends BaseEnemy {
         this.sprite.on('animationcomplete', (anim: Phaser.Animations.Animation) => {
             if (anim.key === 'ogre_attacking') {
                 if (this.sprite.active) {
+                    // Reset animation tracking and play walk
+                    this.currentAnimation = '';
                     this.playAnimation(this.mobAnimations.walk);
                 }
             }
@@ -46,6 +48,12 @@ export class OgreEnemy extends BaseEnemy {
     }
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip all actions
+        if (this.isStunned()) {
+            this.updateHealthBar();
+            return null;
+        }
+
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -108,8 +116,10 @@ export class OgreEnemy extends BaseEnemy {
         this.isAttacking = true;
         this.attackTimer = this.attackDuration;
         
-        if (this.sprite.anims) {
+        // Play attack animation and update tracking
+        if (this.sprite.anims && this.scene.anims.exists('ogre_attacking')) {
             this.sprite.play('ogre_attacking');
+            this.currentAnimation = 'ogre_attacking';
         }
         
         const enemyRadius = this.getApproximateRadius();

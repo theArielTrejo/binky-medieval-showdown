@@ -72,6 +72,12 @@ export class TombstoneEnemy extends BaseEnemy {
     }
 
     public update(_playerX: number, _playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip spawning while stunned
+        if (this.isStunned()) {
+            this.updateHealthBar();
+            return null;
+        }
+
         // Tombstone doesn't move - ensure velocity is always 0
         const body = this.sprite.body as Phaser.Physics.Arcade.Body;
         if (body) body.setVelocity(0, 0);

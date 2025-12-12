@@ -115,9 +115,9 @@ export class InputManager {
             case PlayerAction.SPECIAL_1:
                 this.inputBuffer.add(new SkillCommand(ActionType.SPECIAL_1));
                 break;
-            // ATTACK_PRIMARY is mouse-only usually, but if mapped to key...
-            // SPECIAL_1/2 are not in ActionType yet, maybe add them if needed?
-            // For now ignoring SPECIAL_1/2 as per PDF plan which focuses on Primary/Secondary.
+            case PlayerAction.SPECIAL_2:
+                this.inputBuffer.add(new SkillCommand(ActionType.UTILITY));
+                break;
         }
     }
 

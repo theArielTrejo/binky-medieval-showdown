@@ -86,6 +86,12 @@ export class FallenAngelEnemy extends BaseEnemy {
     }
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip all actions
+        if (this.isStunned()) {
+            this.updateHealthBar();
+            return null;
+        }
+
         if (this.healCooldown > 0) this.healCooldown -= deltaTime;
         if (this.orbAttackCooldown > 0) this.orbAttackCooldown -= deltaTime;
 

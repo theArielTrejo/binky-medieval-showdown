@@ -194,6 +194,16 @@ export class Preloader extends Scene {
             this.load.image(`knight-basic-${i}`, `Effects/knight-basic/${i}.png`);
         }
 
+        // Pixel sword for whirlwind
+        this.load.image('pixel-sword', 'Effects/pixel-sword.png');
+
+        // Pixel hammer for hammer throw
+        this.load.image('pixel-hammer', 'Effects/pixel-hammer.png');
+
+        // Shield dash effect
+        this.load.image('shield-dash', 'Effects/shield-dash.png');
+        this.load.image('wood-shield', 'Effects/wood sheild.jpg');
+
         // UI and misc
         this.load.image('logo', 'logo.png');
         this.load.image('green_orb', 'images/green_orb.png');

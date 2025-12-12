@@ -43,6 +43,12 @@ export class SkeletonPirateEnemy extends BaseEnemy {
     }
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip all actions
+        if (this.isStunned()) {
+            this.updateHealthBar();
+            return null;
+        }
+
         if (this.vortexAttackCooldown > 0) this.vortexAttackCooldown -= deltaTime;
 
         const dx = playerX - this.sprite.x;

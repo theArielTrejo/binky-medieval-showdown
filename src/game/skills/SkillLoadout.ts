@@ -4,4 +4,5 @@ export class SkillLoadout {
     public primary?: Skill;
     public secondary?: Skill;
     public special?: Skill;
+    public utility?: Skill;
 }

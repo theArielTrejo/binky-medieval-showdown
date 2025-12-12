@@ -48,6 +48,12 @@ export class ZombieEnemy extends BaseEnemy {
     }
 
     public update(playerX: number, playerY: number, deltaTime: number): EnemyAttackResult | null {
+        // Check if stunned - skip all actions
+        if (this.isStunned()) {
+            this.updateHealthBar();
+            return null;
+        }
+
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);

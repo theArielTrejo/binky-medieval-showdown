@@ -29,6 +29,44 @@ export abstract class BaseEnemy {
     protected lastAttackTime: number = 0;
     protected attackCooldown: number = 1000;
 
+    /**
+     * Check if the enemy is currently stunned
+     * @returns true if stunned and should skip all actions
+     */
+    public isStunned(): boolean {
+        if (!this.sprite || !this.sprite.active) return false;
+        
+        const stunned = this.sprite.getData('stunned');
+        const stunnedUntil = this.sprite.getData('stunnedUntil') || 0;
+        
+        if (stunned && this.scene.time.now < stunnedUntil) {
+            // Stop movement while stunned
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            if (body) {
+                body.setVelocity(0, 0);
+            }
+            // Play idle animation while stunned
+            this.playAnimation(this.mobAnimations.idle);
+            this.isAttacking = false;
+            return true;
+        }
+        
+        // Clear stun if expired - enemy can now resume normal behavior
+        if (stunned && this.scene.time.now >= stunnedUntil) {
+            this.sprite.setData('stunned', false);
+            // Destroy stun stars if they still exist
+            const stunStars = this.sprite.getData('stunStars');
+            if (stunStars && stunStars.active) {
+                stunStars.destroy();
+            }
+            this.sprite.setData('stunStars', null);
+            // Clear tint
+            this.sprite.clearTint();
+        }
+        
+        return false;
+    }
+
     constructor(scene: Scene, x: number, y: number, type: EnemyType) {
         this.scene = scene;
         this.type = type;
@@ -169,6 +207,14 @@ export abstract class BaseEnemy {
     }
 
     public destroy(): void {
+        // Clean up stun stars if present
+        if (this.sprite) {
+            const stunStars = this.sprite.getData('stunStars');
+            if (stunStars && stunStars.active) {
+                stunStars.destroy();
+            }
+        }
+
         // Clean up health bar graphics
         if (this.healthBarBackground) {
             this.healthBarBackground.destroy();

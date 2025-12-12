@@ -15,6 +15,7 @@ import { CleaveSkill } from './skills/CleaveSkill';
 import { ShurikenFanSkill } from './skills/ShurikenFanSkill';
 import { NovaSkill } from './skills/NovaSkill';
 import { WhirlwindSkill } from './skills/WhirlwindSkill';
+import { HammerThrowSkill } from './skills/HammerThrowSkill';
 import { EffectManager } from './effects/EffectManager';
 
 import { CombatComponent } from './components/CombatComponent';
@@ -73,6 +74,7 @@ export class Player {
             this.loadout.primary = new CleaveSkill();
             this.loadout.secondary = new ShieldBashSkill();
             this.loadout.special = new WhirlwindSkill();
+            this.loadout.utility = new HammerThrowSkill();
         } else if (this.archetype.type === PlayerArchetypeType.EVASIVE) {
             this.loadout.primary = new ShurikenFanSkill();
             this.loadout.secondary = new ShadowDashSkill();
