@@ -181,13 +181,21 @@ export class Preloader extends Scene {
 
         // Heal Effect
         this.load.image('feather-heal', 'Effects/feather-heal.png');
-        
+
         // Projectile sprites
         this.load.image('wind-ball', 'Effects/Wind ball.png');
         this.load.image('ninja-star', 'Effects/Ninja Star.png');
-        // Comet projectile (14 frames)
+        // Comet projectile (Static)
+        this.load.image('comet', 'Effects/comet/comet.png');
+
+        // Comet projectile (14 frames) for Nova Skill
         for (let i = 1; i <= 14; i++) {
             this.load.image(`comet-${i}`, `Effects/comet/comet${i}.png`);
+        }
+
+        // Blackhole/Gravity Well (9 frames)
+        for (let i = 1; i <= 9; i++) {
+            this.load.image(`blackhole-${i}`, `Effects/blackhole/blackhole${i}.png`);
         }
 
         // Knight basic attack animation (10 frames)
@@ -215,6 +223,7 @@ export class Preloader extends Scene {
         this.load.image('logo', 'logo.png');
         this.load.image('green_orb', 'images/green_orb.png');
         this.load.image('sparkle', 'images/green_orb.png');
+        this.load.image('book_bg', 'images/book_bg.png');
 
         // Effects
         this.load.spritesheet('lightning-bolt', 'Effects/Lightning-bolt.png', { frameWidth: 72, frameHeight: 72 });

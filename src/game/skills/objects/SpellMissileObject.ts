@@ -61,8 +61,9 @@ export class SpellMissileObject extends Phaser.GameObjects.Container {
             this.cometSprite.setRotation(travelAngle);
             // Flip vertically when aiming left so the sprite appears mirrored across the player
             this.cometSprite.setFlipY(isLeft);
-            // Animate frames 1..8 over the travel duration (clamp min/max)
-            const totalFrames = 8;
+
+            // Animate frames 1..14 over the travel duration (clamp min/max)
+            const totalFrames = 14;
             const minFrameDuration = 30;
             const maxFrameDuration = 120;
             const frameDuration = Phaser.Math.Clamp(duration / totalFrames, minFrameDuration, maxFrameDuration);
@@ -132,6 +133,13 @@ export class SpellMissileObject extends Phaser.GameObjects.Container {
 
         // Call the callback to spawn the Nova
         this.onReachTarget();
+
+        // Stop trail
+        const particles = this.getData('particles') as Phaser.GameObjects.Particles.ParticleEmitter;
+        if (particles) {
+            particles.stop();
+            this.scene.time.delayedCall(500, () => particles.destroy());
+        }
 
         // Destroy self
         this.destroy();

@@ -18,6 +18,8 @@ import { WhirlwindSkill } from './skills/WhirlwindSkill';
 import { HammerThrowSkill } from './skills/HammerThrowSkill';
 import { DaggerStabSkill } from './skills/DaggerStabSkill';
 import { CaltropSkill } from './skills/CaltropSkill';
+import { CometSkill } from './skills/CometSkill';
+import { GravityWellSkill } from './skills/GravityWellSkill';
 import { EffectManager } from './effects/EffectManager';
 
 import { CombatComponent } from './components/CombatComponent';
@@ -83,8 +85,11 @@ export class Player {
             this.loadout.special = new DaggerStabSkill();
             this.loadout.utility = new CaltropSkill();
         } else {
+            // Mage (Glass Cannon)
             this.loadout.primary = new NovaSkill();
             this.loadout.secondary = new ShadowDashSkill();
+            this.loadout.special = new CometSkill();
+            this.loadout.utility = new GravityWellSkill();
         }
 
         // Initialize Registry if needed

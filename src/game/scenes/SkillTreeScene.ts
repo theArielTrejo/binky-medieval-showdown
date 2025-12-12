@@ -20,6 +20,7 @@ export class SkillTreeScene extends Scene {
 
     // Objects
     private connectionsGraphics: GameObjects.Graphics;
+    private connectionGroup: GameObjects.Group; // Manage text objects
     private skillPointsText: GameObjects.Text;
     private tooltip: GameObjects.DOMElement;
     private nodes: Map<string, SkillNode> = new Map();
@@ -100,12 +101,13 @@ export class SkillTreeScene extends Scene {
         this.uiCamera.ignore([this.backgroundLayer, this.nodeLayer, this.connectionLayer]);
 
 
-        // 3. Background (Parallax) with Colors and Tiny Spirals
-        //this.createParallaxBackground();
+        // 3. Background (Book)
+        this.createBookBackground();
 
         // 4. Connections Graphics
         this.connectionsGraphics = this.make.graphics({ x: 0, y: 0 });
         this.connectionLayer.add(this.connectionsGraphics);
+        this.connectionGroup = this.add.group();
 
         // 5. Build Tree
         this.createSkillTree();
@@ -134,108 +136,35 @@ export class SkillTreeScene extends Scene {
         if (this.worldCamera) this.worldCamera.setSize(width, height);
         if (this.uiCamera) this.uiCamera.setSize(width, height);
 
-        // Resize Star Layers
-        const dimension = Math.max(width, height) * 2.5;
-        this.starLayers.forEach(layer => {
-            layer.sprite.setSize(dimension, dimension);
-            layer.sprite.setPosition(width / 2, height / 2);
-        });
+        // Resize Background Image
+        const bg = this.backgroundLayer.getAt(0) as Phaser.GameObjects.Image;
+        if (bg) {
+            const scaleX = width / bg.width;
+            const scaleY = height / bg.height;
+            const scale = Math.max(scaleX, scaleY);
+            bg.setScale(scale).setPosition(width / 2, height / 2);
+        }
 
         // Re-center UI elements
         this.uiLayer.removeAll();
         this.createUI();
     }
 
-    /*private createParallaxBackground() {
-        const width = this.scale.width;
-        const height = this.scale.height;
-        const dimension = Math.max(width, height) * 2.5; // Oversized for rotation
+    private createBookBackground() {
+        const { width, height } = this.scale;
 
-        // Define layers based on ClassSelectionUI but adapted for rotation
-        const layers = [
-            { key: 'stars_far_tree', count: 200, size: 1, alpha: 0.4, speed: 0.05 },
-            { key: 'stars_mid_tree', count: 80, size: 2, alpha: 0.7, speed: 0.1 },
-            { key: 'stars_near_tree', count: 10, size: 3, alpha: 1.0, speed: 0.15 }
-        ];
+        // Add the book background centered
+        const bg = this.add.image(width / 2, height / 2, 'book_bg');
+        bg.setOrigin(0.5);
 
-        this.starLayers = []; // Reset
+        // Scale to cover screen (cover mode)
+        const scaleX = width / bg.width;
+        const scaleY = height / bg.height;
+        const scale = Math.max(scaleX, scaleY);
+        bg.setScale(scale);
 
-        // Colors for random stars (Nebula/Galaxy Palette: Pink, Blue, Purple, Teal, Gold)
-        const starColors = [0xffffff, 0xff00cc, 0x4169e1, 0x00ffff, 0xffd700, 0xbf00ff, 0xff69b4];
-
-        layers.forEach(layer => {
-            if (!this.textures.exists(layer.key)) {
-                const graphics = this.make.graphics({ x: 0, y: 0 });
-                graphics.fillStyle(0xffffff, 1);
-
-                // 1. Draw Standard Stars (Mostly White)
-                for (let i = 0; i < layer.count; i++) {
-                    const x = Math.random() * 1024;
-                    const y = Math.random() * 1024;
-
-                    // 90% White, 10% Colored (Slightly more color for "nebula" feel)
-                    const isColored = Math.random() > 0.90;
-                    let color = 0xffffff;
-                    let alpha = Math.random() * layer.alpha;
-
-                    if (isColored) {
-                        color = starColors[Math.floor(Math.random() * starColors.length)];
-                        alpha = 0.9; // Colored stars are brighter
-                    }
-
-                    graphics.fillStyle(color, alpha);
-                    graphics.fillCircle(x, y, Math.random() * layer.size);
-                }
-
-                // 2. Draw defined Galaxy Spirals (Rare)
-                if (layer.size >= 2) {
-                    const spiralCount = 7; // Increased density (~15% boost feel)
-                    for (let s = 0; s < spiralCount; s++) {
-                        const sx = Math.random() * 1000;
-                        const sy = Math.random() * 1000;
-                        const sColor = starColors[Math.floor(Math.random() * starColors.length)];
-
-                        graphics.fillStyle(sColor, 0.85);
-
-                        // High-Definition Spiral (15x15) - "Grand Design" style
-                        // Center Core (Heavy 3x3)
-                        graphics.fillRect(sx, sy, 3, 3);
-
-                        // Inner Rotation (The "Bar")
-                        graphics.fillRect(sx - 2, sy, 2, 3); // Left shoulder
-                        graphics.fillRect(sx + 3, sy, 2, 3); // Right shoulder
-
-                        // Arm 1 (Top Sweep)
-                        graphics.fillRect(sx + 2, sy - 2, 2, 2);
-                        graphics.fillRect(sx + 4, sy - 4, 2, 2);
-                        graphics.fillRect(sx + 1, sy - 5, 3, 1); // Tip
-
-                        // Arm 2 (Bottom Sweep)
-                        graphics.fillRect(sx - 1, sy + 3, 2, 2);
-                        graphics.fillRect(sx - 3, sy + 5, 2, 2);
-                        graphics.fillRect(sx - 1, sy + 7, 3, 1); // Tip
-
-                        // Core Hotspot (White center)
-                        graphics.fillStyle(0xffffff, 1);
-                        graphics.fillRect(sx + 1, sy + 1, 1, 1);
-                    }
-                }
-
-                graphics.generateTexture(layer.key, 1024, 1024);
-                graphics.destroy();
-            }
-
-            const sprite = this.add.tileSprite(width / 2, height / 2, dimension, dimension, layer.key);
-            sprite.setOrigin(0.5);
-
-            this.backgroundLayer.add(sprite);
-
-            this.starLayers.push({
-                sprite,
-                speed: layer.speed
-            });
-        });
-    } */
+        this.backgroundLayer.add(bg);
+    }
 
     private createUI() {
         const { width, height } = this.scale;
@@ -349,7 +278,13 @@ export class SkillTreeScene extends Scene {
     }
 
     private drawConnections() {
-        this.connectionsGraphics.clear();
+        // Clear previous connection text
+        if (this.connectionGroup) {
+            this.connectionGroup.clear(true, true);
+        }
+
+        // Magic Runes (Futhark and others)
+        const runes = "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ";
 
         this.nodes.forEach((node, skillName) => {
             const skill = (node as any).skill as Skill;
@@ -362,34 +297,81 @@ export class SkillTreeScene extends Scene {
                         const end = new Phaser.Math.Vector2(node.x, node.y);
 
                         const isUnlocked = this.unlockedSkills.get(skillName);
-                        const isPrereqUnlocked = this.unlockedSkills.get(reqName);
+                        //const isPrereqUnlocked = this.unlockedSkills.get(reqName);
 
-                        let color = 0x444444;
+                        let color = '#444444';
                         let alpha = 0.3;
-                        let width = 4;
+                        let glow = false;
 
                         if (isUnlocked) {
-                            color = parseInt(EnhancedDesignSystem.colors.accent.replace('#', '0x'));
+                            color = EnhancedDesignSystem.colors.accent; // Gold
                             alpha = 1;
-                        } else if (isPrereqUnlocked) {
-                            color = 0x888888;
+                            glow = true;
+                        } else if (this.unlockedSkills.get(reqName)) {
+                            color = '#888888'; // Grey but visible
                             alpha = 0.6;
                         }
 
-                        // Draw Cubic Bezier
+                        // Cubic Bezier
                         const controlY = Math.abs(end.y - start.y) * 0.5;
                         const p1 = new Phaser.Math.Vector2(start.x, start.y + controlY);
                         const p2 = new Phaser.Math.Vector2(end.x, end.y - controlY);
-
                         const curve = new Phaser.Curves.CubicBezier(start, p1, p2, end);
 
-                        this.connectionsGraphics.lineStyle(width, color, alpha);
-                        curve.draw(this.connectionsGraphics);
+                        // Calculate points for text placement
+                        // Spacing depends on length, but constant spacing looks best for text
+                        const length = curve.getLength();
+                        const spacing = 20; // Space between runes
+                        const count = Math.floor(length / spacing);
+                        const points = curve.getSpacedPoints(count);
 
-                        // Glow for active paths
-                        if (isUnlocked) {
-                            this.connectionsGraphics.lineStyle(width * 2, color, 0.2);
-                            curve.draw(this.connectionsGraphics);
+                        for (let i = 0; i < points.length; i++) {
+                            // Skip first/last few to avoid overlapping nodes
+                            if (i < 2 || i > points.length - 2) continue;
+
+                            const point = points[i];
+                            const floatIdx = i / points.length;
+
+                            // Get tangent for rotation
+                            const tangent = curve.getTangent(floatIdx);
+                            const angle = tangent.angle(); // Radians
+
+                            // Pick random rune deterministically based on position (so it doesn't flicker on redraw)
+                            const charIndex = (skillName.length + i) % runes.length;
+                            const char = runes[charIndex];
+
+                            const runeText = this.add.text(point.x, point.y, char, {
+                                fontFamily: 'Uncial Antiqua, "Times New Roman", serif',
+                                fontSize: '18px',
+                                color: color,
+                                stroke: '#000000',
+                                strokeThickness: 3
+                            });
+
+                            runeText.setOrigin(0.5);
+                            runeText.setRotation(angle);
+                            runeText.setAlpha(alpha);
+
+                            // Always add a base glow for visibility
+                            runeText.setShadow(0, 0, color, glow ? 12 : 4);
+
+                            // Pulsating glow for unlocked paths
+                            if (glow) {
+                                // Stagger the animation start for a "flowing" effect
+                                const delay = i * 50;
+                                this.tweens.add({
+                                    targets: runeText,
+                                    alpha: { from: 0.7, to: 1.0 },
+                                    duration: 800,
+                                    delay: delay,
+                                    yoyo: true,
+                                    repeat: -1,
+                                    ease: 'Sine.easeInOut'
+                                });
+                            }
+
+                            this.connectionLayer.add(runeText);
+                            this.connectionGroup.add(runeText);
                         }
                     }
                 });
@@ -615,6 +597,7 @@ export class SkillTreeScene extends Scene {
         // Increased base speed from 0.05 to 0.2 for smoother, noticeable motion
         const baseRotation = time * 0.2 * zoomFactor;
 
+        /*
         this.starLayers.forEach((layer, index) => {
             // 1. Rotation: Rotate layers at different speeds/directions for depth
             const dir = index % 2 === 0 ? 1 : -1; // Alternate direction
@@ -625,5 +608,6 @@ export class SkillTreeScene extends Scene {
             //layer.sprite.tilePositionX = this.worldCamera.scrollX * (layer.speed * 0.5);
             //layer.sprite.tilePositionY = this.worldCamera.scrollY * (layer.speed * 0.5);
         });
+        */
     }
 }

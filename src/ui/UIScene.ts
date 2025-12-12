@@ -1,10 +1,12 @@
 import * as Phaser from 'phaser';
 import { LevelBarUI } from './LevelBarUI';
+import { ControlsUI } from './ControlsUI';
 import { Player } from '../game/Player';
 import { Game } from '../game/scenes/Game';
 
 export class UIScene extends Phaser.Scene {
     private levelBarUI: LevelBarUI | undefined;
+    private controlsUI: ControlsUI | undefined;
 
     constructor() {
         super({ key: 'UIScene', active: true });
@@ -12,6 +14,16 @@ export class UIScene extends Phaser.Scene {
 
     create(): void {
         const gameScene = this.scene.get('Game') as Game;
+
+        // Initialize Controls/Pause UI immediately
+        this.controlsUI = new ControlsUI(this);
+
+        // Global Key Listener for Pause
+        this.input.keyboard?.on('keydown-ESC', () => {
+            if (this.controlsUI) {
+                this.controlsUI.toggle();
+            }
+        });
 
         // Initial boot listener - likely only fires once on app load
         gameScene.events.on('playerReady', (player: Player) => {
@@ -43,6 +55,17 @@ export class UIScene extends Phaser.Scene {
         if (this.levelBarUI) {
             this.levelBarUI.destroy();
             this.levelBarUI = undefined;
+        }
+        // ControlsUI is persistent across game restarts usually, 
+        // but safe to recreate if needed.
+        if (this.controlsUI) {
+            // Ensure we resume game if we are destroying the UI while paused
+            if (this.controlsUI.isOpen()) {
+                this.game.scene.resume('Game');
+            }
+            // Actually probably don't need to destroy it if UIScene stays active?
+            // But let's follow the pattern
+            // this.controlsUI = undefined; // actually keep it alive for now or recreate
         }
     }
 }

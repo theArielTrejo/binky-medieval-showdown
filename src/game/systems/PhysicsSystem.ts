@@ -6,7 +6,7 @@ export class PhysicsSystem {
     private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
     private objectRects: Phaser.GameObjects.Rectangle[] = [];
     private doorColliders!: Phaser.Physics.Arcade.StaticGroup;
-    
+
     // Debug
     private debugEnabled: boolean = false;
     private collisionDebugGfx!: Phaser.GameObjects.Graphics;
@@ -54,7 +54,7 @@ export class PhysicsSystem {
                 this.objectRects.push(rect);
             });
         }
-        
+
         console.log(`PhysicsSystem: World setup complete. ${this.collisionLayers.length} layers, ${this.objectRects.length} static objects.`);
     }
 
@@ -73,12 +73,12 @@ export class PhysicsSystem {
 
             // Add to static group (automatically adds static body)
             this.doorColliders.add(rect);
-            
+
             // Explicitly refresh body if needed, but adding to static group usually handles it
-             const body = rect.body as Phaser.Physics.Arcade.StaticBody;
-             if (body) {
-                 body.updateFromGameObject();
-             }
+            const body = rect.body as Phaser.Physics.Arcade.StaticBody;
+            if (body) {
+                body.updateFromGameObject();
+            }
         });
         console.log(`PhysicsSystem: Registered ${this.doorColliders.getLength()} door colliders.`);
     }
@@ -90,7 +90,7 @@ export class PhysicsSystem {
 
     public setupPlayerCollisions(player: Player): void {
         this.player = player;
-        
+
         // Collide with tile layers
         this.collisionLayers.forEach(layer => {
             this.scene.physics.add.collider(player.sprite, layer);
@@ -122,6 +122,121 @@ export class PhysicsSystem {
 
     public getCollisionLayers(): Phaser.Tilemaps.TilemapLayer[] {
         return this.collisionLayers;
+    }
+
+    /**
+     * Get the physics world bounds for clamping positions
+     */
+    public getWorldBounds(): Phaser.Geom.Rectangle {
+        return this.scene.physics.world.bounds;
+    }
+
+    /**
+     * Raycast from start to end position and return the first collision point with walls.
+     * Returns null if the path is clear.
+     * @param startX - Starting X coordinate
+     * @param startY - Starting Y coordinate  
+     * @param endX - Target X coordinate
+     * @param endY - Target Y coordinate
+     * @param padding - Distance to stop before the collision point (default 10px)
+     */
+    public getLineCollisionPoint(
+        startX: number,
+        startY: number,
+        endX: number,
+        endY: number,
+        padding: number = 10
+    ): Phaser.Math.Vector2 | null {
+        const line = new Phaser.Geom.Line(startX, startY, endX, endY);
+
+        let closestPoint: Phaser.Math.Vector2 | null = null;
+        let closestDistSq = Infinity;
+
+        for (const layer of this.collisionLayers) {
+            const tiles = layer.getTilesWithinShape(line, { isColliding: true });
+
+            for (const tile of tiles) {
+                // Create tile bounds rectangle
+                const tileRect = new Phaser.Geom.Rectangle(
+                    tile.pixelX,
+                    tile.pixelY,
+                    tile.width,
+                    tile.height
+                );
+
+                // Find intersection point with tile
+                const points = Phaser.Geom.Intersects.GetLineToRectangle(line, tileRect);
+
+                if (points.length > 0) {
+                    // Find the closest intersection point to start
+                    for (const point of points) {
+                        const dx = point.x - startX;
+                        const dy = point.y - startY;
+                        const distSq = dx * dx + dy * dy;
+
+                        if (distSq < closestDistSq) {
+                            closestDistSq = distSq;
+                            closestPoint = new Phaser.Math.Vector2(point.x, point.y);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also check object rectangles
+        for (const rect of this.objectRects) {
+            const body = rect.body as Phaser.Physics.Arcade.StaticBody;
+            if (!body) continue;
+
+            const objRect = new Phaser.Geom.Rectangle(body.x, body.y, body.width, body.height);
+            const points = Phaser.Geom.Intersects.GetLineToRectangle(line, objRect);
+
+            if (points.length > 0) {
+                for (const point of points) {
+                    const dx = point.x - startX;
+                    const dy = point.y - startY;
+                    const distSq = dx * dx + dy * dy;
+
+                    if (distSq < closestDistSq) {
+                        closestDistSq = distSq;
+                        closestPoint = new Phaser.Math.Vector2(point.x, point.y);
+                    }
+                }
+            }
+        }
+
+        // Also check door colliders
+        this.doorColliders.children.iterate((child: Phaser.GameObjects.GameObject) => {
+            const rect = child as Phaser.GameObjects.Rectangle;
+            const body = rect.body as Phaser.Physics.Arcade.StaticBody;
+            if (!body) return true;
+
+            const doorRect = new Phaser.Geom.Rectangle(body.x, body.y, body.width, body.height);
+            const points = Phaser.Geom.Intersects.GetLineToRectangle(line, doorRect);
+
+            if (points.length > 0) {
+                for (const point of points) {
+                    const dx = point.x - startX;
+                    const dy = point.y - startY;
+                    const distSq = dx * dx + dy * dy;
+
+                    if (distSq < closestDistSq) {
+                        closestDistSq = distSq;
+                        closestPoint = new Phaser.Math.Vector2(point.x, point.y);
+                    }
+                }
+            }
+            return true;
+        });
+
+        // If we found a collision, back up by padding amount
+        if (closestPoint) {
+            const dir = new Phaser.Math.Vector2(endX - startX, endY - startY).normalize();
+            closestPoint.x -= dir.x * padding;
+            closestPoint.y -= dir.y * padding;
+        }
+
+        return closestPoint;
     }
 
     // --- Debugging ---
@@ -171,7 +286,7 @@ export class PhysicsSystem {
         this.collisionDebugGfx.lineStyle(2, 0x0000ff, 1);
         this.doorColliders.children.iterate((child: Phaser.GameObjects.GameObject) => {
             const rect = child as Phaser.GameObjects.Rectangle;
-             const body = (rect.body as Phaser.Physics.Arcade.StaticBody);
+            const body = (rect.body as Phaser.Physics.Arcade.StaticBody);
             if (body) {
                 this.collisionDebugGfx.strokeRect(body.x, body.y, body.width, body.height);
             }

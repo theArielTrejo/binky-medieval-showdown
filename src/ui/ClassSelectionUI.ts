@@ -421,10 +421,12 @@ export class ClassSelectionUI {
         // Description with standardized styling
         const description = this.scene.add.text(
             0,
-            -15,
+            -10,
             classInfo.description,
             {
                 ...EnhancedStyleHelpers.bodyStyle(),
+                fontFamily: EnhancedDesignSystem.fontFamily.readable, // Use readable font
+                fontSize: '22px',
                 align: 'center',
                 wordWrap: { width: 550 }
             }
@@ -434,27 +436,33 @@ export class ClassSelectionUI {
         // Strengths with standardized styling
         const strengths = this.scene.add.text(
             -150,
-            15,
+            25,
             `Strengths: ${classInfo.strengths}`,
             EnhancedStyleHelpers.createTextStyle({
-                size: 'xs',
+                // size: 'md',
                 color: EnhancedDesignSystem.colors.success,
-                fontFamily: 'primary'
+                fontFamily: 'readable', // Use readable font
+                stroke: true
             })
         ).setOrigin(0, 0.5);
+        strengths.setFontSize(20);
+        strengths.setStroke('#000000', 3);
         this.detailsPanel.add(strengths);
 
         // Weaknesses with standardized styling
         const weaknesses = this.scene.add.text(
             -150,
-            35,
+            50,
             `Weaknesses: ${classInfo.weaknesses}`,
             EnhancedStyleHelpers.createTextStyle({
-                size: 'xs',
+                // size: 'md',
                 color: EnhancedDesignSystem.colors.error,
-                fontFamily: 'primary'
+                fontFamily: 'readable', // Use readable font
+                stroke: true
             })
         ).setOrigin(0, 0.5);
+        weaknesses.setFontSize(20);
+        weaknesses.setStroke('#000000', 3);
         this.detailsPanel.add(weaknesses);
 
         // Fade in with proper state management
