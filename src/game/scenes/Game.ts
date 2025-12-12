@@ -579,17 +579,28 @@ export class Game extends Scene {
         this.roundManager?.update(deltaTime);
 
         // --- DOOR CONTROL LOGIC ---
-        // Open doors after completing specific waves (thresholds use next-round start, e.g., >5 means wave 5 completed)
+        // Open doors after completing specific waves (triggered at start of next round)
+        // Door 1 after wave 5 → round >= 6
+        // Door 2 after wave 10 → round >= 11
+        // Door 3 after wave 15 → round >= 16
+        // Door 4 after wave 20 → round >= 21
+        // Door 5 after wave 25 → round >= 26
         if (this.roundManager && this.mapInteractionSystem) {
             const round = this.roundManager.getCurrentRound();
             if (round >= 6) {
                 this.mapInteractionSystem.openDoorGroup(0, 'The Dark Forest Gate has opened!');
             }
             if (round >= 11) {
-                this.mapInteractionSystem.openDoorGroup(1, "Binky's Town Gate has opened!");
+                this.mapInteractionSystem.openDoorGroup(1, "Binkshire Fields has opened!");
             }
             if (round >= 16) {
-                this.mapInteractionSystem.openDoorGroup(2, ' Water Ways Gate has opened!');
+                this.mapInteractionSystem.openDoorGroup(2, 'Water Ways Gate has opened!');
+            }
+            if (round >= 21) {
+                this.mapInteractionSystem.openDoorGroup(3, 'Gloomroot Circle Trail Gate has opened!');
+            }
+            if (round >= 26) {
+                this.mapInteractionSystem.openDoorGroup(4, "Binky's Castle has opened!");
             }
         }
     }
