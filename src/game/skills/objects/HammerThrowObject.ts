@@ -158,8 +158,8 @@ export class HammerThrowObject extends SkillObject {
             }
         });
         
-        // Impact effect - camera shake
-        this.scene.cameras.main.shake(80, 0.008);
+        // Impact effect - subtle camera shake
+        this.scene.cameras.main.shake(40, 0.001);
         
         // Destroy projectile after hit
         this.destroy();
