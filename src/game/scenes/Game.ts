@@ -147,7 +147,7 @@ export class Game extends Scene {
                 { name: 'floor1', imageKey: 'floor1', imagePath: 'assets/tilemaps/floor1.png' },
                 { name: 'GraveyardTileset', imageKey: 'GraveyardTileset', imagePath: 'assets/tilemaps/GraveyardTileset.png' },
                 { name: 'tiledwallandfloor', imageKey: 'tiledwallandfloor', imagePath: 'assets/tilemaps/tiledwallandfloor.png' },
-
+                { name: 'gatedoorandflags', imageKey: 'gatedoorandflags', imagePath: 'assets/tilemaps/gatedoorandflags.png'},
                 { name: 'castlewall', imageKey: 'castlewall', imagePath: 'assets/tilemaps/castlewall.png' },
                 { name: 'objecthouserocksstatues', imageKey: 'objecthouserocksstatues', imagePath: 'assets/tilemaps/objecthouserocksstatues.png' },
                 { name: 'houses1', imageKey: 'houses1', imagePath: 'assets/tilemaps/houses1.png' },
@@ -169,8 +169,9 @@ export class Game extends Scene {
                 { name: 'spots_lianas', imageKey: 'spots_lianas', imagePath: 'assets/tilemaps/spots_lianas.png' },
                 { name: 'Water_coasts', imageKey: 'Water_coasts', imagePath: 'assets/tilemaps/Water_coasts.png' },
                 { name: 'water_detilazation', imageKey: 'water_detilazation', imagePath: 'assets/tilemaps/water_detilazation.png' },
+                { name: 'Water_lilis', imageKey: 'Water_lilis', imagePath: 'assets/tilemaps/Water_lilis.png' },
 
-                { name: 'Water_lilis', imageKey: 'Water_lilis', imagePath: 'assets/tilemaps/Water_lilis.png' }
+                { name: 'deadopps', imageKey: 'deadopps', imagePath: 'assets/tilemaps/deadopps.png'}
             ],
             layers: [
                 { name: 'background', tilesets: [], depth: 0, visible: true, collides: false },

@@ -79,7 +79,7 @@ export class Preloader extends Scene {
         this.load.image('floor1', 'tilemaps/floor1.png');
         this.load.image('GraveyardTileset', 'tilemaps/GraveyardTileset.png');
         this.load.image('tiledwallandfloor', 'tilemaps/tiledwallandfloor.png');
-        this.load.image('gatedoorandflags', 'tilemaps/gatedoorandfloors.png');
+        this.load.image('gatedoorandflags', 'tilemaps/gatedoorandflags.png');
         this.load.image('castlewall', 'tilemaps/castlewall.png');
         this.load.image('objecthouserocksstatues', 'tilemaps/objecthouserocksstatues.png');
         this.load.image('houses1', 'tilemaps/houses1.png');
@@ -106,6 +106,7 @@ export class Preloader extends Scene {
         this.load.image('water_detilazation', 'tilemaps/water_detilazation.png');
         this.load.image('water_detilazation_v2', 'tilemaps/water_detilazation_v2.png');
         this.load.image('Water_lilis', 'tilemaps/Water_lilis.png');
+        this.load.image('deadopps', 'tilemaps/deadopps.png');
 
         // --- FX & Mobs (Teammate Expansion) ---
         this.load.image('green_orb', 'images/green_orb.png');
