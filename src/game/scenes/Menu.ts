@@ -1,7 +1,9 @@
 import { Scene } from 'phaser';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
+import { AudioManager } from '../systems/AudioManager';
 
 export class Menu extends Scene {
+    private audio!: AudioManager;
     constructor() {
         super('Menu');
     }
@@ -84,7 +86,14 @@ export class Menu extends Scene {
         console.log('✅ Title text created');
 
         // Start/ensure menu music is playing
-        this.playMenuMusic();
+        this.audio = AudioManager.getInstance();
+        this.audio.init(this);
+
+        // Load saved volume or default
+        const savedVolume = localStorage.getItem('menuMusicVolume');
+        const volume = savedVolume !== null ? parseFloat(savedVolume) : 0.03;
+
+        this.audio.playMusic('menu-music', { volume });
 
         // --- Knight ambient walker setup ---
         // Verify atlas loaded
@@ -251,7 +260,13 @@ export class Menu extends Scene {
             button.setStroke('#000000', 4); // Add stroke for readability
             button.setOrigin(0.5).setInteractive().setDepth(101).setScrollFactor(0);
 
-            button.on('pointerdown', callback);
+            button.on('pointerdown', () => {
+                //  UI click sound
+                this.audio.playSFX('ui-button-click', { volume: 0.25 });
+
+                // Run the actual button logic
+                callback();
+            });
 
             button.on('pointerover', () => {
                 button.setColor(EnhancedDesignSystem.colors.accent); // Gold on hover
@@ -285,28 +300,4 @@ export class Menu extends Scene {
         });
     }
 
-    private playMenuMusic(): void {
-        if (!this.cache.audio.exists('menu-music')) {
-            console.warn('Menu music asset not found. Place audio/menu_theme.ogg or .mp3 under public/assets.');
-            return;
-        }
-
-        // Load saved volume or use default
-        const savedVolume = localStorage.getItem('menuMusicVolume');
-        const targetVolume = savedVolume !== null ? parseFloat(savedVolume) : 0.03;
-
-        const existing = this.sound.get('menu-music');
-        if (existing) {
-            // Set volume before playing
-            (existing as any).setVolume(targetVolume);
-            if (!existing.isPlaying) {
-                existing.play({ loop: true });
-            }
-            return;
-        }
-
-        // Create sound with target volume already set, then play
-        const music = this.sound.add('menu-music', { loop: true, volume: targetVolume });
-        music.play();
-    }
 }

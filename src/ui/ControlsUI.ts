@@ -1,23 +1,26 @@
 import { Scene } from 'phaser';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
+import { AudioManager } from '../game/systems/AudioManager';
 
 export class ControlsUI {
     private scene: Scene;
+    private audio: AudioManager;
     private container: Phaser.GameObjects.Container;
     private overlay: Phaser.GameObjects.Rectangle;
     private panel: Phaser.GameObjects.Container;
     private isVisible: boolean = false;
     private toggleButton: Phaser.GameObjects.Container;
 
-    constructor(scene: Scene) {
+    constructor(scene: Scene, audio: AudioManager) {
         this.scene = scene;
+        this.audio = audio;
         this.createUI();
     }
 
     private createUI(): void {
         const width = this.scene.scale.width;
         const height = this.scene.scale.height;
-
+        
         // Container for the whole UI
         this.container = this.scene.add.container(0, 0);
         this.container.setDepth(2000); // Very high depth to sit on top of everything
@@ -67,15 +70,32 @@ export class ControlsUI {
         this.createControlsList();
 
         // Close Hint
-        const closeHint = this.scene.add.text(0, 220, 'Press ESC to Resume', EnhancedStyleHelpers.createTextStyle({
-            size: 'md',
-            color: EnhancedDesignSystem.colors.textMuted,
-            fontFamily: 'primary'
-        })).setOrigin(0.5);
+        const closeHint = this.scene.add.text(
+            0,
+            220,
+            'Press ESC to Resume',
+            EnhancedStyleHelpers.createTextStyle({
+                size: 'md',
+                color: EnhancedDesignSystem.colors.textMuted,
+                fontFamily: 'primary'
+            })
+        ).setOrigin(0.5);
+
+        closeHint.setInteractive({ useHandCursor: true });
+
+        closeHint.on('pointerdown', () => {
+            // 🔊 UI click sound
+            this.audio.playSFX('ui-button-click', { volume: 0.25 });
+
+            // Same behavior as ESC / ? button
+            this.toggle();
+        });
+
         this.panel.add(closeHint);
 
         // Initial State: Hidden
         this.setVisible(false);
+
     }
 
     private createToggleButton(): void {
@@ -108,6 +128,7 @@ export class ControlsUI {
         this.toggleButton.add(hitArea);
 
         hitArea.on('pointerdown', () => {
+            this.audio.playSFX('ui-button-click', { volume: 0.25 });
             this.toggle();
         });
 
@@ -186,22 +207,36 @@ export class ControlsUI {
 
     public setVisible(visible: boolean): void {
         this.isVisible = visible;
+
+        // Show / hide overlay + panel
         this.container.setVisible(visible);
 
-        // Notify scene to pause/resume game
-        // We do this by emitting an event or calling a callback
-        // For simplicity, we can access the game scene directly if we know it
-        const gameScene = this.scene.game.scene.getScene('Game');
-        if (gameScene) {
-            if (visible) {
-                this.scene.game.scene.pause('Game');
-                console.log('Game Paused');
-            } else {
-                this.scene.game.scene.resume('Game');
-                console.log('Game Resumed');
+        // Overlay should ONLY block input when visible
+        if (visible) {
+            this.overlay.setInteractive();
+        } else {
+            this.overlay.disableInteractive();
+        }
+
+        // Correct pause/resume logic
+        const sm = this.scene.game.scene;
+
+        if (visible) {
+            // Only pause if Game is currently running/active
+            if (sm.isActive('Game')) {
+                sm.pause('Game');
+            }
+        } else {
+            // Resume if Game is paused
+            if (sm.isPaused('Game')) {
+                sm.resume('Game');
             }
         }
     }
+
+
+
+
 
     public isOpen(): boolean {
         return this.isVisible;

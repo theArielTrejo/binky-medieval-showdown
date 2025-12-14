@@ -76,6 +76,7 @@ export class Preloader extends Scene {
 
         // Music & audio (menu background music)
         this.load.audio('menu-music', ['audio/GOT_Song.mp3']);
+        this.load.audio('ui-button-click', ['audio/clickUIButton.mp3']);
 
         // Tilemap and tilesets (use 'map' key for Game compatibility)
         this.load.tilemapTiledJSON('map', 'tilemaps/binkymap1.json');
@@ -110,6 +111,8 @@ export class Preloader extends Scene {
         this.load.image('water_detilazation_v2', 'tilemaps/water_detilazation_v2.png');
         this.load.image('Water_lilis', 'tilemaps/Water_lilis.png');
         this.load.image('deadopps', 'tilemaps/deadopps.png');
+        this.load.image('townobjects', 'tilemaps/townobjects.png');
+        this.load.image('kingobjects', 'tilemaps/kingobjects.png');
 
         // --- FX & Mobs (Teammate Expansion) ---
         this.load.image('green_orb', 'images/green_orb.png');

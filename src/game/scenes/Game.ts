@@ -14,6 +14,7 @@ import { AtlasManager } from '../systems/AtlasManager';
 import { PlayerSkillSystem } from '../skills/PlayerSkillSystem';
 import { RoundManager } from '../systems/RoundManager';
 import { UIScene } from '../../ui/UIScene';
+import { AudioManager } from '../systems/AudioManager';
 import { LightingSystem } from '../systems/LightingSystem';
 import { PhysicsSystem } from '../systems/PhysicsSystem';
 import { MapInteractionSystem } from '../systems/MapInteractionSystem';
@@ -71,6 +72,9 @@ export class Game extends Scene {
 
     create() {
         // console.log('Game scene created');
+
+        const audio = AudioManager.getInstance();
+        audio.init(this);
 
         if (this.input && this.input.keyboard) {
             this.input.keyboard.removeAllListeners('keydown-R');
@@ -171,7 +175,10 @@ export class Game extends Scene {
                 { name: 'water_detilazation', imageKey: 'water_detilazation', imagePath: 'assets/tilemaps/water_detilazation.png' },
                 { name: 'Water_lilis', imageKey: 'Water_lilis', imagePath: 'assets/tilemaps/Water_lilis.png' },
 
-                { name: 'deadopps', imageKey: 'deadopps', imagePath: 'assets/tilemaps/deadopps.png'}
+                { name: 'deadopps', imageKey: 'deadopps', imagePath: 'assets/tilemaps/deadopps.png'},
+
+                { name: 'townobjects', imageKey: 'townobjects', imagePath: 'assets/tilemaps/townobjects.png'},
+                { name: 'kingobjects', imageKey: 'kingobjects', imagePath: 'assets/tilemaps/kingobjects.png'}
             ],
             layers: [
                 { name: 'background', tilesets: [], depth: 0, visible: true, collides: false },
@@ -588,19 +595,20 @@ export class Game extends Scene {
         // Door 5 after wave 25 → round >= 26
         if (this.roundManager && this.mapInteractionSystem) {
             const round = this.roundManager.getCurrentRound();
-            if (round >= 6) {
+            // 6
+            if (round >= 1) {
                 this.mapInteractionSystem.openDoorGroup(0, 'The Dark Forest Gate has opened!');
-            }
-            if (round >= 11) {
+            } // 11
+            if (round >= 1) {
                 this.mapInteractionSystem.openDoorGroup(1, "Binkshire Fields has opened!");
-            }
-            if (round >= 16) {
+            } // 16
+            if (round >= 1) {
                 this.mapInteractionSystem.openDoorGroup(2, 'Water Ways Gate has opened!');
-            }
-            if (round >= 21) {
+            } // 21
+            if (round >= 1) {
                 this.mapInteractionSystem.openDoorGroup(3, 'Gloomroot Circle Trail Gate has opened!');
-            }
-            if (round >= 26) {
+            } // 26
+            if (round >= 1) {
                 this.mapInteractionSystem.openDoorGroup(4, "Binky's Castle has opened!");
             }
         }

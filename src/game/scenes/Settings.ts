@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
+import { AudioManager } from '../systems/AudioManager';
 
 export class Settings extends Scene {
     private volumeSlider!: Phaser.GameObjects.Rectangle;
@@ -16,6 +17,9 @@ export class Settings extends Scene {
         const height = this.cameras.main.height;
         const centerX = width / 2;
         const centerY = height / 2;
+
+        const audio = AudioManager.getInstance();
+        audio.init(this);
 
         // Dark overlay background (matching ControlsUI style)
         const overlay = this.add.rectangle(centerX, centerY, width, height, 0x000000, 0.7);
@@ -149,6 +153,9 @@ export class Settings extends Scene {
         panel.add(backButton);
 
         backButton.on('pointerdown', () => {
+            // UI click sound
+            audio.playSFX('ui-button-click', { volume: 0.25 });
+
             console.log('Back to menu');
             this.scene.stop('Settings');
             this.scene.resume('Menu');

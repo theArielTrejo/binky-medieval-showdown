@@ -1,10 +1,13 @@
 import { Scene } from 'phaser';
 import { ClassSelectionUI } from '../../ui/ClassSelectionUI';
+import { ControlsUI } from '../../ui/ControlsUI';
 import { PlayerArchetypeType } from '../objects/PlayerArchetype';
+import { AudioManager } from '../systems/AudioManager';
+
 
 export class ClassSelectionScene extends Scene {
     private classSelectionUI!: ClassSelectionUI;
-
+    private controlsUI!: ControlsUI;
     constructor() {
         super('ClassSelectionScene');
     }
@@ -12,18 +15,16 @@ export class ClassSelectionScene extends Scene {
     create(): void {
         console.log('ClassSelectionScene: create started');
 
+        const audio = AudioManager.getInstance();
+        audio.init(this);
+        
         this.classSelectionUI = new ClassSelectionUI(this, {
+            audio,
             visible: true,
-            onClassSelected: (archetype: PlayerArchetypeType) => {
-                console.log(`Class chosen: ${archetype}. Starting Game...`);
-                
-                // Stop menu music when starting the game
-                const menuMusic = this.sound.get('menu-music');
-                if (menuMusic) {
-                    menuMusic.stop();
-                }
-                
-                // Transition to the main Game scene, passing the selected archetype
+            onClassSelected: (archetype) => {
+                audio.playSFX('ui-button-click', { volume: 0.25 });
+
+                audio.stopMusic(); // optional cleanup
                 this.scene.start('Game', { archetype });
             }
         });

@@ -2,6 +2,7 @@
 import { Scene } from 'phaser';
 import { PlayerArchetypeType } from '../game/objects/PlayerArchetype';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from './EnhancedDesignSystem';
+import { AudioManager } from '../game/systems/AudioManager';
 
 export interface ClassData {
     name: string;
@@ -15,12 +16,14 @@ export interface ClassData {
 
 export interface ClassSelectionConfig {
     onClassSelected: (archetype: PlayerArchetypeType) => void;
+    audio: AudioManager;
     position?: { x: number; y: number };
     visible?: boolean;
 }
 
 export class ClassSelectionUI {
     private scene: Scene;
+    private audio: AudioManager;
     private config: ClassSelectionConfig;
     private container: Phaser.GameObjects.Container;
     private starLayers: { sprite: Phaser.GameObjects.TileSprite, speedX: number, speedY: number }[] = [];
@@ -67,6 +70,7 @@ export class ClassSelectionUI {
 
     constructor(scene: Scene, config: ClassSelectionConfig) {
         this.scene = scene;
+        this.audio = config.audio;
         this.config = {
             position: { x: scene.scale.width / 2, y: scene.scale.height / 2 },
             visible: false, // Default to false, controlled by show()
@@ -107,9 +111,6 @@ export class ClassSelectionUI {
 
         // Create details panel
         this.createDetailsPanel();
-
-        // Create select button
-        this.createSelectButton();
 
         // Create select button
         this.createSelectButton();
@@ -268,6 +269,7 @@ export class ClassSelectionUI {
         });
 
         bg.on('pointerdown', () => {
+            this.audio.playSFX('ui-button-click', { volume: 0.25 });
             console.log('Card clicked:', classInfo.name, classInfo.archetype);
             this.selectClass(classInfo.archetype);
         });
@@ -521,7 +523,7 @@ export class ClassSelectionUI {
 
     private createSelectButton(): void {
         this.selectButton = this.scene.add.container(0, 250);
-
+        
         // Button background with medieval styling
         const bg = this.scene.add.graphics();
         EnhancedStyleHelpers.createMedievalButton(bg, -80, -25, 160, 50, false);
@@ -571,9 +573,12 @@ export class ClassSelectionUI {
             });
 
             hitArea.on('pointerdown', () => {
-                if (this.selectedClass) {
-                    this.config.onClassSelected(this.selectedClass);
-                }
+                if (!this.selectedClass) return;
+
+                //  UI click sound
+                this.audio.playSFX('ui-button-click', { volume: 0.25 });
+
+                this.config.onClassSelected(this.selectedClass);
             });
         }
     }

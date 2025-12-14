@@ -3,6 +3,8 @@ import { LevelBarUI } from './LevelBarUI';
 import { ControlsUI } from './ControlsUI';
 import { Player } from '../game/Player';
 import { Game } from '../game/scenes/Game';
+import { AudioManager } from '../game/systems/AudioManager';
+
 
 export class UIScene extends Phaser.Scene {
     private levelBarUI: LevelBarUI | undefined;
@@ -15,12 +17,19 @@ export class UIScene extends Phaser.Scene {
     create(): void {
         const gameScene = this.scene.get('Game') as Game;
 
+        
+        const audio = AudioManager.getInstance();
+        audio.init(this);
         // Initialize Controls/Pause UI immediately
-        this.controlsUI = new ControlsUI(this);
+        this.controlsUI = new ControlsUI(this, audio);
 
         // Global Key Listener for Pause
         this.input.keyboard?.on('keydown-ESC', () => {
             if (this.controlsUI) {
+                //  UI click sound (same as ? button)
+                const audio = AudioManager.getInstance();
+                audio.playSFX('ui-button-click', { volume: 0.25 });
+
                 this.controlsUI.toggle();
             }
         });
