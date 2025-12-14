@@ -83,6 +83,9 @@ export class Menu extends Scene {
         titleText.setOrigin(0.5).setDepth(100).setScrollFactor(0);
         console.log('✅ Title text created');
 
+        // Start/ensure menu music is playing
+        this.playMenuMusic();
+
         // --- Knight ambient walker setup ---
         // Verify atlas loaded
         if (!this.textures.exists('knight_walking')) {
@@ -272,11 +275,38 @@ export class Menu extends Scene {
         // Settings Button
         createButton(buttonY + spacing, '⚙ SETTINGS', () => {
             console.log('Settings clicked');
+            this.scene.pause('Menu');
+            this.scene.launch('Settings');
         });
 
         // Quit Button
         createButton(buttonY + spacing * 2, '✕ QUIT', () => {
             console.log('Quit clicked');
         });
+    }
+
+    private playMenuMusic(): void {
+        if (!this.cache.audio.exists('menu-music')) {
+            console.warn('Menu music asset not found. Place audio/menu_theme.ogg or .mp3 under public/assets.');
+            return;
+        }
+
+        // Load saved volume or use default
+        const savedVolume = localStorage.getItem('menuMusicVolume');
+        const targetVolume = savedVolume !== null ? parseFloat(savedVolume) : 0.03;
+
+        const existing = this.sound.get('menu-music');
+        if (existing) {
+            // Set volume before playing
+            (existing as any).setVolume(targetVolume);
+            if (!existing.isPlaying) {
+                existing.play({ loop: true });
+            }
+            return;
+        }
+
+        // Create sound with target volume already set, then play
+        const music = this.sound.add('menu-music', { loop: true, volume: targetVolume });
+        music.play();
     }
 }

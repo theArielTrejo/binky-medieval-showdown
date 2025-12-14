@@ -16,6 +16,13 @@ export class ClassSelectionScene extends Scene {
             visible: true,
             onClassSelected: (archetype: PlayerArchetypeType) => {
                 console.log(`Class chosen: ${archetype}. Starting Game...`);
+                
+                // Stop menu music when starting the game
+                const menuMusic = this.sound.get('menu-music');
+                if (menuMusic) {
+                    menuMusic.stop();
+                }
+                
                 // Transition to the main Game scene, passing the selected archetype
                 this.scene.start('Game', { archetype });
             }

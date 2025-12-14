@@ -74,6 +74,9 @@ export class Preloader extends Scene {
         // --- Load ALL Assets (shared between Menu and Game) ---
         this.load.setPath('assets');
 
+        // Music & audio (menu background music)
+        this.load.audio('menu-music', ['audio/GOT_Song.mp3']);
+
         // Tilemap and tilesets (use 'map' key for Game compatibility)
         this.load.tilemapTiledJSON('map', 'tilemaps/binkymap1.json');
         this.load.image('floor1', 'tilemaps/floor1.png');

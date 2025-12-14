@@ -1,5 +1,6 @@
 import { Menu } from './scenes/Menu';
 import { Preloader } from './scenes/Preloader';
+import { Settings } from './scenes/Settings';
 import { ClassSelectionScene } from './scenes/ClassSelectionScene';
 import { Game as MainGame } from './scenes/Game';
 import { UIScene } from '../ui/UIScene';
@@ -38,7 +39,7 @@ const config: Types.Core.GameConfig = {
       }
     ]
   },
-  scene: [Preloader, Menu, ClassSelectionScene, MainGame, UIScene, SkillTreeScene],
+  scene: [Preloader, Menu, Settings, ClassSelectionScene, MainGame, UIScene, SkillTreeScene],
 };
 
 // Export StartGame function (so index.ts can call StartGame('game-container'))
