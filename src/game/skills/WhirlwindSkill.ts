@@ -3,6 +3,7 @@ import { Player } from '../Player';
 import { WhirlwindObject } from './objects/WhirlwindObject';
 import { Game } from '../scenes/Game';
 import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
+import { AudioManager } from '../systems/AudioManager';
 
 export class WhirlwindSkill extends Skill {
     constructor() {
@@ -10,10 +11,12 @@ export class WhirlwindSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('knight-whirlwind', { volume: 0.4 });
+
         // Instantiate the Whirlwind Object - damage per tick scales with player stats (0.5x per tick)
         const whirlwindDamage = Math.floor(player.archetype.stats.damage * 0.5);
         const whirlwind = new WhirlwindObject(player.scene as Game, player.sprite, whirlwindDamage);
-        
+
         // Register Collision
         const gameScene = player.scene as Game;
         const enemySystem = gameScene.getEnemySystem();
@@ -26,7 +29,7 @@ export class WhirlwindSkill extends Skill {
                     const skill = obj1 as WhirlwindObject;
                     const enemySprite = obj2 as Phaser.GameObjects.Sprite;
                     const enemy = enemySprite.getData('enemy') as Enemy;
-                    
+
                     if (skill && enemy) {
                         // WhirlwindObject typically handles damage interval logic, 
                         // but we trigger onHit here if available.

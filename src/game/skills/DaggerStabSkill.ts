@@ -3,6 +3,7 @@ import { Player } from '../Player';
 import { Game } from '../scenes/Game';
 import { PlayerState } from '../types/PlayerTypes';
 import { BaseEnemy } from '../enemies/BaseEnemy';
+import { AudioManager } from '../systems/AudioManager';
 
 export class DaggerStabSkill extends Skill {
     private readonly stabRange: number = 45; // Very close range
@@ -13,6 +14,8 @@ export class DaggerStabSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('ninja-dagger-stab');
+
         // Break invisibility when attacking
         if (player.sprite.getData('invisible')) {
             player.sprite.setData('invisible', false);
@@ -22,7 +25,7 @@ export class DaggerStabSkill extends Skill {
 
         const gameScene = player.scene as Game;
         const enemySystem = gameScene.getEnemySystem();
-        
+
         if (!enemySystem) return;
 
         // Get direction player is facing (towards cursor)
@@ -65,7 +68,7 @@ export class DaggerStabSkill extends Skill {
         // Check for enemies in stab range
         let gotKill = false;
         const enemies = enemySystem.getEnemies();
-        
+
         for (const enemy of enemies) {
             if (!enemy.sprite.active) continue;
 
@@ -99,7 +102,7 @@ export class DaggerStabSkill extends Skill {
         if (gotKill) {
             // Reset cooldown on kill!
             player.cooldownManager.startCooldown('SPECIAL_SKILL', 0);
-            
+
             // Flash effect to indicate reset
             player.sprite.setTint(0xff4444);
             player.scene.time.delayedCall(100, () => {

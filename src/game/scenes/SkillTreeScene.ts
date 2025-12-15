@@ -5,6 +5,7 @@ import { skillTreeData, Skill } from '../data/SkillTreeData';
 import { playerArchetypeToSkillArchetype, PlayerArchetypeType } from '../objects/PlayerArchetype';
 import { EnhancedDesignSystem, EnhancedStyleHelpers } from '../../ui/EnhancedDesignSystem';
 import { SkillNode } from '../objects/SkillNode';
+import { AudioManager } from '../systems/AudioManager';
 
 export class SkillTreeScene extends Scene {
     // Layers
@@ -56,6 +57,12 @@ export class SkillTreeScene extends Scene {
     }
 
     create() {
+        // Play skill tree ambient music
+        const audio = AudioManager.getInstance();
+        audio.init(this);
+        audio.playMusic('skilltree-music');
+        audio.playSFX('skill-tree-open');
+
         // Sync state from registry
         if (!this.registry.has('unlockedSkills')) {
             this.registry.set('unlockedSkills', new Map<string, boolean>());
@@ -408,6 +415,9 @@ export class SkillTreeScene extends Scene {
             this.unlockedSkills.set(skill.name, true);
             this.registry.set('unlockedSkills', this.unlockedSkills);
 
+            // Play unlock sound
+            AudioManager.getInstance().playSFX('skill-unlock');
+
             // Update Nodes visually
             this.nodes.forEach((node, _) => {
                 const nodeSkill = (node as any).skill as Skill;
@@ -580,6 +590,9 @@ export class SkillTreeScene extends Scene {
             this.lastToggleTime = now;
 
             console.log("Closing Skill Tree via 'T'");
+
+            // Restore gameplay music before closing
+            AudioManager.getInstance().playMusic('gameplay-music');
 
             // Resume Game (it was properly paused) then stop this overlay scene
             this.scene.resume('Game');

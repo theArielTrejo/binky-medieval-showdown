@@ -2,6 +2,7 @@ import { Skill } from './Skill';
 import { Player } from '../Player';
 import { GravityWellObject } from './objects/GravityWellObject';
 import { Game } from '../scenes/Game';
+import { AudioManager } from '../systems/AudioManager';
 
 export class GravityWellSkill extends Skill {
     constructor() {
@@ -9,6 +10,8 @@ export class GravityWellSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('mage-gravity-well');
+
         const targetPos = player.inputManager.getPointerWorldPosition();
 
         const gravityWell = new GravityWellObject(

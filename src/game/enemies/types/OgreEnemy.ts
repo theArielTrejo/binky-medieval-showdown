@@ -11,7 +11,7 @@ export class OgreEnemy extends BaseEnemy {
 
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, EnemyType.OGRE);
-        
+
         // Ogre specific event listeners
         this.sprite.on('animationcomplete', (anim: Phaser.Animations.Animation) => {
             if (anim.key === 'ogre_attacking') {
@@ -34,7 +34,7 @@ export class OgreEnemy extends BaseEnemy {
             xpValue: 25      // High XP reward
         };
         const specialAbilities = ['melee_attack', 'high_damage'];
-        
+
         return {
             ...baseStats,
             cost: BaseEnemy.calculateEnemyCost(baseStats, specialAbilities),
@@ -64,23 +64,23 @@ export class OgreEnemy extends BaseEnemy {
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         // Cooldowns
         if (this.meleeAttackCooldown > 0) {
             this.meleeAttackCooldown -= deltaTime;
         }
-        
+
         // Attack Timer
         if (this.isAttacking) {
             this.attackTimer -= deltaTime;
             if (this.attackTimer <= 0) {
                 this.isAttacking = false;
             }
-            
+
             // Stop movement when attacking
             const body = this.sprite.body as Phaser.Physics.Arcade.Body;
             if (body) body.setVelocity(0, 0);
-            
+
             // Ensure animation plays (sometimes FSM overrides)
             // The listener handles the reset
             return null;
@@ -122,35 +122,35 @@ export class OgreEnemy extends BaseEnemy {
         this.meleeAttackCooldown = this.meleeAttackInterval;
         this.isAttacking = true;
         this.attackTimer = this.attackDuration;
-        
+
         // Play attack animation and update tracking
         if (this.sprite.anims && this.scene.anims.exists('ogre_attacking')) {
             this.sprite.play('ogre_attacking');
             this.currentAnimation = 'ogre_attacking';
         }
-        
+
         const enemyRadius = this.getApproximateRadius();
         const meleeAttack = new MeleeAttack(
-            this.scene, 
-            this.sprite.x, 
-            this.sprite.y, 
-            playerX, 
-            playerY, 
-            this.stats.damage, 
-            enemyRadius, 
-            100, 
-            60, 
+            this.scene,
+            this.sprite.x,
+            this.sprite.y,
+            playerX,
+            playerY,
+            this.stats.damage,
+            enemyRadius,
+            100,
+            60,
             EnemyType.OGRE
         );
 
         console.log(`Enemy #${this.sprite.getData('enemyId')} (OGRE) creating MELEE ATTACK`);
-        
-        return { 
-            type: 'melee', 
-            damage: this.stats.damage, 
-            position: { x: this.sprite.x, y: this.sprite.y }, 
-            hitPlayer: false, 
-            attackObject: meleeAttack 
+
+        return {
+            type: 'melee',
+            damage: this.stats.damage,
+            position: { x: this.sprite.x, y: this.sprite.y },
+            hitPlayer: false,
+            attackObject: meleeAttack
         };
     }
 }

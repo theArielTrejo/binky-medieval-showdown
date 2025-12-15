@@ -78,6 +78,46 @@ export class Preloader extends Scene {
         this.load.audio('menu-music', ['audio/GOT_Song.mp3']);
         this.load.audio('ui-button-click', ['audio/clickUIButton.mp3']);
 
+        // Gameplay music
+        this.load.audio('gameplay-music', ['audio/music/gameplay_combat.mp3']);
+        this.load.audio('skilltree-music', ['audio/music/skill_tree_ambient.mp3']);
+
+        // Player SFX - Knight
+        this.load.audio('knight-cleave', ['audio/sfx/player/knight_cleave.mp3']);
+        this.load.audio('knight-shield-bash', ['audio/sfx/player/knight_shield_bash.mp3']);
+        this.load.audio('knight-whirlwind', ['audio/sfx/player/knight_whirlwind.mp3']);
+        this.load.audio('knight-hammer-throw', ['audio/sfx/player/knight_hammer_throw.mp3']);
+
+        // Player SFX - Mage
+        this.load.audio('mage-nova', ['audio/sfx/player/mage_nova.mp3']);
+        this.load.audio('mage-comet', ['audio/sfx/player/mage_comet.mp3']);
+        this.load.audio('mage-gravity-well', ['audio/sfx/player/mage_gravity_well.mp3']);
+
+        // Player SFX - Ninja
+        this.load.audio('ninja-shuriken', ['audio/sfx/player/ninja_shuriken.mp3']);
+        this.load.audio('ninja-dagger-stab', ['audio/sfx/player/ninja_dagger_stab.mp3']);
+        this.load.audio('ninja-caltrop', ['audio/sfx/player/ninja_caltrop.mp3']);
+
+        // Shared player SFX
+        this.load.audio('shadow-dash', ['audio/sfx/player/shadow_dash.mp3']);
+
+        // Enemy SFX
+        this.load.audio('enemy-hit', ['audio/sfx/enemy/enemy_hit.mp3']);
+        this.load.audio('enemy-death', ['audio/sfx/enemy/enemy_death.mp3']);
+        this.load.audio('archer-arrow', ['audio/sfx/enemy/archer_arrow.mp3']);
+        this.load.audio('ogre-slam', ['audio/sfx/enemy/ogre_slam.mp3']);
+        this.load.audio('skeleton-rattle', ['audio/sfx/enemy/skeleton_rattle.mp3']);
+        this.load.audio('zombie-groan', ['audio/sfx/enemy/zombie_groan.mp3']);
+        this.load.audio('lightning-crackle', ['audio/sfx/enemy/lightning_crackle.mp3']);
+
+        // Gameplay SFX
+        this.load.audio('door-open', ['audio/sfx/gameplay/door_open.mp3']);
+        this.load.audio('new-round', ['audio/sfx/gameplay/new_round.mp3']);
+        this.load.audio('orb-collect', ['audio/sfx/gameplay/orb_collect.mp3']);
+        this.load.audio('level-up', ['audio/sfx/gameplay/level_up.mp3']);
+        this.load.audio('skill-tree-open', ['audio/sfx/gameplay/skill_tree_open.mp3']);
+        this.load.audio('skill-unlock', ['audio/sfx/gameplay/skill_unlock.mp3']);
+
         // Tilemap and tilesets (use 'map' key for Game compatibility)
         this.load.tilemapTiledJSON('map', 'tilemaps/binkymap1.json');
         this.load.image('floor1', 'tilemaps/floor1.png');

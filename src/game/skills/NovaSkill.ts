@@ -3,6 +3,7 @@ import { Player } from '../Player';
 import { NovaOptions } from './SkillObjects';
 import { Game } from '../scenes/Game';
 import { SpellMissileObject } from './objects/SpellMissileObject';
+import { AudioManager } from '../systems/AudioManager';
 
 export class NovaSkill extends Skill {
     constructor() {
@@ -10,6 +11,8 @@ export class NovaSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('mage-nova');
+
         const unlocked = player.scene.registry.get('unlockedSkills') as Map<string, boolean> || new Map();
 
         let radius = 30; // Slightly smaller AoE

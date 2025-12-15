@@ -14,13 +14,13 @@ export class ClawAttack {
     public y: number;
     public width: number = 80; // Hitbox width for collision detection
     public height: number = 80; // Hitbox height for collision detection
-    
+
     constructor(scene: Scene, targetX: number, targetY: number, damage: number) {
         this.scene = scene;
         this.damage = damage;
         this.x = targetX;
         this.y = targetY;
-        
+
         // Check if claw texture exists
         if (scene.textures.exists('gnoll-claw-1')) {
             // Create claw sprite at player position
@@ -29,17 +29,17 @@ export class ClawAttack {
             this.clawSprite.setScale(0.05); // Smaller, more precise claw slash
             this.clawSprite.setDepth(7); // Above most game objects but below UI
             this.clawSprite.setOrigin(0.5, 0.5); // Center origin on player
-            
+
             // Play claw animation if it exists
             if (scene.anims.exists('gnoll-claw-attack')) {
                 this.clawSprite.play('gnoll-claw-attack');
-                
+
                 // Destroy when animation completes
                 this.clawSprite.once('animationcomplete', () => {
                     this.destroy();
                 });
             }
-            
+
             console.log(`🐺 Claw sprite created at (${targetX.toFixed(0)}, ${targetY.toFixed(0)})`);
         } else {
             console.warn('Claw texture not loaded, using fallback');
@@ -51,7 +51,7 @@ export class ClawAttack {
             fallbackSlash.lineTo(targetX + 30, targetY + 30);
             fallbackSlash.strokePath();
             fallbackSlash.setDepth(7);
-            
+
             scene.time.delayedCall(300, () => {
                 fallbackSlash.destroy();
                 this.destroy();
@@ -61,9 +61,9 @@ export class ClawAttack {
 
     public update(deltaTime: number): void {
         if (!this.active) return;
-        
+
         this.elapsed += deltaTime;
-        
+
         // Destroy after lifetime (safety check in case animation doesn't complete)
         if (this.elapsed >= this.lifetime) {
             this.destroy();
@@ -89,7 +89,7 @@ export class ClawAttack {
             height: this.height
         };
     }
-    
+
     public getPosition(): { x: number; y: number } {
         return { x: this.x, y: this.y };
     }

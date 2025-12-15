@@ -4,6 +4,7 @@ import { Shuriken } from '../objects/Shuriken';
 import { Game } from '../scenes/Game';
 import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
 import { ProjectileOptions } from './objects/BaseProjectile';
+import { AudioManager } from '../systems/AudioManager';
 
 export class ShurikenFanSkill extends Skill {
     constructor() {
@@ -11,6 +12,8 @@ export class ShurikenFanSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('ninja-shuriken');
+
         // Break invisibility when attacking
         if (player.sprite.getData('invisible')) {
             player.sprite.setData('invisible', false);

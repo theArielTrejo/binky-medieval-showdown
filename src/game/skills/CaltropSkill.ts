@@ -2,6 +2,7 @@ import { Skill } from './Skill';
 import { Player } from '../Player';
 import { Game } from '../scenes/Game';
 import { PlayerState } from '../types/PlayerTypes';
+import { AudioManager } from '../systems/AudioManager';
 
 export class CaltropSkill extends Skill {
     private readonly fieldRadius: number = 60; // Area covered by caltrops
@@ -15,6 +16,8 @@ export class CaltropSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('ninja-caltrop');
+
         // Break invisibility when attacking
         if (player.sprite.getData('invisible')) {
             player.sprite.setData('invisible', false);
@@ -24,24 +27,24 @@ export class CaltropSkill extends Skill {
 
         const gameScene = player.scene as Game;
         const enemySystem = gameScene.getEnemySystem();
-        
+
         // Play attack animation
         player.playAnimation('attack');
-        
+
         // Face towards target
         const targetPos = player.inputManager.getPointerWorldPosition();
         player.facingLeft = targetPos.x < player.sprite.x;
         player.sprite.setFlipX(player.facingLeft);
-        
+
         // Clamp throw distance
         const dx = targetPos.x - player.sprite.x;
         const dy = targetPos.y - player.sprite.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const maxThrowDist = 200;
-        
+
         let fieldX = targetPos.x;
         let fieldY = targetPos.y;
-        
+
         if (dist > maxThrowDist) {
             fieldX = player.sprite.x + (dx / dist) * maxThrowDist;
             fieldY = player.sprite.y + (dy / dist) * maxThrowDist;
@@ -57,14 +60,14 @@ export class CaltropSkill extends Skill {
 
         // Create caltrop sprites scattered in the area
         const caltropSprites: Phaser.GameObjects.Sprite[] = [];
-        
+
         for (let i = 0; i < this.numCaltrops; i++) {
             // Distribute caltrops more evenly in ellipse
             const angle = (i / this.numCaltrops) * Math.PI * 2 + Phaser.Math.FloatBetween(-0.3, 0.3);
             const radiusMult = Phaser.Math.FloatBetween(0.2, 0.95);
             const offsetX = Math.cos(angle) * this.fieldRadius * radiusMult;
             const offsetY = Math.sin(angle) * this.fieldRadius * 0.6 * radiusMult;
-            
+
             const caltrop = player.scene.add.sprite(
                 fieldX + offsetX,
                 fieldY + offsetY,
@@ -74,7 +77,7 @@ export class CaltropSkill extends Skill {
             caltrop.setDepth(2);
             caltrop.setRotation(Phaser.Math.FloatBetween(0, Math.PI * 2));
             caltrop.setAlpha(0);
-            
+
             // Animate caltrops appearing (thrown in)
             player.scene.tweens.add({
                 targets: caltrop,
@@ -82,33 +85,33 @@ export class CaltropSkill extends Skill {
                 delay: i * 20,
                 duration: 100
             });
-            
+
             caltropSprites.push(caltrop);
         }
 
         // Track enemies in the field and their slow state
         const enemiesInField = new Map<number, { lastDamageTime: number }>();
-        
+
         // Damage/slow tick timer - check every frame for smooth slowing
         const fieldTimer = player.scene.time.addEvent({
             delay: 16, // Check every frame
             callback: () => {
                 if (!enemySystem) return;
-                
+
                 const enemies = enemySystem.getEnemies();
                 const currentTime = player.scene.time.now;
-                
+
                 for (const enemy of enemies) {
                     if (!enemy.sprite.active) continue;
-                    
+
                     const enemyId = enemy.sprite.getData('enemyId');
                     if (!enemyId) continue;
-                    
+
                     // Check if enemy is in the caltrop field
                     const ex = enemy.sprite.x - fieldX;
                     const ey = enemy.sprite.y - fieldY;
                     const distToCenter = Math.sqrt(ex * ex + ey * ey);
-                    
+
                     if (distToCenter <= this.fieldRadius) {
                         // Enemy is in the field
                         if (!enemiesInField.has(enemyId)) {
@@ -116,17 +119,17 @@ export class CaltropSkill extends Skill {
                             // Apply slow tint when entering
                             enemy.sprite.setTint(0x888888);
                         }
-                        
+
                         const enemyData = enemiesInField.get(enemyId)!;
-                        
+
                         // Mark enemy as slowed (enemies check this in getEffectiveSpeed())
                         enemy.sprite.setData('caltropSlowed', true);
-                        
+
                         // Apply damage on tick
                         if (currentTime - enemyData.lastDamageTime >= this.tickRate) {
                             enemy.takeDamage(this.damagePerTick);
                             enemyData.lastDamageTime = currentTime;
-                            
+
                             // Small hit indicator
                             const hitMarker = player.scene.add.circle(
                                 enemy.sprite.x,
@@ -160,7 +163,7 @@ export class CaltropSkill extends Skill {
         player.scene.time.delayedCall(this.fieldDuration, () => {
             // Stop the damage timer
             fieldTimer.destroy();
-            
+
             // Clear slow from all enemies that were in the field
             if (enemySystem) {
                 for (const [enemyId] of enemiesInField) {
@@ -174,7 +177,7 @@ export class CaltropSkill extends Skill {
                 }
             }
             enemiesInField.clear();
-            
+
             // Fade out AOE indicator
             player.scene.tweens.add({
                 targets: aoeIndicator,
@@ -182,7 +185,7 @@ export class CaltropSkill extends Skill {
                 duration: 300,
                 onComplete: () => aoeIndicator.destroy()
             });
-            
+
             // Fade out and destroy caltrops
             for (const caltrop of caltropSprites) {
                 if (caltrop.active) {
@@ -198,7 +201,7 @@ export class CaltropSkill extends Skill {
 
         // Start cooldown
         player.cooldownManager.startCooldown('UTILITY_SKILL', this.cooldown);
-        
+
         // Return to idle
         player.stateMachine.transition(PlayerState.IDLE);
     }

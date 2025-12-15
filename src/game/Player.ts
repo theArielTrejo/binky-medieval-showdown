@@ -25,6 +25,7 @@ import { EffectManager } from './effects/EffectManager';
 import { CombatComponent } from './components/CombatComponent';
 import { VisualComponent } from './components/VisualComponent';
 import { PassiveManager } from './systems/PassiveManager';
+import { AudioManager } from './systems/AudioManager';
 
 // FSM Imports
 import { StateMachine } from './states/StateMachine';
@@ -363,6 +364,9 @@ export class Player {
     private gainXP(amount: number): void {
         const levels = this.archetype.gainXP(amount, this.scene.time.now);
         if (levels > 0) {
+            // Play level up sound
+            AudioManager.getInstance().playSFX('level-up');
+
             // Visual effect
             const txt = this.scene.add.text(this.sprite.x, this.sprite.y - 60, "LEVEL UP!", { color: "#ffff00", fontSize: "20px", fontStyle: "bold" });
             this.scene.tweens.add({ targets: txt, y: txt.y - 50, alpha: 0, duration: 1500, onComplete: () => txt.destroy() });

@@ -26,7 +26,7 @@ const config: Types.Core.GameConfig = {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { x:0, y: 0 },
+      gravity: { x: 0, y: 0 },
       debug: false,               // shows collision boxes
     },
   },
@@ -39,7 +39,7 @@ const config: Types.Core.GameConfig = {
       }
     ]
   },
-  scene: [Preloader, Menu, Settings, ClassSelectionScene, MainGame, UIScene, SkillTreeScene],
+  scene: [Preloader, Menu, ClassSelectionScene, MainGame, UIScene, SkillTreeScene, Settings],
 };
 
 // Export StartGame function (so index.ts can call StartGame('game-container'))
@@ -47,7 +47,7 @@ const StartGame = (parent: string) => {
   const game = new Game({ ...config, parent });
 
   // Scale Manager handles resizing with FIT + CENTER_BOTH
-  
+
   return game;
 };
 

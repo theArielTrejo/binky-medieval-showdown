@@ -1,11 +1,12 @@
 import { Scene } from 'phaser';
 import { PhysicsSystem } from './PhysicsSystem';
+import { AudioManager } from './AudioManager';
 
 export class MapInteractionSystem {
     private scene: Scene;
     private physicsSystem: PhysicsSystem;
     private tilemap!: Phaser.Tilemaps.Tilemap;
-    
+
     private doorTiles: Phaser.Tilemaps.Tile[] = [];
     private doorGroups: { tiles: Phaser.Tilemaps.Tile[]; opened: boolean; label: string }[] = [];
     private objectLayer: Phaser.Tilemaps.TilemapLayer | null = null;
@@ -44,7 +45,7 @@ export class MapInteractionSystem {
             if (tile.tileset) {
                 const tileData = tile.tileset.getTileData(tile.index) as any;
                 if (tileData && tileData.animation) {
-                    delete tileData.animation; 
+                    delete tileData.animation;
                 }
             }
         });
@@ -83,6 +84,7 @@ export class MapInteractionSystem {
         }
 
         console.log(`MapInteractionSystem: ${message}`);
+        AudioManager.getInstance().playSFX('door-open');
         this.showGateOpenMessage(message);
     }
 

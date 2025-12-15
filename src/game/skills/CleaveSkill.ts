@@ -3,12 +3,15 @@ import { Player } from '../Player';
 import { CleaveObject } from './objects/CleaveObject';
 import { Game } from '../scenes/Game';
 import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
+import { AudioManager } from '../systems/AudioManager';
 
 export class CleaveSkill extends Skill {
     constructor() {
         super(1000);
     }
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('knight-cleave');
+
         const pointer = player.scene.input.activePointer;
         const worldPoint = player.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
 

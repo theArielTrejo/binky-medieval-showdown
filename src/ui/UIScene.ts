@@ -1,6 +1,5 @@
 import * as Phaser from 'phaser';
 import { LevelBarUI } from './LevelBarUI';
-import { ControlsUI } from './ControlsUI';
 import { Player } from '../game/Player';
 import { Game } from '../game/scenes/Game';
 import { AudioManager } from '../game/systems/AudioManager';
@@ -8,7 +7,6 @@ import { AudioManager } from '../game/systems/AudioManager';
 
 export class UIScene extends Phaser.Scene {
     private levelBarUI: LevelBarUI | undefined;
-    private controlsUI: ControlsUI | undefined;
 
     constructor() {
         super({ key: 'UIScene', active: true });
@@ -17,20 +15,36 @@ export class UIScene extends Phaser.Scene {
     create(): void {
         const gameScene = this.scene.get('Game') as Game;
 
-        
         const audio = AudioManager.getInstance();
         audio.init(this);
-        // Initialize Controls/Pause UI immediately
-        this.controlsUI = new ControlsUI(this, audio);
 
-        // Global Key Listener for Pause
+        // Global Key Listener for Pause - now opens Settings scene
         this.input.keyboard?.on('keydown-ESC', () => {
-            if (this.controlsUI) {
-                //  UI click sound (same as ? button)
-                const audio = AudioManager.getInstance();
-                audio.playSFX('ui-button-click', { volume: 0.25 });
+            const sm = this.scene;
 
-                this.controlsUI.toggle();
+            // If Settings is already open, close it and resume
+            if (sm.isActive('Settings')) {
+                audio.playSFX('ui-button-click', { volume: 0.25 });
+                sm.stop('Settings');
+
+                // Resume whichever scene was paused
+                if (sm.isPaused('Game')) {
+                    sm.resume('Game');
+                } else if (sm.isPaused('Menu')) {
+                    sm.resume('Menu');
+                }
+                return;
+            }
+
+            // Open Settings and pause underlying scene
+            audio.playSFX('ui-button-click', { volume: 0.25 });
+
+            if (sm.isActive('Game')) {
+                sm.pause('Game');
+                sm.launch('Settings', { fromGame: true });
+            } else if (sm.isActive('Menu')) {
+                sm.pause('Menu');
+                sm.launch('Settings', { fromGame: false });
             }
         });
 
@@ -65,16 +79,6 @@ export class UIScene extends Phaser.Scene {
             this.levelBarUI.destroy();
             this.levelBarUI = undefined;
         }
-        // ControlsUI is persistent across game restarts usually, 
-        // but safe to recreate if needed.
-        if (this.controlsUI) {
-            // Ensure we resume game if we are destroying the UI while paused
-            if (this.controlsUI.isOpen()) {
-                this.game.scene.resume('Game');
-            }
-            // Actually probably don't need to destroy it if UIScene stays active?
-            // But let's follow the pattern
-            // this.controlsUI = undefined; // actually keep it alive for now or recreate
-        }
     }
 }
+

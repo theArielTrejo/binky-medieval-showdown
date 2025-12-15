@@ -3,6 +3,7 @@ import { EnemyType, EnemyStats, EnemyAttackResult } from '../types/EnemyTypes';
 import { AnimationMapper, MobAnimationSet } from '../config/AnimationMappings';
 import { validateNoRandomSelection, getHardcodedMobSkin } from '../systems/HardcodedMobSkins';
 import { Shield } from './attacks/Shield';
+import { AudioManager } from '../systems/AudioManager';
 
 export abstract class BaseEnemy {
     public sprite: Phaser.GameObjects.Sprite;
@@ -34,12 +35,12 @@ export abstract class BaseEnemy {
      */
     public getEffectiveSpeed(): number {
         let speed = this.stats.speed;
-        
+
         // Check for caltrop slow
         if (this.sprite.getData('caltropSlowed')) {
             speed *= 0.5; // 50% slow = 50% speed
         }
-        
+
         return speed;
     }
 
@@ -91,10 +92,10 @@ export abstract class BaseEnemy {
      */
     public isStunned(): boolean {
         if (!this.sprite || !this.sprite.active) return false;
-        
+
         const stunned = this.sprite.getData('stunned');
         const stunnedUntil = this.sprite.getData('stunnedUntil') || 0;
-        
+
         if (stunned && this.scene.time.now < stunnedUntil) {
             // Stop movement while stunned
             const body = this.sprite.body as Phaser.Physics.Arcade.Body;
@@ -106,7 +107,7 @@ export abstract class BaseEnemy {
             this.isAttacking = false;
             return true;
         }
-        
+
         // Clear stun if expired - enemy can now resume normal behavior
         if (stunned && this.scene.time.now >= stunnedUntil) {
             this.sprite.setData('stunned', false);
@@ -119,7 +120,7 @@ export abstract class BaseEnemy {
             // Clear tint
             this.sprite.clearTint();
         }
-        
+
         return false;
     }
 
@@ -181,7 +182,15 @@ export abstract class BaseEnemy {
     public takeDamage(amount: number): boolean {
         this.currentHealth -= amount;
         this.updateHealthBar();
-        return this.currentHealth <= 0;
+
+        const isDead = this.currentHealth <= 0;
+        if (isDead) {
+            AudioManager.getInstance().playSFX('enemy-death', { volume: 0.15 });
+        } else {
+            AudioManager.getInstance().playSFX('enemy-hit', { volume: 0.1 });
+        }
+
+        return isDead;
     }
 
     /**
@@ -204,11 +213,11 @@ export abstract class BaseEnemy {
         // Background (dark red)
         this.healthBarBackground = this.scene.add.graphics();
         this.healthBarBackground.setDepth(10);
-        
+
         // Fill (green for health)
         this.healthBarFill = this.scene.add.graphics();
         this.healthBarFill.setDepth(11);
-        
+
         this.updateHealthBar();
     }
 
@@ -227,7 +236,7 @@ export abstract class BaseEnemy {
         this.healthBarBackground.clear();
         this.healthBarBackground.fillStyle(0x1a1a2e, 0.8);
         this.healthBarBackground.fillRoundedRect(x - 1, y - 1, this.HEALTH_BAR_WIDTH + 2, this.HEALTH_BAR_HEIGHT + 2, 2);
-        
+
         // Border
         this.healthBarBackground.lineStyle(1, 0x000000, 0.5);
         this.healthBarBackground.strokeRoundedRect(x - 1, y - 1, this.HEALTH_BAR_WIDTH + 2, this.HEALTH_BAR_HEIGHT + 2, 2);
@@ -238,7 +247,7 @@ export abstract class BaseEnemy {
 
         // Clear and redraw fill
         this.healthBarFill.clear();
-        
+
         // Color gradient based on health percentage
         let fillColor: number;
         if (healthPercent > 0.6) {
@@ -248,7 +257,7 @@ export abstract class BaseEnemy {
         } else {
             fillColor = 0xef4444; // Red
         }
-        
+
         if (fillWidth > 0) {
             this.healthBarFill.fillStyle(fillColor, 1);
             this.healthBarFill.fillRoundedRect(x, y, fillWidth, this.HEALTH_BAR_HEIGHT, 1);
@@ -280,7 +289,7 @@ export abstract class BaseEnemy {
             this.healthBarFill.destroy();
             this.healthBarFill = null;
         }
-        
+
         if (this.sprite && this.sprite.active) {
             this.sprite.destroy();
         }
@@ -335,7 +344,7 @@ export abstract class BaseEnemy {
                 return physicsSystem.getCollisionLayers();
             }
         }
-        
+
         // Fallback: search for tilemap layers in scene children
         const collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
         const tilemap = this.scene.children.getAll().find(child => child instanceof Phaser.Tilemaps.TilemapLayer) as Phaser.Tilemaps.TilemapLayer;

@@ -2,6 +2,7 @@ import { Skill } from './Skill';
 import { Player } from '../Player';
 import { Game } from '../scenes/Game';
 import { PlayerState } from '../types/PlayerTypes';
+import { AudioManager } from '../systems/AudioManager';
 
 export class ShieldBashSkill extends Skill {
     constructor() {
@@ -9,6 +10,8 @@ export class ShieldBashSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('knight-shield-bash', { volume: 0.4 });
+
         const targetPos = player.inputManager.getPointerWorldPosition();
 
         const startX = player.sprite.x;

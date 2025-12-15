@@ -4,6 +4,7 @@ import { XP_CONSTANTS } from '../constants/XPConstants';
 import { EnemyType } from '../types/EnemyTypes';
 import { EffectManager } from '../effects/EffectManager';
 import { getOrbConfigForEnemyType, clampToGameBounds, clampCollectionRange } from '../constants/XPConstants';
+import { AudioManager } from './AudioManager';
 
 export class XPOrbSystem {
     private scene: Scene;
@@ -84,6 +85,7 @@ export class XPOrbSystem {
 
                     // Trigger effect and kill
                     EffectManager.createCollectionEffect(this.scene, orb.x, orb.y, xpValue);
+                    AudioManager.getInstance().playSFX('orb-collect', { volume: 0.1 });
 
                     orb.collect(() => {
                         onXPCollected(xpValue);

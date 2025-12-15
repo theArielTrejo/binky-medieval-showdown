@@ -3,6 +3,7 @@ import { Player } from '../Player';
 import { HammerThrowObject } from './objects/HammerThrowObject';
 import { Game } from '../scenes/Game';
 import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
+import { AudioManager } from '../systems/AudioManager';
 
 export class HammerThrowSkill extends Skill {
     constructor() {
@@ -10,9 +11,11 @@ export class HammerThrowSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('knight-hammer-throw', { volume: 0.4 });
+
         // Get target position (mouse cursor)
         const targetPos = player.inputManager.getPointerWorldPosition();
-        
+
         // Create hammer projectile with high damage (2x player damage)
         const hammerDamage = Math.floor(player.archetype.stats.damage * 2);
         const hammer = new HammerThrowObject(
@@ -23,7 +26,7 @@ export class HammerThrowSkill extends Skill {
             targetPos.y,
             hammerDamage
         );
-        
+
         // Register collision with enemies
         const gameScene = player.scene as Game;
         const enemySystem = gameScene.getEnemySystem();
@@ -37,7 +40,7 @@ export class HammerThrowSkill extends Skill {
                     const projectile = obj1 as HammerThrowObject;
                     const enemySprite = obj2 as Phaser.GameObjects.Sprite;
                     const enemy = enemySprite.getData('enemy') as Enemy;
-                    
+
                     if (projectile && enemy && projectile.active) {
                         const enemyId = enemySprite.getData('enemyId');
                         if (enemyId && !projectile.hitEnemies.has(enemyId)) {

@@ -3,6 +3,7 @@ import { Player } from '../Player';
 import { CometObject } from './objects/CometObject';
 import { Game } from '../scenes/Game';
 import { BaseEnemy as Enemy } from '../enemies/BaseEnemy';
+import { AudioManager } from '../systems/AudioManager';
 
 export class CometSkill extends Skill {
     constructor() {
@@ -10,6 +11,8 @@ export class CometSkill extends Skill {
     }
 
     activate(player: Player): void {
+        AudioManager.getInstance().playSFX('mage-comet');
+
         const targetPos = player.inputManager.getPointerWorldPosition();
 
         // High damage single-target projectile (2x player damage)

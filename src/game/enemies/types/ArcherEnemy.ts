@@ -7,14 +7,14 @@ import { ArrowIndicator } from '../attacks/ArrowIndicator';
 export class ArcherEnemy extends BaseEnemy {
     private shootCooldown: number = 0;
     private readonly shootInterval: number = 2.0;
-    
+
     // Charging State
     private isChargingArrow: boolean = false;
     private arrowChargeTime: number = 0;
     private readonly arrowChargeDuration: number = 1.5;
     private lockedArrowAngle: number = 0;
     private activeArrowIndicator: ArrowIndicator | null = null;
-    
+
     // Animation state
     private archerDrawAnimPlayed: boolean = false;
     private archerIsReleasing: boolean = false;
@@ -39,7 +39,7 @@ export class ArcherEnemy extends BaseEnemy {
             xpValue: 12      // Slightly higher XP for difficulty
         };
         const specialAbilities = ['ranged_attack', 'kiting'];
-        
+
         return {
             ...baseStats,
             cost: BaseEnemy.calculateEnemyCost(baseStats, specialAbilities),
@@ -65,14 +65,14 @@ export class ArcherEnemy extends BaseEnemy {
         const dx = playerX - this.sprite.x;
         const dy = playerY - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         if (this.shootCooldown > 0) {
             this.shootCooldown -= deltaTime;
         }
 
         const body = this.sprite.body as Phaser.Physics.Arcade.Body;
         if (!body) return null;
-        
+
         const drawAnimDuration = 0.33; // 4 frames at 12fps
         const releaseAnimDuration = 0.31; // 5 frames at 16fps
         const inCameraView = this.isInCameraView();
@@ -81,7 +81,7 @@ export class ArcherEnemy extends BaseEnemy {
         if (this.archerIsReleasing) {
             body.setVelocity(0, 0);
             this.archerReleaseTimer += deltaTime;
-            
+
             if (this.archerReleaseTimer >= releaseAnimDuration) {
                 // Release animation done, go back to normal
                 this.archerIsReleasing = false;
@@ -93,15 +93,15 @@ export class ArcherEnemy extends BaseEnemy {
         // State 2: Charging arrow (drawing bow)
         if (this.isChargingArrow) {
             body.setVelocity(0, 0);
-            
+
             // Update arrow indicator
             if (this.activeArrowIndicator) {
                 this.activeArrowIndicator.update(deltaTime);
             }
-            
+
             // Update charge time
             this.arrowChargeTime += deltaTime;
-            
+
             // Play draw animation at start, then hold at frame 003
             if (!this.archerDrawAnimPlayed) {
                 if (this.arrowChargeTime < drawAnimDuration) {
@@ -117,29 +117,29 @@ export class ArcherEnemy extends BaseEnemy {
                     this.sprite.setTexture('skeleton_archer_shooting_003');
                 }
             }
-            
+
             // Update star effect position and appearance - only show when almost ready to fire
             const chargeProgress = (this.arrowChargeTime - drawAnimDuration) / (this.arrowChargeDuration - drawAnimDuration);
             const showStar = chargeProgress >= 0.60; // Only show star in last 40% of charge
-            
+
             if (this.archerDrawAnimPlayed && showStar) {
                 // Create star if it doesn't exist
                 if (!this.arrowTipStar) {
                     this.arrowTipStar = this.scene.add.graphics();
                     this.arrowTipStar.setDepth(20);
                 }
-                
+
                 const starDistance = 18; // Distance from sprite center to bow side
                 // Star appears to the left or right based on facing direction
                 const starX = this.sprite.x + (this.facingLeft ? -starDistance : starDistance);
                 const starY = this.sprite.y + 5; // Slightly below center where bow is held
-                
+
                 // Clear and redraw star with pulsing effect
                 this.arrowTipStar.clear();
                 const pulse = 0.7 + Math.sin(this.arrowChargeTime * 20) * 0.3; // Fast pulsing
                 const starSize = 6; // Fixed size
                 const alpha = 0.9; // Bright
-                
+
                 // Draw 4-pointed star
                 this.arrowTipStar.fillStyle(0xffffff, alpha * pulse);
                 this.arrowTipStar.beginPath();
@@ -156,12 +156,12 @@ export class ArcherEnemy extends BaseEnemy {
                 }
                 this.arrowTipStar.closePath();
                 this.arrowTipStar.fillPath();
-                
+
                 // Add glow effect
                 this.arrowTipStar.fillStyle(0xffffff, alpha * pulse * 0.3);
                 this.arrowTipStar.fillCircle(starX, starY, starSize * 1.5);
             }
-            
+
             // Release arrow when charge is complete
             if (this.arrowChargeTime >= this.arrowChargeDuration) {
                 return this.fireArrow();
@@ -212,17 +212,17 @@ export class ArcherEnemy extends BaseEnemy {
         this.arrowChargeTime = 0;
         this.archerDrawAnimPlayed = false;
         this.lockedArrowAngle = Math.atan2(dy, dx);
-        
+
         // Play draw animation
         this.sprite.play('skeleton_archer_shooting_draw', true);
         this.currentAnimation = 'skeleton_archer_shooting_draw';
-        
+
         const { endX, endY } = this.calculateArrowEndpoint(
             this.sprite.x,
             this.sprite.y,
             this.lockedArrowAngle
         );
-        
+
         this.activeArrowIndicator = new ArrowIndicator(
             this.scene,
             this.sprite.x,
@@ -238,22 +238,22 @@ export class ArcherEnemy extends BaseEnemy {
             this.activeArrowIndicator.destroy();
             this.activeArrowIndicator = null;
         }
-        
+
         // Destroy the star effect
         if (this.arrowTipStar) {
             this.arrowTipStar.destroy();
             this.arrowTipStar = null;
         }
-        
+
         // Play release animation
         this.sprite.play('skeleton_archer_shooting_release', true);
         this.currentAnimation = 'skeleton_archer_shooting_release';
         this.archerIsReleasing = true;
         this.archerReleaseTimer = 0;
-        
+
         // Get collision layers from scene
         const collisionLayers = this.getCollisionLayersFromScene();
-        
+
         // Create arrow projectile
         const arrow = new ArrowProjectile(
             this.scene,
@@ -264,19 +264,19 @@ export class ArcherEnemy extends BaseEnemy {
             collisionLayers,
             600 // High speed
         );
-        
+
         // Reset charging state
         this.isChargingArrow = false;
         this.arrowChargeTime = 0;
         this.archerDrawAnimPlayed = false;
         this.shootCooldown = this.shootInterval;
-        
-        return { 
-            type: 'arrow', 
-            damage: this.stats.damage, 
-            position: { x: this.sprite.x, y: this.sprite.y }, 
-            hitPlayer: false, 
-            attackObject: arrow 
+
+        return {
+            type: 'arrow',
+            damage: this.stats.damage,
+            position: { x: this.sprite.x, y: this.sprite.y },
+            hitPlayer: false,
+            attackObject: arrow
         };
     }
 
@@ -284,23 +284,23 @@ export class ArcherEnemy extends BaseEnemy {
         const maxDistance = 1000;
         const step = 10;
         const collisionLayers = this.getCollisionLayersFromScene();
-        
+
         for (let dist = step; dist < maxDistance; dist += step) {
             const checkX = startX + Math.cos(angle) * dist;
             const checkY = startY + Math.sin(angle) * dist;
-            
+
             for (const layer of collisionLayers) {
                 const tile = layer.getTileAtWorldXY(checkX, checkY);
                 if (tile && tile.collides) {
                     return { endX: checkX, endY: checkY };
                 }
             }
-            
+
             if (checkX < 0 || checkX > 4096 || checkY < 0 || checkY > 4096) {
                 return { endX: checkX, endY: checkY };
             }
         }
-        
+
         return {
             endX: startX + Math.cos(angle) * maxDistance,
             endY: startY + Math.sin(angle) * maxDistance
