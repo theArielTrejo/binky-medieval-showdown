@@ -1,91 +1,241 @@
-# 🧠 AI Director System Documentation
+# 🧠 AI Director System Documentation (V2)
 
-**Current Status:** `ACTIVE` (Neural Contextual Bandit)
+**Current Status:** `ACTIVE` (3-Layer Neural Contextual Bandit)
 **Tech Stack:** TensorFlow.js
-**Location:** `src/game/AIDirector.ts`
+**Location:** `src/game/systems/ai-director/`
 
 ---
 
 ## 📖 What is the AI Director?
 
-The AI Director is the "Dungeon Master" of our game. Unlike standard games that just spawn enemies on a timer, our Director uses **Machine Learning** to watch the player and decide exactly what to spawn to make the game "fun."
+The AI Director is the "Dungeon Master" of our game. Unlike standard games that just spawn enemies on a timer, our Director uses a **3-Layer Architecture** combining deterministic pacing with **Machine Learning** to create adaptive, varied, and fair enemy spawning.
 
 ### The "Netflix" Analogy
 Think of it like the Netflix recommendation algorithm:
 *   **Netflix** looks at what you watched (Context) and recommends a movie (Action) to keep you watching (Reward).
-*   **Our Director** looks at your Health/DPS (Context) and spawns a Monster (Action) to keep you in the "Flow State" (Reward).
+*   **Our Director** looks at your Health/DPS (Context) and spawns a "Combat Package" (Action) to keep you in the "Flow State" (Reward).
 
-## ⚙️ How It Works (The Algorithm)
+---
 
-We moved away from heavy Deep Reinforcement Learning (DQN) to a faster, lighter algorithm called a **Neural Contextual Bandit**.
+## 🏗️ 3-Layer Architecture
 
-1.  **Observe (Context):** Every few seconds, the AI takes a snapshot of the game:
-    *   Player Health & DPS
-    *   Movement patterns (Camping vs. Running)
-    *   Current enemy count
-    *   Stress Level (How overwhelmed the player looks)
+The AI Director V2 separates concerns into three distinct layers:
 
-2.  **Predict (Action):** The Neural Network predicts: *"If I spawn a Gnoll right now, how much 'Flow' will the player feel?"* It does this for every possible enemy type and picks the winner.
+### Layer A: Round Director (Deterministic Pacing)
+**File:** `RoundDirector.ts`
 
-3.  **Learn (Reward):** After the action happens, it calculates a score:
-    *   **Too Easy?** (Player full health, bored) = Low Reward.
-    *   **Too Hard?** (Player died instantly) = Negative Reward.
-    *   **Just Right?** (Player took some damage but survived and moved a lot) = **High Reward**.
+Controls global pacing WITHOUT ML:
+- **Round Budget:** `base + round * linear + round² * quadratic`
+- **Max Concurrent Enemies:** Increases slowly to prevent swarms
+- **Spawn Cap:** Total spawns allowed per round
+- **Target Stress Range:** Defines the "fun zone"
 
-The model updates itself *while you play*. If you are good at kiting Zombies, the AI learns that Zombies don't stress you out, so it might start spawning Archers instead.
+This ensures the game **reliably ramps up every round**, regardless of ML.
 
-## 🛡️ The Budget System (Safety Rails)
+```typescript
+// Example budget calculation
+roundBudget = 120 + (round * 25) + (round² * 1.5)
+maxAlive = clamp(8 + floor(round * 0.8), 8, 30)
+```
 
-To prevent the AI from unfairly swarming the player, it is constrained by a **Resource Budget**.
-*   The Director regenerates "credits" over time.
-*   Spawning a Skeleton costs small credits.
-*   Spawning an Ogre costs huge credits.
-*   If the AI wants to spawn an Ogre but has no credits, it is forced to wait.
+### Layer B: Package Generator (Rules + Constraints)
+**File:** `PackageGenerator.ts`
+
+Defines **what spawns are allowed** right now:
+- **Spawn Packages:** Pre-designed "combat questions" (enemy mixes + formations)
+- **Anti-Repetition Rules:** No-repeat windows, tag diversity requirements
+- **Cooldowns:** Per-package and per-tag cooldowns
+- **Counter-Playstyle Tags:** Packages that punish specific player behaviors
+
+Example package tags:
+- `antiKite` - Counters players who stay at range
+- `antiCamp` - Counters players who stay in one spot
+- `antiAoE` - Counters players who rely on area damage
+- `swarm` - Many weak enemies
+- `elite` - Fewer, tougher enemies
+
+### Layer C: ML Selector (Contextual Bandit)
+**File:** `MLSelector.ts`
+
+The bandit **chooses among valid candidates** to maximize "flow":
+- **Thompson Sampling:** Principled exploration based on uncertainty
+- **Novelty Bonus:** Rewards variety in package selection
+- **Repetition Penalty:** Punishes monotonous spawning
+- **Context-Aware Exploration:** More exploration when bored, less when in danger
+
+ML is **NOT inventing spawns**—it's picking the next beat from a curated set.
+
+---
+
+## ⚙️ How It Works
+
+### 1. Round Start
+```
+Layer A (RoundDirector) calculates:
+  → Round budget (total spawn points)
+  → Max concurrent enemies
+  → Target stress range
+```
+
+### 2. Each Decision Tick (~2.5 seconds)
+```
+Layer B (PackageGenerator) generates candidates:
+  → Filter by: budget, cooldown, round requirements
+  → Calculate novelty/repetition scores
+  → Apply anti-synergy rules
+
+Layer C (MLSelector) ranks candidates:
+  → ML predicts reward for each candidate
+  → Combines ML score + novelty - repetition
+  → Applies exploration strategy
+  → Returns best package + intensity
+
+Layer A validates and executes:
+  → Spend budget
+  → Spawn enemies
+  → Update tracking
+```
+
+### 3. Learning
+```
+After each spawn, calculate reward:
+  → Flow reward (in target stress zone?)
+  → Engagement bonus (player active?)
+  → Variety bonus (enemy type mix)
+  → Novelty bonus (package variety)
+  → Repetition penalty (same package streak)
+
+Update ML model via online learning
+```
+
+---
+
+## 🎯 Spawn Packages (Combat Questions)
+
+Instead of "always spawn archers," packages are **combat questions**:
+
+| Package ID | Tags | Description |
+|------------|------|-------------|
+| `anti_kite_flankers` | antiKite, flanker | Fast enemies from multiple angles |
+| `anti_camp_rush` | antiCamp, swarm | Multi-directional melee rush |
+| `anti_aoe_spread` | antiAoE, elite | Spread out tough enemies |
+| `anti_single_swarm` | antiSingleTarget, swarm | Many weak enemies |
+| `elite_ogre` | elite, antiTank | Heavy hitter with support |
+| `mixed_escalation` | mixed, flanker | Starts weak, reinforcements arrive |
+| `breather_light` | mixed | Low pressure for recovery |
+
+---
+
+## 🛡️ Safety Rules (ML Cannot Override)
+
+```typescript
+SafetyRules = {
+    absoluteMaxAlive: 50,           // Never exceed this
+    minTimeBetweenBeats: 1500,      // Min ms between spawns
+    breatherHealthThreshold: 0.20,  // Force breather if HP < 20%
+    mercyModeThreshold: 0.15        // Reduce intensity if HP < 15%
+}
+```
+
+---
 
 ## 🛠️ How to Modify (Safely)
 
-If you need to tweak the game balance, **do not touch the neural network**. Instead, tweak these safe areas:
+### 1. Adding New Packages
+Edit `PackageGenerator.ts`, add to `initializePackageLibrary()`:
 
-### 1. Modifying Enemy Costs
-Look for `calculateOptimalSpawns` in `AIDirector.ts`.
 ```typescript
-const costs = { 
-    skeletonViking: 50, 
-    archer: 30, 
-    gnoll: 20, 
-    ogre: 100 
-};
+{
+    id: 'my_new_package',
+    name: 'My Package',
+    description: 'What it does',
+    tags: ['antiKite', 'swarm'],
+    baseCost: 80,
+    minRound: 3,
+    cooldownBeats: 3,
+    getCost: (round, intensity) => 80 + round * 6,
+    buildWave: (context, round, intensity) => [
+        { enemyType: EnemyType.GNOLL, count: 4 + intensity, spawnPattern: 'flanking' }
+    ]
+}
 ```
-Changing these numbers affects how expensive enemies are for the AI.
 
-### 2. Modifying "Fun"
-Look for `calculateReward`. This determines what the AI thinks is "good."
-*   If you want the game to be more chaotic, increase the reward for `playerMovementDistance`.
-*   If you want the game to be harder, shift the `targetStress` variable higher.
+### 2. Adjusting Difficulty Scaling
+Edit `RoundDirector.ts`, modify difficulty configs:
 
-### 3. Hard Rules (Overrides)
-Look for `strategicObjectives`. These are "If/Then" rules that override the AI.
-*   *Example:* "If player HP > 90%, force spawn Gnolls."
-You can add new dramatic moments here without knowing ML.
+```typescript
+// In initializeDifficultyConfigs()
+this.difficultyConfigs.set('medium', {
+    baseBudget: 120,        // Starting budget
+    budgetPerRound: 25,     // Linear increase
+    budgetQuadratic: 1.5,   // Quadratic increase (small)
+    baseMaxAlive: 8,        // Starting enemy cap
+    targetStressMin: 0.45,  // Lower bound of "fun zone"
+    targetStressMax: 0.70,  // Upper bound of "fun zone"
+    // ...
+});
+```
 
-## 🔮 Future Plans & Roadmap
+### 3. Adjusting Rewards
+Edit `MLSelector.ts`, modify `calculateReward()`:
 
-Currently, the model starts fresh every game (Online Learning). We plan to expand this:
+```typescript
+// Flow reward (being in target stress zone)
+if (stressDist < 0.1) components.flowReward = 1.0;
 
-### 1. The "Dumb" Model (Static/Random)
-**Goal:** For low-end devices or "Classic Mode."
-*   Remove TensorFlow.js entirely.
-*   Use simple random probability (RNG) to spawn enemies.
-*   Useful for debugging if the AI is acting weird.
+// Engagement bonus
+components.engagementBonus = currContext.engagementScore * 0.5;
 
-### 2. The "Aggressive" Model (Pre-Trained)
-**Goal:** For "Hardcore Mode."
-*   Train a version of the AI that **inverts the reward function**.
-*   Instead of optimizing for "Fun/Flow," it optimizes for "Player Death."
-*   It will actively look for your weaknesses (e.g., if you have low armor, it spams fast attackers).
+// Novelty bonus (from boredom metrics)
+components.noveltyBonus = boredomMetrics.entropy * 0.2;
 
-### 3. The "Pity" Director
-**Goal:** For "Story Mode."
-*   An AI that detects when you are about to quit and intentionally spawns weaker enemies or "accidentally" spawns health drops (via loot tables).
+// Repetition penalty
+components.repetitionPenalty = 
+    (boredomMetrics.samePackageStreak * 0.1) +
+    (boredomMetrics.sameTagStreak * 0.05);
+```
 
 ---
+
+## 📊 Metrics & Debugging
+
+### Console Output
+```
+[AIDirectorV2] Executed "Flanking Rush" (MEDIUM) - Cost: 85, Spawned: 6
+[RoundDirector] Round 5 | Budget: 215/300 | Spawned: 18/35 | Beats: 4
+```
+
+### In-Game Status
+```typescript
+aiDirector.getStatus()        // Overall status
+aiDirector.getBudgetStatus()  // Budget remaining
+aiDirector.getTacticalStatus() // Last package, streaks
+```
+
+---
+
+## 🔮 Key Improvements Over V1
+
+| Feature | V1 (Old) | V2 (New) |
+|---------|----------|----------|
+| Architecture | Single monolithic class | 3-layer separation |
+| Spawn Variety | Pick enemy type | Pick curated "combat packages" |
+| Anti-Repetition | Hope ML behaves | Hard constraints + novelty rewards |
+| Budget | Simple regen | Round-based with scaling |
+| Exploration | ε-greedy only | Thompson Sampling + context-aware ε |
+| Safety | Basic health check | Breathers, mercy mode, hard caps |
+| Playstyle Counter | Limited | Rich context features (kiting, camping, AoE) |
+
+---
+
+## 🚀 Future Plans
+
+1. **Palette Rotation:** Different enemy "families" per round theme
+2. **Boss Encounters:** Special packages for milestone rounds
+3. **Player Archetypes:** Learn per-archetype preferences
+4. **Offline Training:** Train models on collected gameplay data
+5. **A/B Testing:** Compare different package sets
+
+---
+
+*Last Updated: AI Director V2 - 3-Layer Architecture*

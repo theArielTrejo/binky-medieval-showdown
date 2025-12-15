@@ -3,10 +3,12 @@ import { Player } from '../Player';
 import { InputBuffer } from '../input/InputBuffer';
 import { EnemySystem } from '../systems/EnemySystem';
 import { EnemyType } from '../types/EnemyTypes';
+// Old AIDirector kept for AIMetricsDashboard compatibility (will be deprecated)
 import { AIDirector } from '../systems/AIDirector';
 import { PlayerArchetypeType } from '../objects/PlayerArchetype';
 import { MobSpawnerUI } from '../../ui/MobSpawnerUI';
 import { XPOrbSystem } from '../systems/XPOrbSystem';
+import { HealthOrbSystem } from '../systems/HealthOrbSystem';
 import { SpriteSheetManager } from '../systems/SpriteSheetManager';
 import { TilemapManager } from '../systems/TilemapManager';
 import { TilemapConfig } from '../types/TilemapTypes';
@@ -28,6 +30,7 @@ export class Game extends Scene {
     private roundManager!: RoundManager;
     private mobSpawnerUI!: MobSpawnerUI;
     private xpOrbSystem!: XPOrbSystem;
+    private healthOrbSystem!: HealthOrbSystem;
     private tilemap!: Phaser.Tilemaps.Tilemap;
     private tilemapManager!: TilemapManager;
     private gameStarted: boolean = false;
@@ -323,8 +326,11 @@ export class Game extends Scene {
         // Initialize XP Orb System
         this.xpOrbSystem = new XPOrbSystem(this);
 
+        // Initialize Health Orb System
+        this.healthOrbSystem = new HealthOrbSystem(this);
+
         // Initialize Enemy System 
-        this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem);
+        this.enemySystem = new EnemySystem(this, this.player, this.xpOrbSystem, this.healthOrbSystem);
 
         // Initialize Player Skill System (must be after EnemySystem)
         this.playerSkillSystem = new PlayerSkillSystem(this, this.player, this.enemySystem);
@@ -339,8 +345,8 @@ export class Game extends Scene {
         // Initialize AI Director
         this.aiDirector = new AIDirector();
 
-        // Initialize Round Manager
-        this.roundManager = new RoundManager(this, this.enemySystem, this.aiDirector);
+        // Initialize Round Manager (pass player directly since playerReady event already fired)
+        this.roundManager = new RoundManager(this, this.enemySystem, this.aiDirector, this.player);
         this.roundManager.start();
 
         // Initialize Enhanced Mob Spawner UI
@@ -446,6 +452,11 @@ export class Game extends Scene {
             if (this.xpOrbSystem) {
                 this.xpOrbSystem.clearAllOrbs();
                 // this.xpOrbSystem = undefined;
+            }
+
+            if (this.healthOrbSystem) {
+                this.healthOrbSystem.clearAllOrbs();
+                // this.healthOrbSystem = undefined;
             }
 
             if (this.mobSpawnerUI) {
@@ -581,8 +592,13 @@ export class Game extends Scene {
             this.player.collectXPOrbs(this.xpOrbSystem);
         }
 
-        // Update AI Director
-        this.aiDirector?.update(this.player, this.enemySystem);
+        // Collect Health orbs
+        if (this.player && this.healthOrbSystem) {
+            this.player.collectHealthOrbs(this.healthOrbSystem);
+        }
+
+        // Old AI Director update disabled - V2 is handled by RoundManager
+        // this.aiDirector?.update(this.player, this.enemySystem);
 
         // Update Round Manager
         this.roundManager?.update(deltaTime);

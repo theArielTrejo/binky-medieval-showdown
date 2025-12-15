@@ -1,12 +1,13 @@
 import { Scene } from 'phaser';
 import { EnemySystem } from './EnemySystem';
 import { AIDirector } from './AIDirector';
+import { AIDirectorV2 } from './ai-director/AIDirectorV2';
 import { EnemyType } from '../types/EnemyTypes';
 import { AudioManager } from './AudioManager';
 
 export enum RoundState {
     WAITING_TO_START, // Initial state or between rounds
-    SPAWNING,         // Spawning enemies
+    SPAWNING,         // AI Director actively spawning beats
     IN_PROGRESS,      // Enemies are alive, fighting
     ROUND_COMPLETED   // All enemies dead
 }
@@ -15,6 +16,8 @@ export class RoundManager {
     private scene: Scene;
     private enemySystem: EnemySystem;
     private aiDirector: AIDirector;
+    private aiDirectorV2: AIDirectorV2;
+    private player: any;  // Player reference for AI Director
 
     private currentRound: number = 0;
     private state: RoundState = RoundState.WAITING_TO_START;
@@ -25,13 +28,24 @@ export class RoundManager {
 
     // Config
     private timeBetweenRounds: number = 5; // Seconds
+    private useNewAIDirector: boolean = true;  // Flag to use new 3-layer system
 
-    constructor(scene: Scene, enemySystem: EnemySystem, aiDirector: AIDirector) {
+    constructor(scene: Scene, enemySystem: EnemySystem, aiDirector: AIDirector, player?: any) {
         this.scene = scene;
         this.enemySystem = enemySystem;
         this.aiDirector = aiDirector;
+        this.player = player || null;
+        
+        // Initialize new AI Director V2
+        this.aiDirectorV2 = new AIDirectorV2();
 
         this.createUI();
+        
+        // Also listen for playerReady in case player is set later
+        scene.events.on('playerReady', (p: any) => {
+            this.player = p;
+            console.log('[RoundManager] Player reference received');
+        });
     }
 
     private createUI(): void {
@@ -124,7 +138,7 @@ export class RoundManager {
         });
     }
 
-    public update(deltaTime: number): void {
+    public async update(deltaTime: number): Promise<void> {
         switch (this.state) {
             case RoundState.WAITING_TO_START:
                 this.stateTimer -= deltaTime;
@@ -134,13 +148,38 @@ export class RoundManager {
                 break;
 
             case RoundState.SPAWNING:
-                // Spawning is instant for now, but could be staggered
-                this.state = RoundState.IN_PROGRESS;
+                // AI Director V2 handles spawning in beats
+                if (this.useNewAIDirector && this.player) {
+                    // Check if budget is exhausted BEFORE calling update
+                    if (this.aiDirectorV2.isRoundBudgetExhausted()) {
+                        this.state = RoundState.IN_PROGRESS;
+                        console.log(`[RoundManager] Round ${this.currentRound} spawning complete, waiting for enemies to be cleared`);
+                        break;  // Exit early
+                    }
+                    
+                    await this.aiDirectorV2.update(this.player, this.enemySystem);
+                    
+                    // Safety check: if no enemies after 5 seconds, force a basic spawn
+                    if (this.enemySystem.getEnemyCount() === 0 && this.stateTimer < -5) {
+                        console.warn('[RoundManager] No enemies spawned after 5s, forcing basic spawn');
+                        this.forceBasicSpawn();
+                    }
+                } else {
+                    // Legacy: instant spawn (player not available)
+                    console.log('[RoundManager] Using legacy spawn (no player ref)');
+                    this.state = RoundState.IN_PROGRESS;
+                }
                 break;
 
             case RoundState.IN_PROGRESS:
-                // Check if all enemies are dead
-                if (this.enemySystem.getEnemyCount() === 0) {
+                // Continue letting AI director spawn if budget remains
+                if (this.useNewAIDirector && this.player && !this.aiDirectorV2.isRoundBudgetExhausted()) {
+                    await this.aiDirectorV2.update(this.player, this.enemySystem);
+                }
+                
+                // Check if all enemies are dead AND budget exhausted
+                const budgetExhausted = this.useNewAIDirector ? this.aiDirectorV2.isRoundBudgetExhausted() : true;
+                if (this.enemySystem.getEnemyCount() === 0 && budgetExhausted) {
                     this.completeRound();
                 }
                 break;
@@ -155,6 +194,22 @@ export class RoundManager {
     private spawnRound(): void {
         this.state = RoundState.SPAWNING;
 
+        if (this.useNewAIDirector && this.player) {
+            // Use new 3-layer AI Director
+            const budget = this.aiDirectorV2.startRound(this.currentRound);
+            console.log(`[RoundManager] Starting Round ${this.currentRound} with AI Director V2`);
+            console.log(`  Budget: ${budget.totalBudget}, Max Alive: ${budget.maxConcurrentEnemies}, Spawn Cap: ${budget.spawnCap}`);
+            
+            // AI Director will handle spawning in beats during update()
+            return;
+        }
+        
+        // If player not available yet but using new director, fall through to legacy
+        if (this.useNewAIDirector && !this.player) {
+            console.warn('[RoundManager] Player not available, using legacy spawning');
+        }
+
+        // Legacy spawning (fallback)
         // Calculate difficulty based on round
         // Simple formula: Round * 2 enemies, introducing new types
 
@@ -204,22 +259,32 @@ export class RoundManager {
             types[0].count += remaining;
         }
 
-        console.log(`Starting Round ${this.currentRound} with ${totalEnemies} enemies.`);
+        console.log(`Starting Round ${this.currentRound} with ${totalEnemies} enemies (legacy mode).`);
 
         types.forEach(wave => {
             if (wave.count > 0) {
                 this.enemySystem.spawnWave(wave.type, wave.count, 'screen_edges');
             }
         });
-
-        // Optional: Enable AI Director for dynamic adjustment during the round?
-        // For now, let's keep it controlled purely by waves to ensure clear rounds.
     }
 
     private completeRound(): void {
         this.state = RoundState.ROUND_COMPLETED;
         this.showAnnouncement("Round Complete!", 2000);
         console.log(`Round ${this.currentRound} completed.`);
+    }
+    
+    /**
+     * Emergency fallback spawn if AI Director fails
+     */
+    private forceBasicSpawn(): void {
+        const baseCount = 3 + Math.floor(this.currentRound * 0.5);
+        console.log(`[RoundManager] Force spawning ${baseCount} gnolls`);
+        this.enemySystem.spawnWave(EnemyType.GNOLL, baseCount, 'screen_edges');
+        
+        if (this.currentRound >= 2) {
+            this.enemySystem.spawnWave(EnemyType.ARCHER, 1, 'screen_edges');
+        }
     }
 
     private updateUI(): void {

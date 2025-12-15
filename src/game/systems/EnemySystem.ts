@@ -5,6 +5,7 @@ import { EnemyFactory } from '../enemies/EnemyFactory';
 import { FallenAngelEnemy } from '../enemies/types/FallenAngelEnemy';
 import { TombstoneEnemy } from '../enemies/types/TombstoneEnemy';
 import { XPOrbSystem } from './XPOrbSystem';
+import { HealthOrbSystem } from './HealthOrbSystem';
 
 import { Shield } from '../enemies/attacks/Shield';
 import { ConeAttack } from '../enemies/attacks/ConeAttack';
@@ -39,6 +40,7 @@ export class EnemySystem {
     private maxEnemies: number = 50;
     private player: any;
     private xpOrbSystem: XPOrbSystem | undefined;
+    private healthOrbSystem: HealthOrbSystem | undefined;
     private spawnTimer: Phaser.Time.TimerEvent | null = null;
     private onEnemySpawnedCallback: ((enemy: BaseEnemy) => void) | null = null;
 
@@ -53,10 +55,11 @@ export class EnemySystem {
     private activeClawAttacks: ClawAttack[] = [];
     private activeArrowProjectiles: ArrowProjectile[] = [];
 
-    constructor(scene: Scene, player?: any, xpOrbSystem?: XPOrbSystem) {
+    constructor(scene: Scene, player?: any, xpOrbSystem?: XPOrbSystem, healthOrbSystem?: HealthOrbSystem) {
         this.scene = scene;
         this.player = player;
         this.xpOrbSystem = xpOrbSystem;
+        this.healthOrbSystem = healthOrbSystem;
         this.enemiesGroup = this.scene.physics.add.group();
     }
 
@@ -172,15 +175,21 @@ export class EnemySystem {
      * @param enemyType - Type of enemy to spawn
      * @param x - X coordinate to spawn at
      * @param y - Y coordinate to spawn at
+     * @param isElite - Whether to spawn as an elite enemy
      * @returns The spawned enemy or null if max enemies reached
      */
-    public spawnEnemy(enemyType: EnemyType, x: number, y: number): BaseEnemy | null {
+    public spawnEnemy(enemyType: EnemyType, x: number, y: number, isElite: boolean = false): BaseEnemy | null {
         if (this.enemies.length >= this.maxEnemies) {
             console.warn('Max enemies reached, cannot spawn more');
             return null;
         }
 
         const enemy = EnemyFactory.create(this.scene, x, y, enemyType);
+        
+        // Make elite if specified
+        if (isElite) {
+            enemy.makeElite();
+        }
         
         // Setup Fallen Angel with reference to enemy system for healing
         if (enemy instanceof FallenAngelEnemy) {
@@ -204,9 +213,10 @@ export class EnemySystem {
      * @param location - Spawn location strategy ('near_player', 'screen_edges', 'random_ambush')
      * @param playerX - Player's X coordinate for positioning
      * @param playerY - Player's Y coordinate for positioning
+     * @param eliteChance - Probability (0-1) that each spawned enemy will be elite
      * @returns Array of spawned enemies
      */
-    public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384): BaseEnemy[] {
+    public spawnWave(enemyType: EnemyType, count: number, location: string, playerX: number = 512, playerY: number = 384, eliteChance: number = 0): BaseEnemy[] {
         if (this.enemies.length >= this.maxEnemies) {
             return []; // Don't spawn if max is reached
         }
@@ -219,6 +229,11 @@ export class EnemySystem {
         for (let i = 0; i < spawnCount; i++) {
             const spawnPos = this.getSpawnPosition(location, playerX, playerY);
             const enemy = EnemyFactory.create(this.scene, spawnPos.x, spawnPos.y, enemyType);
+            
+            // Check if this enemy should be elite
+            if (eliteChance > 0 && Math.random() < eliteChance) {
+                enemy.makeElite();
+            }
             
             // Setup Fallen Angel with reference to enemy system for healing
             if (enemy instanceof FallenAngelEnemy) {
@@ -245,14 +260,20 @@ export class EnemySystem {
 
     /**
      * Spawn a single enemy at a specific position
+     * @param isElite - Whether to spawn as an elite enemy
      * @returns The spawned enemy, or null if max enemies reached
      */
-    public spawnEnemyAt(enemyType: EnemyType, x: number, y: number): BaseEnemy | null {
+    public spawnEnemyAt(enemyType: EnemyType, x: number, y: number, isElite: boolean = false): BaseEnemy | null {
         if (this.enemies.length >= this.maxEnemies) {
             return null; // Don't spawn if max is reached
         }
 
         const enemy = EnemyFactory.create(this.scene, x, y, enemyType);
+        
+        // Make elite if specified
+        if (isElite) {
+            enemy.makeElite();
+        }
         
         // Setup Fallen Angel with reference to enemy system for healing
         if (enemy instanceof FallenAngelEnemy) {
@@ -541,6 +562,11 @@ export class EnemySystem {
                         enemy.type,
                         enemy.stats.xpValue
                     );
+                    
+                    // Try to spawn health orb (25% chance)
+                    if (this.healthOrbSystem) {
+                        this.healthOrbSystem.trySpawnHealthOrb(spawnX, spawnY);
+                    }
                 }
 
                 // Ensure enemy is properly destroyed if it hasn't been already

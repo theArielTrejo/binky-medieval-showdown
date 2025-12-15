@@ -14,6 +14,14 @@ export abstract class BaseEnemy {
     public scene: Scene;
     public activeShield: Shield | null = null;
     public _farTimer: number = 0;
+    
+    // Elite enemy properties
+    public isElite: boolean = false;
+    public static readonly ELITE_SCALE_MULTIPLIER: number = 1.4;      // 40% larger
+    public static readonly ELITE_HEALTH_MULTIPLIER: number = 2.5;     // 2.5x health
+    public static readonly ELITE_DAMAGE_MULTIPLIER: number = 1.5;     // 1.5x damage
+    public static readonly ELITE_XP_MULTIPLIER: number = 3.0;         // 3x XP value
+    public static readonly ELITE_TINT: number = 0xff4444;             // Red tint
 
     // Health bar graphics
     protected healthBarBackground: Phaser.GameObjects.Graphics | null = null;
@@ -191,6 +199,40 @@ export abstract class BaseEnemy {
         }
 
         return isDead;
+    }
+    
+    /**
+     * Transform this enemy into an Elite variant
+     * Elites are larger, have more health, deal more damage, and have a red tint
+     */
+    public makeElite(): void {
+        if (this.isElite) return; // Already elite
+        
+        this.isElite = true;
+        
+        // Scale up stats
+        this.stats.health = Math.floor(this.stats.health * BaseEnemy.ELITE_HEALTH_MULTIPLIER);
+        this.stats.damage = Math.floor(this.stats.damage * BaseEnemy.ELITE_DAMAGE_MULTIPLIER);
+        this.stats.xpValue = Math.floor(this.stats.xpValue * BaseEnemy.ELITE_XP_MULTIPLIER);
+        
+        // Update current health to new max
+        this.currentHealth = this.stats.health;
+        this.maxHealth = this.stats.health;
+        
+        // Scale up sprite
+        const currentScale = this.sprite.scaleX;
+        this.sprite.setScale(currentScale * BaseEnemy.ELITE_SCALE_MULTIPLIER);
+        
+        // Apply red tint
+        this.sprite.setTint(BaseEnemy.ELITE_TINT);
+        
+        // Store elite status on sprite for reference
+        this.sprite.setData('isElite', true);
+        
+        // Update health bar to reflect new stats
+        this.updateHealthBar();
+        
+        console.log(`🔴 Elite ${this.type} spawned! HP: ${this.stats.health}, DMG: ${this.stats.damage}`);
     }
 
     /**

@@ -7,6 +7,7 @@ import { PlayerAction } from './types/InputTypes';
 import { PlayerState } from './types/PlayerTypes';
 import { CooldownManager } from './systems/CooldownManager';
 import { XPOrbSystem } from './systems/XPOrbSystem';
+import { HealthOrbSystem } from './systems/HealthOrbSystem';
 import { InputBuffer } from './input/InputBuffer';
 import { SkillLoadout } from './skills/SkillLoadout';
 import { ShieldBashSkill } from './skills/ShieldBashSkill';
@@ -360,6 +361,11 @@ export class Player {
         });
     }
 
+    public collectHealthOrbs(system: HealthOrbSystem): void {
+        system.collectOrbs(this.sprite.x, this.sprite.y, (health) => {
+            this.heal(health);
+        });
+    }
 
     private gainXP(amount: number): void {
         const levels = this.archetype.gainXP(amount, this.scene.time.now);
