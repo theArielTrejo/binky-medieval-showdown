@@ -613,19 +613,19 @@ export class Game extends Scene {
         if (this.roundManager && this.mapInteractionSystem) {
             const round = this.roundManager.getCurrentRound();
             // 6
-            if (round >= 1) {
+            if (round >= 6) {
                 this.mapInteractionSystem.openDoorGroup(0, 'The Dark Forest Gate has opened!');
             } // 11
-            if (round >= 1) {
+            if (round >= 11) {
                 this.mapInteractionSystem.openDoorGroup(1, "Binkshire Fields has opened!");
             } // 16
-            if (round >= 1) {
+            if (round >= 16) {
                 this.mapInteractionSystem.openDoorGroup(2, 'Water Ways Gate has opened!');
             } // 21
-            if (round >= 1) {
+            if (round >= 21) {
                 this.mapInteractionSystem.openDoorGroup(3, 'Gloomroot Circle Trail Gate has opened!');
             } // 26
-            if (round >= 1) {
+            if (round >= 26) {
                 this.mapInteractionSystem.openDoorGroup(4, "Binky's Castle has opened!");
             }
         }

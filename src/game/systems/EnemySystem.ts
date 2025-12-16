@@ -96,6 +96,25 @@ export class EnemySystem {
         });
     }
 
+    // Prioritize new zone that was unlocked
+    private pickZoneWithPriority(zones: any[]): any {
+        const lastUnlocked = this.scene.registry.get("last_unlocked_zone");
+
+        if (!lastUnlocked) {
+            return Phaser.Utils.Array.GetRandom(zones);
+        }
+
+        // Zones matching the most recently unlocked area
+        const preferred = zones.filter(z => z.name === lastUnlocked);
+
+        // 🔥 70% chance to spawn in newest zone
+        if (preferred.length > 0 && Math.random() < 0.7) {
+            return Phaser.Utils.Array.GetRandom(preferred);
+        }
+
+        // Otherwise fallback to any active zone
+        return Phaser.Utils.Array.GetRandom(zones);
+    }
 
 
     // This PREVENTS enemies from spawning inside of collision tiles, walls, houses, etc
@@ -305,7 +324,7 @@ export class EnemySystem {
         }
 
         // Pick a random rectangle zone
-        const zone = Phaser.Utils.Array.GetRandom(zones);
+        const zone = this.pickZoneWithPriority(zones);
 
         const safeRadius = 180;
         let x = 0, y = 0;
@@ -316,19 +335,35 @@ export class EnemySystem {
         // Declare inView OUTSIDE the loop
         let inView = false;
 
+        const preferredMin = 200; // how close enemies try to spawn
+        const preferredMax = 400; // max distance from player
+
         do {
-            x = Phaser.Math.Between(zone.x, zone.x + zone.width);
-            y = Phaser.Math.Between(zone.y, zone.y + zone.height);
+            // Angle from zone center → player
+            const angle = Phaser.Math.Angle.Between(
+                zone.x + zone.width / 2,
+                zone.y + zone.height / 2,
+                playerX,
+                playerY
+            );
 
-            // Update inView value
+            const dist = Phaser.Math.Between(preferredMin, preferredMax);
+
+            // Spawn toward player, not random corner
+            x = playerX + Math.cos(angle) * dist;
+            y = playerY + Math.sin(angle) * dist;
+
+            // Clamp inside zone rectangle
+            x = Phaser.Math.Clamp(x, zone.x, zone.x + zone.width);
+            y = Phaser.Math.Clamp(y, zone.y, zone.y + zone.height);
+
             inView = cam.worldView.contains(x, y);
-
             attempts++;
 
         } while (
             (
                 Phaser.Math.Distance.Between(x, y, playerX, playerY) < safeRadius ||
-                inView ||                                     // <-- USE BOOLEAN HERE
+                inView ||
                 !this.isValidSpawn(x, y)
             )
             &&

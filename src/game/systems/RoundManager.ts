@@ -47,6 +47,23 @@ export class RoundManager {
             console.log('[RoundManager] Player reference received');
         });
     }
+    // Tracks last unlocked zone
+    private activateZone(zoneName: string): void {
+        const zones = this.scene.registry.get("enemy_spawn_zones") || [];
+
+        zones.forEach((z: any) => {
+            if (z.name === zoneName) {
+                const prop = z.properties.find((p: any) => p.name === "active");
+                if (prop) prop.value = true;
+            }
+        });
+
+        // key line
+        this.scene.registry.set("last_unlocked_zone", zoneName);
+
+        console.log("Activated spawn zone:", zoneName);
+    }
+
 
     private createUI(): void {
         const width = this.scene.cameras.main.width;
@@ -87,31 +104,30 @@ export class RoundManager {
         this.currentRound++;
         this.scene.registry.set("current_round", this.currentRound);
 
-        // === Unlock additional spawn zones based on round number ===
-        const zones = this.scene.registry.get("enemy_spawn_zones") || [];
-        zones.forEach((z: any) => {
-            const name = z.name;
+        // === Unlock spawn zones (and mark newest for priority spawning) ===
+        if (this.currentRound === 1) {
+            this.activateZone("zone_graveyard");
+        }
 
-            if (this.currentRound >= 1 && name === "zone_graveyard") {
-                const prop = z.properties.find((p: any) => p.name === "active");
-                if (prop) prop.value = true;
-            }
+        if (this.currentRound === 6) {
+            this.activateZone("zone_forest");
+        }
 
-            if (this.currentRound >= 6 && name === "zone_forest") {
-                const prop = z.properties.find((p: any) => p.name === "active");
-                if (prop) prop.value = true;
-            }
+        if (this.currentRound === 11) {
+            this.activateZone("zone_town");
+        }
 
-            if (this.currentRound >= 11 && name === "zone_town") {
-                const prop = z.properties.find((p: any) => p.name === "active");
-                if (prop) prop.value = true;
-            }
+        if (this.currentRound === 16) {
+            this.activateZone("zone_water");
+        }
 
-            if (this.currentRound >= 16 && name === "zone_water") {
-                const prop = z.properties.find((p: any) => p.name === "active");
-                if (prop) prop.value = true;
-            }
-        });
+        if (this.currentRound === 21) {
+            this.activateZone("zone_cliff");
+        }
+
+        if (this.currentRound === 26) {
+            this.activateZone("zone_kingcastle");
+        }
 
         this.state = RoundState.WAITING_TO_START;
         this.stateTimer = this.timeBetweenRounds;
