@@ -1,3 +1,24 @@
+# How our game works + the usage of Contextual Bandits
+<img width="1280" height="720" alt="Slide2" src="https://github.com/user-attachments/assets/5c43e174-0bc3-4876-aab4-dad8b3305b51" />
+<img width="1280" height="720" alt="Slide3" src="https://github.com/user-attachments/assets/5cc6b64c-bcd3-4764-8ac1-e6d4cd5d846f" />
+<img width="1280" height="720" alt="Slide4" src="https://github.com/user-attachments/assets/ef521510-969f-42f2-832e-47bc2902ccca" />
+<img width="1280" height="720" alt="Slide5" src="https://github.com/user-attachments/assets/559b6c46-c7ba-4644-bc41-90d4f5a8f392" />
+<img width="1280" height="720" alt="Slide6" src="https://github.com/user-attachments/assets/1f2e1f08-10ea-4fbf-8186-c3fa0d19971a" />
+<img width="1280" height="720" alt="Slide7" src="https://github.com/user-attachments/assets/453edd13-a4dd-4587-bb37-202d9a4a270b" />
+<img width="1280" height="720" alt="Slide8" src="https://github.com/user-attachments/assets/cbef1d6c-86be-4365-a3dd-b5db76617999" />
+<img width="1280" height="720" alt="Slide9" src="https://github.com/user-attachments/assets/6e6bb74b-7c45-4a6e-b9be-c3f2b617abc9" />
+<img width="1280" height="720" alt="Slide11" src="https://github.com/user-attachments/assets/f71f09aa-959d-459e-908b-8cd62c259ee1" />
+<img width="1280" height="720" alt="Slide12" src="https://github.com/user-attachments/assets/863ce055-3e1b-4583-b5aa-02d6c8c9b2a3" />
+<img width="1280" height="720" alt="Slide13" src="https://github.com/user-attachments/assets/a4a5014c-13a9-4f77-a747-852d00d6f9df" />
+<img width="1280" height="720" alt="Slide14" src="https://github.com/user-attachments/assets/c0966968-b936-4f9e-abbb-0bf9ac2e995f" />
+<img width="1280" height="720" alt="Slide15" src="https://github.com/user-attachments/assets/0d64d984-77c8-475c-bd28-8d1c2b499207" />
+<img width="1280" height="720" alt="Slide16" src="https://github.com/user-attachments/assets/36be966d-47b1-4776-9a04-34386f0fac09" />
+<img width="1280" height="720" alt="Slide17" src="https://github.com/user-attachments/assets/38f1a521-029e-4cc0-82fe-e9c35449cf61" />
+<img width="1280" height="720" alt="Slide18" src="https://github.com/user-attachments/assets/76dbf5ac-d632-4c4e-915a-d34c77d8c94a" />
+<img width="1280" height="720" alt="Slide19" src="https://github.com/user-attachments/assets/d9f4cd9f-8c04-4ea2-b57f-2f19cd0a728f" />
+
+
+
 # Phaser Vite TypeScript Template (Set up Guide)
 
 This is a Phaser 3 project template that uses Vite for bundling. It supports hot-reloading for quick development workflow, includes TypeScript support and scripts to generate production-ready builds.
